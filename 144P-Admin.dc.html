@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B3F46">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0B3F46">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/lucide-static@0.460.0/font/lucide.css">
+<script src="./image-slot.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script src="./cloud.js"></script>
+<script src="./admin-data.js"></script>
+<style>
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{margin:0;overflow-x:hidden;background:#F4F7F7;font-family:'Public Sans',system-ui,sans-serif;color:#173344;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#075D61}a:hover{color:#123C56}
+input,textarea,button,select{font-family:inherit}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible,a:focus-visible{outline:3px solid #0E8A7E;outline-offset:2px}
+</style>
+</helmet>
+
+<sc-if value="{{ isLoading }}" hint-placeholder-val="{{ false }}">
+  <div style="min-height:100vh;display:flex;align-items:center;justify-content:center;color:#6A7A84">Loading…</div>
+</sc-if>
+
+<sc-if value="{{ isLogin }}" hint-placeholder-val="{{ true }}">
+  <div data-screen-label="Admin Sign In" style="min-height:100vh;display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr))">
+    <div style="position:relative;background:#0B3F46;color:#FFFFFF;min-height:320px;display:flex;flex-direction:column;justify-content:space-between;padding:40px;overflow:hidden">
+      <div style="position:absolute;inset:0;opacity:.9"><image-slot id="admin-login-landscape" shape="rect" placeholder="Drop a sunrise landscape photo"></image-slot></div>
+      <div style="position:relative;pointer-events:none;display:flex;align-items:center;gap:12px"><i class="icon-book-open" style="font-size:30px"></i><div style="display:flex;flex-direction:column"><span style="font-family:'Source Serif 4',serif;font-size:24px;font-weight:600">The 144(P) Plan</span><span style="font-size:13px;color:#BFE2DC">Multi-Church Platform</span></div></div>
+      <div style="position:relative;pointer-events:none;font-family:'Source Serif 4',serif;font-size:30px;line-height:1.25;max-width:420px">Grow your faith. Make an eternal impact.</div>
+    </div>
+    <div style="display:flex;align-items:center;justify-content:center;padding:40px 24px;background:#F8F5EE">
+      <div style="width:100%;max-width:440px;display:flex;flex-direction:column;gap:18px">
+        <div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:28px;font-weight:700">Administrator sign in</div><div style="font-size:15px;color:#6A7A84;line-height:1.5">Partners use the mobile app. This area is for the platform owner and verified church administrators.</div></div>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Email<input type="email" value="{{ lf.email }}" onChange="{{ lfOn.email }}" style="border:1px solid #CBD5DA;border-radius:10px;padding:12px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344"></label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Password<input type="password" value="{{ lf.password }}" onChange="{{ lfOn.password }}" style="border:1px solid #CBD5DA;border-radius:10px;padding:12px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344"></label>
+        <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}"><div role="alert" style="background:#FBEAE7;color:#8A2E22;border-radius:10px;padding:10px 14px;font-size:14px">{{ err }}</div></sc-if>
+        <button onClick="{{ doLogin }}" style="border:none;border-radius:10px;min-height:50px;background:#123C56;color:#FFFFFF;font-size:16px;font-weight:600;cursor:pointer">Sign in</button>
+        <div style="border-top:1px solid #E1E7EA;padding-top:16px;display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6A7A84">Demo sign-in · test data</div>
+          <button onClick="{{ loginPlatform }}" style="display:flex;align-items:center;gap:12px;text-align:left;background:#FFFFFF;border:1px solid #E1E7EA;border-radius:12px;padding:12px 14px;cursor:pointer;color:#173344">
+            <span style="width:38px;height:38px;border-radius:50%;background:#123C56;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">PA</span>
+            <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">Platform Administrator</span><span style="font-size:13px;color:#6A7A84">Owner account · role assigned server-side</span></span><i class="icon-chevron-right" style="color:#6A7A84"></i>
+          </button>
+          <sc-for list="{{ demoChurchAdmins }}" as="a" hint-placeholder-count="3">
+            <button onClick="{{ a.pick }}" style="display:flex;align-items:center;gap:12px;text-align:left;background:#FFFFFF;border:1px solid #E1E7EA;border-radius:12px;padding:12px 14px;cursor:pointer;color:#173344">
+              <span style="width:38px;height:38px;border-radius:50%;background:#E8F5F3;color:#075D61;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">{{ a.initials }}</span>
+              <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">{{ a.name }}</span><span style="font-size:13px;color:#6A7A84">Church Administrator · {{ a.church }}</span></span><i class="icon-chevron-right" style="color:#6A7A84"></i>
+            </button>
+          </sc-for>
+        </div>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isAccept }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="Accept Invitation" style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 20px;background:#F8F5EE">
+    <div style="width:100%;max-width:460px;background:#FFFFFF;border:1px solid #E1E7EA;border-radius:18px;padding:28px;display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;align-items:center;gap:10px;color:#075D61"><i class="icon-shield-check" style="font-size:26px"></i><span style="font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase">Administrator invitation</span></div>
+      <sc-if value="{{ acValid }}" hint-placeholder-val="{{ true }}">
+        <div style="font-size:24px;font-weight:700;line-height:1.25">Administer {{ acChurch }}</div>
+        <div style="font-size:15px;color:#6A7A84;line-height:1.5">Invitation for {{ acEmail }}. Create your own password; nobody at 144(P) will ever email you one.</div>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Full name<input value="{{ af.name }}" onChange="{{ afOn.name }}" style="border:1px solid #CBD5DA;border-radius:10px;padding:12px 14px;font-size:16px;font-weight:400;color:#173344"></label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Create password<input type="password" value="{{ af.password }}" onChange="{{ afOn.password }}" placeholder="At least 10 characters" style="border:1px solid #CBD5DA;border-radius:10px;padding:12px 14px;font-size:16px;font-weight:400;color:#173344"></label>
+        <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}"><div role="alert" style="background:#FBEAE7;color:#8A2E22;border-radius:10px;padding:10px 14px;font-size:14px">{{ err }}</div></sc-if>
+        <button onClick="{{ acceptInvite }}" style="border:none;border-radius:10px;min-height:50px;background:#075D61;color:#FFFFFF;font-size:16px;font-weight:600;cursor:pointer">Accept and create account</button>
+      </sc-if>
+      <sc-if value="{{ acInvalid }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:22px;font-weight:700">This invitation can't be used</div>
+        <div style="font-size:15px;color:#6A7A84;line-height:1.5">{{ acReason }} Ask the 144(P) Plan team to send a new invitation.</div>
+      </sc-if>
+      <button onClick="{{ toLogin }}" style="border:none;background:transparent;color:#075D61;font-size:15px;font-weight:600;cursor:pointer;min-height:44px">Back to sign in</button>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isShell }}" hint-placeholder-val="{{ false }}">
+<div style="display:flex;min-height:100vh;background:#F4F7F7">
+  <sc-if value="{{ showSidebar }}" hint-placeholder-val="{{ true }}">
+    <aside style="flex:none;width:236px;background:#0B3F46;color:#FFFFFF;display:flex;flex-direction:column;position:sticky;top:0;height:100vh">
+      <div style="display:flex;align-items:center;gap:10px;padding:22px 18px"><i class="icon-book-open" style="font-size:28px"></i><div style="display:flex;flex-direction:column"><span style="font-family:'Source Serif 4',serif;font-size:19px;font-weight:600">{{ platformName }}</span><span style="font-size:12px;color:#BFE2DC">Multi-Church Platform</span></div></div>
+      <nav style="display:flex;flex-direction:column;gap:2px;padding:0 10px">
+        <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="7">
+          <button onClick="{{ n.pick }}" aria-current="{{ n.current }}" style="display:flex;align-items:center;gap:12px;border:none;border-radius:10px;min-height:42px;padding:0 12px;background:{{ n.bg }};color:{{ n.fg }};font-size:15px;font-weight:{{ n.weight }};cursor:pointer;text-align:left"><i class="{{ n.icon }}" style="font-size:18px"></i>{{ n.label }}</button>
+        </sc-for>
+      </nav>
+      <div style="flex:1"></div>
+      <div style="margin:12px;display:flex;flex-direction:column;gap:10px">
+        <div style="position:relative;height:150px;border-radius:14px;overflow:hidden;background:#123C56"><image-slot id="admin-sidebar-landscape" shape="rect" placeholder="Drop a landscape photo"></image-slot></div>
+        <div style="text-align:center"><div style="font-family:'Source Serif 4',serif;font-size:16px;font-weight:600">The 144(P) Plan</div><div style="font-size:12px;color:#DDF0ED">Grow your faith. Make an eternal impact.</div></div>
+      </div>
+    </aside>
+  </sc-if>
+  <div style="flex:1;min-width:0;display:flex;flex-direction:column">
+    <header style="position:sticky;top:0;z-index:5;background:#FFFFFF;border-bottom:1px solid #E1E7EA;min-height:60px;display:flex;align-items:center;gap:8px;padding:env(safe-area-inset-top) calc(clamp(12px,3vw,20px) + env(safe-area-inset-right)) 0 calc(clamp(12px,3vw,20px) + env(safe-area-inset-left))">
+      <sc-if value="{{ isNarrow }}" hint-placeholder-val="{{ false }}"><button onClick="{{ openMenu }}" aria-label="Open menu" aria-expanded="{{ menuOpen }}" style="width:44px;height:44px;margin-left:-8px;border:none;background:transparent;color:#123C56;font-size:24px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="icon-menu"></i></button><span style="font-family:'Source Serif 4',serif;font-size:17px;font-weight:600;color:#123C56;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0">{{ platformName }}</span></sc-if>
+      <div style="flex:1"></div>
+      <sc-if value="{{ isWide }}" hint-placeholder-val="{{ true }}"><span style="font-size:14px;font-weight:600;color:#173344">{{ roleLabel }}</span></sc-if>
+      <button onClick="{{ bellClick }}" aria-label="Items needing attention" style="position:relative;width:40px;height:40px;border:none;background:transparent;color:#123C56;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="icon-bell"></i><sc-if value="{{ hasBell }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:6px;right:6px;min-width:16px;height:16px;border-radius:8px;background:#C9452F;color:#FFFFFF;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;padding:0 4px">{{ bellCount }}</span></sc-if></button>
+      <span style="width:36px;height:36px;border-radius:50%;background:#0E8A7E;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">{{ avatar }}</span>
+      <sc-if value="{{ isWide }}" hint-placeholder-val="{{ true }}"><button onClick="{{ signOut }}" style="border:1px solid #CBD5DA;border-radius:8px;min-height:36px;padding:0 12px;background:#FFFFFF;color:#173344;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="icon-log-out"></i>Sign out</button></sc-if>
+    </header>
+    <sc-if value="{{ menuOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:fixed;inset:0;z-index:45;display:flex">
+        <nav aria-label="Main" style="width:min(84vw,300px);height:100%;overflow-y:auto;background:#0B3F46;color:#FFFFFF;display:flex;flex-direction:column;gap:2px;padding:calc(16px + env(safe-area-inset-top)) 10px calc(16px + env(safe-area-inset-bottom)) calc(10px + env(safe-area-inset-left))">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 8px 14px"><span style="font-family:'Source Serif 4',serif;font-size:19px;font-weight:600">{{ platformName }}</span><button onClick="{{ closeMenu }}" aria-label="Close menu" style="width:44px;height:44px;border:none;background:transparent;color:#FFFFFF;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="icon-x"></i></button></div>
+          <div style="font-size:13px;color:#BFE2DC;padding:0 12px 10px">{{ roleLabel }}</div>
+          <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="7">
+            <button onClick="{{ n.pick }}" aria-current="{{ n.current }}" style="display:flex;align-items:center;gap:12px;border:none;border-radius:10px;min-height:48px;padding:0 12px;background:{{ n.bg }};color:{{ n.fg }};font-size:16px;font-weight:{{ n.weight }};cursor:pointer;text-align:left"><i class="{{ n.icon }}" style="font-size:19px"></i>{{ n.label }}</button>
+          </sc-for>
+          <div style="flex:1"></div>
+          <button onClick="{{ signOut }}" style="display:flex;align-items:center;gap:12px;border:1px solid #2B6168;border-radius:10px;min-height:48px;padding:0 12px;background:transparent;color:#FFFFFF;font-size:15px;font-weight:600;cursor:pointer"><i class="icon-log-out"></i>Sign out</button>
+        </nav>
+        <button onClick="{{ closeMenu }}" aria-label="Close menu" style="flex:1;border:none;background:rgba(11,63,70,.45);cursor:pointer"></button>
+      </div>
+    </sc-if>
+    <sc-if value="{{ hasBanner }}" hint-placeholder-val="{{ false }}">
+      <div role="status" style="background:{{ bannerBg }};color:{{ bannerFg }};padding:12px 24px;font-size:14px;display:flex;gap:10px;align-items:center;line-height:1.45"><i class="icon-info" style="font-size:18px"></i><span>{{ bannerText }}</span></div>
+    </sc-if>
+    <main style="flex:1;min-width:0;padding:clamp(12px,4vw,24px) calc(clamp(12px,4vw,24px) + env(safe-area-inset-right)) calc(clamp(16px,4vw,24px) + env(safe-area-inset-bottom)) calc(clamp(12px,4vw,24px) + env(safe-area-inset-left));display:flex;flex-direction:column;gap:20px;width:100%;max-width:1320px">
+
+<sc-if value="{{ isPDash }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="P1 Platform Dashboard" style="display:flex;flex-direction:column;gap:20px">
+    <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between">
+      <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:clamp(22px,5.5vw,27px);font-weight:700;line-height:1.2">Platform Administrator Dashboard</h1><div style="font-size:15px;color:#6A7A84">Multi-church management, billing, and platform health at a glance.</div></div>
+      <button onClick="{{ addChurch }}" style="border:none;border-radius:10px;min-height:44px;padding:0 18px;background:#075D61;color:#FFFFFF;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="icon-plus"></i>Add New Church</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,140px),1fr));gap:12px">
+      <sc-for list="{{ pKpis }}" as="k" hint-placeholder-count="7">
+        <button onClick="{{ k.open }}" style="background:{{ k.bg }};border:1px solid {{ k.border }};border-radius:14px;padding:16px 10px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px;cursor:pointer;color:#173344">
+          <i class="{{ k.icon }}" style="font-size:24px;color:{{ k.fg }}"></i>
+          <span style="font-size:13px;color:#4F5F68;line-height:1.25">{{ k.label }}</span>
+          <span style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums;color:{{ k.valueColor }}">{{ k.value }}</span>
+        </button>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px">
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:15px;font-weight:700">Collected revenue · this month</div>
+        <div style="font-size:28px;font-weight:700;font-variant-numeric:tabular-nums">{{ revThisMonth }}</div>
+        <div style="font-size:13px;color:{{ revDeltaColor }}">{{ revDelta }}</div>
+        <div style="position:relative;height:170px;margin-top:10px">
+          <sc-for list="{{ revChart.ys }}" as="y" hint-placeholder-count="4"><div style="position:absolute;left:0;right:0;top:{{ y.top }};border-top:1px dashed #E6ECEE"><span style="position:absolute;left:0;top:-9px;font-size:11px;color:#6A7A84;background:#FFFFFF;padding-right:4px">{{ y.label }}</span></div></sc-for>
+          <svg viewBox="0 0 600 170" preserveAspectRatio="none" style="position:absolute;left:48px;top:0;width:calc(100% - 48px);height:100%;overflow:visible" aria-hidden="true"><polygon points="{{ revChart.area }}" style="fill:#E8F5F3"></polygon><polyline points="{{ revChart.line }}" fill="none" style="stroke:#0E8A7E;stroke-width:3;vector-effect:non-scaling-stroke"></polyline></svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding-left:48px;font-size:11px;color:#6A7A84"><sc-for list="{{ revChart.xs }}" as="x" hint-placeholder-count="6"><span>{{ x }}</span></sc-for></div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:15px;font-weight:700">New church enrollments</div>
+        <div style="font-size:28px;font-weight:700">{{ enrThisMonth }} <span style="font-size:14px;font-weight:500;color:#6A7A84">this month</span></div>
+        <div style="display:flex;align-items:flex-end;gap:10px;height:170px;margin-top:10px">
+          <sc-for list="{{ enrBars }}" as="b" hint-placeholder-count="6"><div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%"><span style="font-size:12px;font-weight:600">{{ b.v }}</span><div style="width:100%;max-width:40px;border-radius:6px 6px 0 0;background:{{ b.color }};height:{{ b.h }}"></div><span style="font-size:11px;color:#6A7A84">{{ b.label }}</span></div></sc-for>
+        </div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:15px;font-weight:700">Recent activity</span><button onClick="{{ toReports }}" style="border:none;background:transparent;color:#075D61;font-size:13px;font-weight:600;cursor:pointer">View all</button></div>
+        <sc-for list="{{ activity }}" as="a" hint-placeholder-count="6">
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid #EEF2F3">
+            <span style="flex:none;width:30px;height:30px;border-radius:50%;background:{{ a.bg }};color:{{ a.fg }};display:flex;align-items:center;justify-content:center;font-size:15px"><i class="{{ a.icon }}"></i></span>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:600">{{ a.title }}</span><span style="font-size:13px;color:#4F5F68">{{ a.text }}</span></div>
+            <span style="flex:none;font-size:12px;color:#6A7A84;white-space:nowrap">{{ a.when }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px">
+        <div style="font-size:15px;font-weight:700">Active subscriptions by plan</div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:24px">
+          <div style="flex:none;width:150px;height:150px;border-radius:50%;background:{{ planDonut.bg }};display:flex;align-items:center;justify-content:center"><div style="width:100px;height:100px;border-radius:50%;background:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:28px;font-weight:700">{{ planDonut.total }}</span><span style="font-size:12px;color:#6A7A84">subscriptions</span></div></div>
+          <div style="flex:1;min-width:160px;display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ planDonut.legend }}" as="l" hint-placeholder-count="4"><div style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="width:12px;height:12px;border-radius:50%;background:{{ l.color }}"></span><span style="flex:1">{{ l.name }}</span><span style="font-weight:600;font-variant-numeric:tabular-nums">{{ l.value }}</span></div></sc-for>
+          </div>
+        </div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:15px;font-weight:700">Subscriptions requiring attention</div>
+        <sc-if value="{{ noAttention }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;color:#6A7A84">Nothing needs attention.</div></sc-if>
+        <sc-for list="{{ attention }}" as="a" hint-placeholder-count="4">
+          <button onClick="{{ a.open }}" style="display:flex;gap:10px;align-items:center;padding:10px 12px;border:1px solid #F1E2C4;background:#FFFAF0;border-radius:10px;cursor:pointer;color:#173344;text-align:left">
+            <i class="icon-triangle-alert" style="color:#B7791F;font-size:18px"></i>
+            <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:600">{{ a.name }}</span><span style="font-size:13px;color:#4F5F68">{{ a.reason }}</span></span>
+            <i class="icon-chevron-right" style="color:#6A7A84"></i>
+          </button>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isPChurches }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="P2 Church Directory" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between">
+      <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:clamp(22px,5.5vw,27px);font-weight:700;line-height:1.2">Church Directory</h1><div style="font-size:15px;color:#6A7A84">Manage every church on the platform.</div></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <button onClick="{{ exportDirectory }}" style="border:1px solid #075D61;border-radius:10px;min-height:44px;padding:0 16px;background:#FFFFFF;color:#075D61;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="icon-download"></i>Export</button>
+        <button onClick="{{ addChurch }}" style="border:none;border-radius:10px;min-height:44px;padding:0 18px;background:#075D61;color:#FFFFFF;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="icon-plus"></i>Add New Church</button>
+      </div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <sc-for list="{{ dirTabs }}" as="t" hint-placeholder-count="6">
+        <button onClick="{{ t.pick }}" style="border:none;border-radius:999px;min-height:36px;padding:0 14px;background:{{ t.bg }};color:{{ t.fg }};font-size:14px;font-weight:600;cursor:pointer">{{ t.label }}</button>
+      </sc-for>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <label style="flex:1;min-width:220px;display:flex;align-items:center;gap:8px;border:1px solid #CBD5DA;border-radius:10px;padding:0 12px;background:#FFFFFF"><i class="icon-search" style="color:#6A7A84"></i><input value="{{ dirQ }}" onChange="{{ onDirQ }}" placeholder="Search by church name, city, or admin…" aria-label="Search churches" style="flex:1;border:none;outline:none;min-height:42px;font-size:15px;color:#173344;background:transparent"></label>
+      <select value="{{ dirPlan }}" onChange="{{ onDirPlan }}" aria-label="Plan filter" style="border:1px solid #CBD5DA;border-radius:10px;min-height:44px;padding:0 12px;font-size:14px;background:#FFFFFF;color:#173344"><option value="all">Plan: All plans</option><option value="small">Small Church</option><option value="growing">Growing Church</option><option value="large">Large Church</option><option value="enterprise">Enterprise</option></select>
+      <select value="{{ dirSort }}" onChange="{{ onDirSort }}" aria-label="Sort" style="border:1px solid #CBD5DA;border-radius:10px;min-height:44px;padding:0 12px;font-size:14px;background:#FFFFFF;color:#173344"><option value="name">Sort: Church name (A–Z)</option><option value="partners">Sort: Active Partners</option><option value="amount">Sort: Billing amount</option><option value="renewal">Sort: Next renewal</option><option value="newest">Sort: Newest</option></select>
+    </div>
+    <sc-if value="{{ tableView }}" hint-placeholder-val="{{ true }}"><div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;overflow-x:auto">
+      <div style="min-width:980px">
+        <div style="display:grid;grid-template-columns:2fr 1.1fr 1.7fr 1.2fr .9fr 1fr .9fr 1fr;gap:10px;padding:12px 16px;background:#F4F7F7;font-size:12px;font-weight:700;color:#4F5F68;text-transform:uppercase;letter-spacing:.04em"><span>Church</span><span>City / State</span><span>Primary admin</span><span>Plan</span><span>Active Partners</span><span>Billing amount</span><span>Status</span><span>Next renewal</span></div>
+        <sc-if value="{{ dirEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:24px;text-align:center;color:#6A7A84">No churches match these filters.</div></sc-if>
+        <sc-for list="{{ dirRows }}" as="r" hint-placeholder-count="8">
+          <div role="button" tabindex="0" onClick="{{ r.select }}" onDoubleClick="{{ r.open }}" style="display:grid;grid-template-columns:2fr 1.1fr 1.7fr 1.2fr .9fr 1fr .9fr 1fr;gap:10px;padding:12px 16px;border-top:1px solid #EEF2F3;align-items:center;font-size:14px;cursor:pointer;background:{{ r.bg }}">
+            <span style="display:flex;align-items:center;gap:10px;min-width:0"><i class="icon-church" style="font-size:20px;color:#075D61"></i><span style="display:flex;flex-direction:column;min-width:0"><span style="font-weight:600">{{ r.name }}</span><span style="font-size:12px;color:#6A7A84">{{ r.code }}</span></span></span>
+            <span>{{ r.city }}</span>
+            <span style="display:flex;flex-direction:column;min-width:0"><span>{{ r.admin }}</span><span style="font-size:12px;color:#6A7A84;overflow:hidden;text-overflow:ellipsis">{{ r.email }}</span></span>
+            <span><span style="font-size:12px;font-weight:600;border-radius:999px;padding:4px 10px;white-space:nowrap;background:{{ r.planBg }};color:{{ r.planFg }}">{{ r.plan }}</span></span>
+            <span style="display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums">{{ r.active }}<sc-if value="{{ r.warn }}" hint-placeholder-val="{{ false }}"><i class="icon-triangle-alert" title="Near plan limit" style="color:#B7791F"></i></sc-if></span>
+            <span style="font-variant-numeric:tabular-nums">{{ r.amount }}</span>
+            <span><span style="font-size:12px;font-weight:600;border-radius:999px;padding:4px 10px;white-space:nowrap;background:{{ r.stBg }};color:{{ r.stFg }}">{{ r.status }}</span></span>
+            <span>{{ r.renewal }}</span>
+          </div>
+        </sc-for>
+      </div>
+    </div></sc-if>
+<sc-if value="{{ cardView }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <sc-if value="{{ dirEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:20px;text-align:center;color:#6A7A84;background:#FFFFFF;border-radius:14px">No churches match these filters.</div></sc-if>
+    <sc-for list="{{ dirRows }}" as="r" hint-placeholder-count="4">
+      <button onClick="{{ r.open }}" style="width:100%;text-align:left;background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:14px;cursor:pointer;color:#173344;display:flex;flex-direction:column;gap:10px">
+        <span style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><span style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:16px;font-weight:700">{{ r.name }}</span><span style="font-size:13px;color:#6A7A84">{{ r.city }} · {{ r.code }}</span></span><span style="font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;white-space:nowrap;background:{{ r.stBg }};color:{{ r.stFg }}">{{ r.status }}</span></span>
+        <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><span style="font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;white-space:nowrap;background:{{ r.planBg }};color:{{ r.planFg }}">{{ r.plan }}</span><span style="font-size:13px;color:#4F5F68;overflow-wrap:anywhere">{{ r.admin }}</span></span>
+        <span style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px"><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:12px;color:#6A7A84">Active</span><span style="font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere">{{ r.active }}</span></div><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:12px;color:#6A7A84">Billing</span><span style="font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere">{{ r.amount }}</span></div><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:12px;color:#6A7A84">Renewal</span><span style="font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere">{{ r.renewal }}</span></div></span>
+      </button>
+    </sc-for>
+  </div></sc-if>
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;font-size:14px;color:#4F5F68">
+      <span>{{ dirShowing }}</span>
+      <div style="display:flex;gap:6px;align-items:center">
+        <button onClick="{{ dirPrev }}" aria-label="Previous page" style="width:36px;height:36px;border:1px solid #CBD5DA;border-radius:8px;background:#FFFFFF;cursor:pointer;color:#173344"><i class="icon-chevron-left"></i></button>
+        <sc-for list="{{ dirPages }}" as="p" hint-placeholder-count="2"><button onClick="{{ p.pick }}" style="min-width:36px;height:36px;border:1px solid {{ p.border }};border-radius:8px;background:{{ p.bg }};color:{{ p.fg }};cursor:pointer;font-weight:600">{{ p.n }}</button></sc-for>
+        <button onClick="{{ dirNext }}" aria-label="Next page" style="width:36px;height:36px;border:1px solid #CBD5DA;border-radius:8px;background:#FFFFFF;cursor:pointer;color:#173344"><i class="icon-chevron-right"></i></button>
+      </div>
+    </div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:12px 16px">
+      <span style="font-size:14px;font-weight:600;margin-right:6px">{{ selLabel }}</span>
+      <sc-for list="{{ selActions }}" as="a" hint-placeholder-count="6">
+        <button onClick="{{ a.run }}" style="border:1px solid #CBD5DA;border-radius:8px;min-height:38px;padding:0 14px;background:#FFFFFF;color:{{ a.fg }};font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="{{ a.icon }}"></i>{{ a.label }}</button>
+      </sc-for>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isPChurch }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="P3 Church Account" style="display:flex;flex-direction:column;gap:18px">
+    <button onClick="{{ toDirectory }}" style="align-self:flex-start;border:none;background:transparent;color:#075D61;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px;padding:0"><i class="icon-arrow-left"></i>Church Directory</button>
+    <div style="display:flex;flex-wrap:wrap;gap:16px;align-items:flex-start;justify-content:space-between">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <h1 style="margin:0;font-size:clamp(22px,5.5vw,27px);font-weight:700;line-height:1.2">{{ ca.name }}</h1>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;font-size:14px;color:#6A7A84"><span>{{ ca.code }}</span><span>·</span><span>{{ ca.location }}</span><span style="font-size:12px;font-weight:600;border-radius:999px;padding:4px 10px;background:{{ ca.stBg }};color:{{ ca.stFg }}">{{ ca.status }}</span><span style="font-size:12px;font-weight:600;border-radius:999px;padding:4px 10px;background:{{ ca.planBg }};color:{{ ca.planFg }}">{{ ca.plan }}</span></div>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onClick="{{ ca.edit }}" style="border:1px solid #CBD5DA;border-radius:8px;min-height:40px;padding:0 14px;background:#FFFFFF;color:#173344;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="icon-pencil"></i>Edit</button>
+        <button onClick="{{ ca.suspend }}" style="border:1px solid {{ ca.suspendBorder }};border-radius:8px;min-height:40px;padding:0 14px;background:#FFFFFF;color:{{ ca.suspendFg }};font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="icon-power"></i>{{ ca.suspendLabel }}</button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr));gap:16px">
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:16px;font-weight:700">Subscription</div>
+        <div style="display:flex;flex-direction:column">
+          <sc-for list="{{ ca.subRows }}" as="r" hint-placeholder-count="7"><div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #EEF2F3;font-size:14px"><span style="color:#6A7A84">{{ r.label }}</span><span style="font-weight:600;text-align:right">{{ r.value }}</span></div></sc-for>
+        </div>
+        <div style="font-size:13px;font-weight:700;color:#4F5F68;padding-top:4px">Change plan</div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px">
+          <sc-for list="{{ ca.planOpts }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.pick }}" style="border:2px solid {{ o.border }};border-radius:10px;padding:10px;background:#FFFFFF;cursor:pointer;color:#173344;text-align:left;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:700">{{ o.name }}</span><span style="font-size:12px;color:#6A7A84">{{ o.price }}</span></button></sc-for>
+        </div>
+        <div style="display:flex;gap:8px">
+          <sc-for list="{{ ca.freqOpts }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.pick }}" style="border:1px solid {{ o.border }};border-radius:999px;min-height:36px;padding:0 14px;background:{{ o.bg }};color:{{ o.fg }};font-size:13px;font-weight:600;cursor:pointer">{{ o.name }}</button></sc-for>
+        </div>
+        <sc-if value="{{ ca.needsCustom }}" hint-placeholder-val="{{ false }}">
+          <label style="display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px">Negotiated price (USD)<input type="number" value="{{ ca.customPrice }}" onChange="{{ ca.onCustom }}" style="width:120px;border:1px solid #CBD5DA;border-radius:8px;padding:8px 10px;font-size:15px"></label>
+          <label style="display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px">Partner capacity<input type="number" value="{{ ca.customLimit }}" onChange="{{ ca.onCustomLimit }}" style="width:120px;border:1px solid #CBD5DA;border-radius:8px;padding:8px 10px;font-size:15px"></label>
+        </sc-if>
+        <label style="display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px">Approved discount (%)<input type="number" min="0" max="50" value="{{ ca.discount }}" onChange="{{ ca.onDiscount }}" style="width:120px;border:1px solid #CBD5DA;border-radius:8px;padding:8px 10px;font-size:15px"></label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onClick="{{ ca.applyPlan }}" style="border:none;border-radius:8px;min-height:40px;padding:0 16px;background:#075D61;color:#FFFFFF;font-size:14px;font-weight:600;cursor:pointer">{{ ca.applyLabel }}</button>
+          <button onClick="{{ ca.toggleCancel }}" style="border:1px solid #CBD5DA;border-radius:8px;min-height:40px;padding:0 14px;background:#FFFFFF;color:#173344;font-size:14px;font-weight:600;cursor:pointer">{{ ca.cancelLabel }}</button>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:16px;font-weight:700">Partner usage</div>
+          <div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:28px;font-weight:700;font-variant-numeric:tabular-nums">{{ ca.active }}</span><span style="font-size:14px;color:#6A7A84">active of {{ ca.limit }} included</span></div>
+          <div style="height:10px;border-radius:5px;background:#E8EEF0;overflow:hidden"><div style="height:100%;background:{{ ca.usageColor }};width:{{ ca.usagePct }}"></div></div>
+          <sc-if value="{{ ca.usageWarn }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#8A5A00;background:#FFF4DC;border-radius:8px;padding:8px 10px">{{ ca.usageWarnText }}</div></sc-if>
+          <div style="font-size:13px;color:#6A7A84;line-height:1.45">{{ ca.enrolled }} enrolled · {{ ca.tables }} Tables. Active = used the app in the last 30 days. Accounts are never removed when a limit is exceeded.</div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;gap:16px;flex-wrap:wrap">
+          <div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px">
+            <div style="font-size:16px;font-weight:700">Partner enrollment link</div>
+            <div style="font-size:13px;color:#6A7A84">Grants Partner sign-up only, never administrator access. Policy: {{ ca.policy }}.</div>
+            <div style="display:flex;align-items:center;gap:6px;border:1px solid #CBD5DA;border-radius:8px;padding:8px 10px;font-size:13px;background:#F8FAFA;word-break:break-all">{{ ca.joinUrl }}</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ ca.copyLink }}" style="border:1px solid #CBD5DA;border-radius:8px;min-height:36px;padding:0 12px;background:#FFFFFF;color:#173344;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="icon-copy"></i>Copy</button><button onClick="{{ ca.openJoin }}" style="border:1px solid #CBD5DA;border-radius:8px;min-height:36px;padding:0 12px;background:#FFFFFF;color:#173344;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="icon-external-link"></i>Open sign-up page</button></div>
+          </div>
+          <sc-if value="{{ ca.hasQr }}" hint-placeholder-val="{{ false }}"><div role="img" aria-label="QR code for the enrollment link" style="flex:none;width:132px;height:132px;background-image:url({{ ca.qr }});background-size:contain;background-repeat:no-repeat;image-rendering:pixelated;border:1px solid #E1E7EA;border-radius:8px"></div></sc-if>
+        </div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:16px;font-weight:700">Administrators &amp; invitations</div>
+        <sc-for list="{{ ca.admins }}" as="a" hint-placeholder-count="1"><div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #EEF2F3;font-size:14px"><span style="display:flex;flex-direction:column"><span style="font-weight:600">{{ a.name }}</span><span style="font-size:12px;color:#6A7A84">{{ a.email }} · {{ a.title }}</span></span><span style="font-size:12px;font-weight:600;color:#1E7A45">{{ a.status }}</span></div></sc-for>
+        <sc-for list="{{ ca.invites }}" as="v" hint-placeholder-count="1"><div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #EEF2F3;font-size:14px"><span style="display:flex;flex-direction:column"><span style="font-weight:600">{{ v.email }}</span><span style="font-size:12px;color:#6A7A84">{{ v.sub }}</span></span><span style="font-size:12px;font-weight:600;color:{{ v.fg }}">{{ v.status }}</span></div></sc-for>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr));gap:8px">
+          <input value="{{ invF.name }}" onChange="{{ invOn.name }}" placeholder="Full name" aria-label="Admin name" style="border:1px solid #CBD5DA;border-radius:8px;padding:9px 10px;font-size:14px">
+          <input value="{{ invF.email }}" onChange="{{ invOn.email }}" placeholder="Email" aria-label="Admin email" style="border:1px solid #CBD5DA;border-radius:8px;padding:9px 10px;font-size:14px">
+          <input value="{{ invF.title }}" onChange="{{ invOn.title }}" placeholder="Role / title" aria-label="Admin title" style="border:1px solid #CBD5DA;border-radius:8px;padding:9px 10px;font-size:14px">
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ ca.sendInvite }}" style="border:none;border-radius:8px;min-height:38px;padding:0 14px;background:#123C56;color:#FFFFFF;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="icon-send"></i>Send invitation</button><button onClick="{{ ca.resendInvite }}" style="border:1px solid #CBD5DA;border-radius:8px;min-height:38px;padding:0 14px;background:#FFFFFF;color:#173344;font-size:14px;font-weight:600;cursor:pointer">Resend latest</button></div>
+        <div style="font-size:12px;color:#6A7A84">Invitations expire after 7 days. Only a hash of each token is stored.</div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:16px;font-weight:700">Billing history</div>
+        <sc-if value="{{ ca.noInvoices }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;color:#6A7A84">No invoices yet{{ ca.noInvoicesWhy }}.</div></sc-if>
+        <sc-for list="{{ ca.invoices }}" as="i" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:1fr 1fr .8fr .8fr;gap:8px;padding:8px 0;border-bottom:1px solid #EEF2F3;font-size:13px;align-items:center"><span style="font-weight:600">{{ i.number }}</span><span style="color:#6A7A84">{{ i.date }}</span><span style="font-variant-numeric:tabular-nums">{{ i.amount }}</span><span><span style="font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;background:{{ i.bg }};color:{{ i.fg }}">{{ i.status }}</span></span></div></sc-for>
+        <div style="border-top:1px dashed #CBD5DA;padding-top:12px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:13px;font-weight:700;color:#4F5F68">Test mode · simulate provider webhooks</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button onClick="{{ ca.simPaid }}" style="border:1px solid #9FD3B4;border-radius:8px;min-height:36px;padding:0 12px;background:#F1FAF4;color:#1E7A45;font-size:13px;font-weight:600;cursor:pointer">Payment succeeded</button>
+            <button onClick="{{ ca.simFail }}" style="border:1px solid #F0B8AF;border-radius:8px;min-height:36px;padding:0 12px;background:#FDF2F0;color:#A33A2E;font-size:13px;font-weight:600;cursor:pointer">Payment failed</button>
+            <button onClick="{{ ca.simDup }}" style="border:1px solid #CBD5DA;border-radius:8px;min-height:36px;padding:0 12px;background:#FFFFFF;color:#173344;font-size:13px;font-weight:600;cursor:pointer">Replay last event</button>
+          </div>
+          <div style="font-size:12px;color:#6A7A84">Financial status changes only from provider events. Replayed event IDs are ignored.</div>
+        </div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:16px;font-weight:700">Later-phase modules for this church</div>
+        <sc-for list="{{ ca.features }}" as="f" hint-placeholder-count="2">
+          <div style="display:flex;align-items:center;gap:12px;padding:6px 0">
+            <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:600">{{ f.label }}</span><span style="font-size:12px;color:#6A7A84">{{ f.sub }}</span></span>
+            <button onClick="{{ f.toggle }}" role="switch" aria-checked="{{ f.on }}" aria-label="{{ f.label }}" style="flex:none;width:48px;height:28px;border-radius:999px;border:none;background:{{ f.bg }};cursor:pointer;padding:3px;display:flex;justify-content:{{ f.justify }}"><span style="width:22px;height:22px;border-radius:50%;background:#FFFFFF"></span></button>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isPForm }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="P4 Register Church" style="display:flex;flex-direction:column;gap:18px;max-width:880px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:clamp(22px,5.5vw,27px);font-weight:700;line-height:1.2">{{ formTitle }}</h1><div style="font-size:15px;color:#6A7A84">{{ formSub }}</div></div>
+    <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:16px;font-weight:700">Church information</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px">
+        <sc-for list="{{ churchFields }}" as="fl" hint-placeholder-count="7">
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600">{{ fl.label }}<input value="{{ fl.value }}" onChange="{{ fl.on }}" placeholder="{{ fl.ph }}" style="border:1px solid #CBD5DA;border-radius:8px;padding:10px 12px;font-size:15px;font-weight:400;color:#173344"></label>
+        </sc-for>
+      </div>
+    </div>
+    <sc-if value="{{ formIsNew }}" hint-placeholder-val="{{ true }}">
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div style="font-size:16px;font-weight:700">Church administrator</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px">
+          <sc-for list="{{ adminFields }}" as="fl" hint-placeholder-count="3">
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600">{{ fl.label }}<input value="{{ fl.value }}" onChange="{{ fl.on }}" style="border:1px solid #CBD5DA;border-radius:8px;padding:10px 12px;font-size:15px;font-weight:400;color:#173344"></label>
+          </sc-for>
+        </div>
+        <div style="font-size:13px;color:#6A7A84">An invitation email is sent. They create their own password through a one-time link; no password is ever emailed.</div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px">
+        <div style="font-size:16px;font-weight:700">Membership</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,170px),1fr));gap:10px">
+          <sc-for list="{{ formPlans }}" as="o" hint-placeholder-count="4"><button onClick="{{ o.pick }}" style="border:2px solid {{ o.border }};border-radius:12px;padding:12px;background:#FFFFFF;cursor:pointer;color:#173344;text-align:left;display:flex;flex-direction:column;gap:4px"><span style="font-size:15px;font-weight:700">{{ o.name }}</span><span style="font-size:13px;color:#4F5F68">{{ o.price }}</span><span style="font-size:12px;color:#6A7A84">{{ o.limit }}</span></button></sc-for>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+          <span style="font-size:13px;font-weight:600;margin-right:4px">Billing</span>
+          <sc-for list="{{ formFreqs }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.pick }}" style="border:1px solid {{ o.border }};border-radius:999px;min-height:36px;padding:0 14px;background:{{ o.bg }};color:{{ o.fg }};font-size:13px;font-weight:600;cursor:pointer">{{ o.name }}</button></sc-for>
+        </div>
+        <div style="display:flex;align-items:center;gap:12px">
+          <button onClick="{{ toggleFormPilot }}" role="switch" aria-checked="{{ formPilot }}" aria-label="Founding pilot" style="flex:none;width:48px;height:28px;border-radius:999px;border:none;background:{{ formPilotBg }};cursor:pointer;padding:3px;display:flex;justify-content:{{ formPilotJustify }}"><span style="width:22px;height:22px;border-radius:50%;background:#FFFFFF"></span></button>
+          <span style="font-size:14px;font-weight:600">Founding church pilot (no charge until pilot ends)</span>
+        </div>
+        <sc-if value="{{ formPilot }}" hint-placeholder-val="{{ false }}">
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px">
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600">Pilot start<input type="date" value="{{ fm.pilotStart }}" onChange="{{ fmOn.pilotStart }}" style="border:1px solid #CBD5DA;border-radius:8px;padding:9px 10px;font-size:15px"></label>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600">Pilot end<input type="date" value="{{ fm.pilotEnd }}" onChange="{{ fmOn.pilotEnd }}" style="border:1px solid #CBD5DA;border-radius:8px;padding:9px 10px;font-size:15px"></label>
+          </div>
+        </sc-if>
+        <label style="display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:600;max-width:420px">Included active Partners<input type="number" value="{{ fm.included }}" onChange="{{ fmOn.included }}" style="width:120px;border:1px solid #CBD5DA;border-radius:8px;padding:8px 10px;font-size:15px"></label>
+        <sc-if value="{{ formIsEnterprise }}" hint-placeholder-val="{{ false }}">
+          <label style="display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:14px;font-weight:600;max-width:420px">Negotiated price (USD)<input type="number" value="{{ fm.customPrice }}" onChange="{{ fmOn.customPrice }}" style="width:120px;border:1px solid #CBD5DA;border-radius:8px;padding:8px 10px;font-size:15px"></label>
+        </sc-if>
+      </div>
+    </sc-if>
+    <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}"><div role="alert" style="background:#FBEAE7;color:#8A2E22;border-radius:10px;padding:10px 14px;font-size:14px">{{ err }}</div></sc-if>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button onClick="{{ saveForm }}" style="border:none;border-radius:10px;min-height:46px;padding:0 20px;background:#075D61;color:#FFFFFF;font-size:15px;font-weight:600;cursor:pointer">{{ formCta }}</button>
+      <button onClick="{{ cancelForm }}" style="border:1px solid #CBD5DA;border-radius:10px;min-height:46px;padding:0 18px;background:#FFFFFF;color:#173344;font-size:15px;font-weight:600;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isPBilling }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="P5 Billing Center" style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:clamp(22px,5.5vw,27px);font-weight:700;line-height:1.2">Billing Center</h1><div style="font-size:15px;color:#6A7A84">Subscriptions, invoices and collected revenue for every church. Provider: {{ providerLine }}.</div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px">
+      <sc-for list="{{ bKpis }}" as="k" hint-placeholder-count="4">
+        <div style="background:{{ k.bg }};border:1px solid {{ k.border }};border-radius:14px;padding:16px;display:flex;gap:12px;align-items:flex-start">
+          <i class="{{ k.icon }}" style="font-size:24px;color:{{ k.fg }}"></i>
+          <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:#4F5F68">{{ k.label }}</span><span style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums">{{ k.value }}</span><span style="font-size:12px;color:#6A7A84">{{ k.sub }}</span></div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px">
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:15px;font-weight:700">Collected revenue trend</div>
+        <div style="font-size:26px;font-weight:700;font-variant-numeric:tabular-nums">{{ revThisMonth }}</div>
+        <div style="position:relative;height:160px;margin-top:10px">
+          <sc-for list="{{ revChart.ys }}" as="y" hint-placeholder-count="4"><div style="position:absolute;left:0;right:0;top:{{ y.top }};border-top:1px dashed #E6ECEE"><span style="position:absolute;left:0;top:-9px;font-size:11px;color:#6A7A84;background:#FFFFFF;padding-right:4px">{{ y.label }}</span></div></sc-for>
+          <svg viewBox="0 0 600 170" preserveAspectRatio="none" style="position:absolute;left:48px;top:0;width:calc(100% - 48px);height:100%;overflow:visible" aria-hidden="true"><polygon points="{{ revChart.area }}" style="fill:#E8F5F3"></polygon><polyline points="{{ revChart.line }}" fill="none" style="stroke:#0E8A7E;stroke-width:3;vector-effect:non-scaling-stroke"></polyline></svg>
+        </div>
+        <div style="display:flex;justify-content:space-between;padding-left:48px;font-size:11px;color:#6A7A84"><sc-for list="{{ revChart.xs }}" as="x" hint-placeholder-count="6"><span>{{ x }}</span></sc-for></div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:14px">
+        <div style="font-size:15px;font-weight:700">Billing status · all churches</div>
+        <div style="display:flex;flex-wrap:wrap;align-items:center;gap:22px">
+          <div style="flex:none;width:140px;height:140px;border-radius:50%;background:{{ statusDonut.bg }};display:flex;align-items:center;justify-content:center"><div style="width:94px;height:94px;border-radius:50%;background:#FFFFFF;display:flex;flex-direction:column;align-items:center;justify-content:center"><span style="font-size:26px;font-weight:700">{{ statusDonut.total }}</span><span style="font-size:12px;color:#6A7A84">churches</span></div></div>
+          <div style="flex:1;min-width:150px;display:flex;flex-direction:column;gap:8px"><sc-for list="{{ statusDonut.legend }}" as="l" hint-placeholder-count="5"><div style="display:flex;align-items:center;gap:10px;font-size:14px"><span style="width:12px;height:12px;border-radius:50%;background:{{ l.color }}"></span><span style="flex:1">{{ l.name }}</span><span style="font-weight:600">{{ l.value }}</span></div></sc-for></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <button onClick="{{ toPlans }}" style="display:flex;align-items:center;gap:12px;background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:14px 16px;cursor:pointer;color:#173344;text-align:left"><i class="icon-layers" style="font-size:22px;color:#075D61"></i><span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:700">Plan management</span><span style="font-size:13px;color:#6A7A84">Prices and limits for new subscriptions</span></span><i class="icon-chevron-right" style="color:#6A7A84"></i></button>
+        <div style="display:flex;flex-direction:column;gap:6px;background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:14px 16px"><span style="display:flex;align-items:center;gap:10px;font-size:15px;font-weight:700"><i class="icon-tag" style="font-size:20px;color:#075D61"></i>Discounts &amp; negotiated prices</span><sc-for list="{{ discounts }}" as="d" hint-placeholder-count="2"><button onClick="{{ d.open }}" style="display:flex;justify-content:space-between;border:none;background:transparent;padding:4px 0;cursor:pointer;color:#173344;font-size:13px"><span>{{ d.name }}</span><span style="color:#6A7A84">{{ d.note }}</span></button></sc-for></div>
+        <button onClick="{{ retryFailed }}" style="display:flex;align-items:center;gap:12px;background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:14px 16px;cursor:pointer;color:#173344;text-align:left"><i class="icon-refresh-cw" style="font-size:22px;color:#075D61"></i><span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:700">Retry failed payments</span><span style="font-size:13px;color:#6A7A84">{{ retryLabel }}</span></span><i class="icon-chevron-right" style="color:#6A7A84"></i></button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,520px),1fr));gap:16px">
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;overflow:hidden">
+        <div style="display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:14px 16px"><span style="font-size:15px;font-weight:700">Subscriptions ({{ subCount }})</span><label style="display:flex;align-items:center;gap:6px;border:1px solid #CBD5DA;border-radius:8px;padding:0 10px"><i class="icon-search" style="color:#6A7A84"></i><input value="{{ subQ }}" onChange="{{ onSubQ }}" placeholder="Search church…" aria-label="Search subscriptions" style="border:none;outline:none;min-height:36px;font-size:14px;background:transparent"></label></div>
+        <sc-if value="{{ tableView }}" hint-placeholder-val="{{ true }}"><div style="overflow-x:auto"><div style="min-width:720px">
+          <div style="display:grid;grid-template-columns:1.6fr 1fr .9fr .9fr 1fr 1.1fr;gap:8px;padding:10px 16px;background:#F4F7F7;font-size:12px;font-weight:700;color:#4F5F68;text-transform:uppercase;letter-spacing:.04em"><span>Church</span><span>Plan</span><span>Frequency</span><span>Last invoice</span><span>Next billing</span><span>Payment method</span></div>
+          <sc-for list="{{ subRows }}" as="r" hint-placeholder-count="6">
+            <button onClick="{{ r.open }}" style="width:100%;display:grid;grid-template-columns:1.6fr 1fr .9fr .9fr 1fr 1.1fr;gap:8px;padding:10px 16px;border:none;border-top:1px solid #EEF2F3;background:#FFFFFF;cursor:pointer;color:#173344;text-align:left;font-size:13px;align-items:center">
+              <span style="font-weight:600">{{ r.name }}</span>
+              <span><span style="font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;white-space:nowrap;background:{{ r.planBg }};color:{{ r.planFg }}">{{ r.plan }}</span></span>
+              <span>{{ r.freq }}</span>
+              <span><span style="font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;background:{{ r.invBg }};color:{{ r.invFg }}">{{ r.inv }}</span></span>
+              <span>{{ r.next }}</span><span style="color:#4F5F68">{{ r.card }}</span>
+            </button>
+          </sc-for>
+        </div></div></sc-if>
+<sc-if value="{{ cardView }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column">
+    <sc-for list="{{ subRows }}" as="r" hint-placeholder-count="4">
+      <button onClick="{{ r.open }}" style="width:100%;text-align:left;border:none;border-top:1px solid #EEF2F3;background:#FFFFFF;padding:12px 16px;cursor:pointer;color:#173344;display:flex;flex-direction:column;gap:8px">
+        <span style="display:flex;justify-content:space-between;gap:8px;align-items:center"><span style="font-size:15px;font-weight:700">{{ r.name }}</span><span style="font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;white-space:nowrap;background:{{ r.invBg }};color:{{ r.invFg }}">{{ r.inv }}</span></span>
+        <span style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:13px;color:#4F5F68"><span style="font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;white-space:nowrap;background:{{ r.planBg }};color:{{ r.planFg }}">{{ r.plan }}</span><span>{{ r.freq }}</span><span>· Next: {{ r.next }}</span></span>
+      </button>
+    </sc-for>
+  </div></sc-if>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px">
+        <div style="font-size:15px;font-weight:700">Recent transactions</div>
+        <sc-for list="{{ recentTx }}" as="t" hint-placeholder-count="6">
+          <div style="display:flex;gap:10px;align-items:flex-start;padding:6px 0;border-bottom:1px solid #EEF2F3">
+            <i class="{{ t.icon }}" style="font-size:18px;color:{{ t.fg }}"></i>
+            <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:600">{{ t.title }}</span><span style="font-size:12px;color:#6A7A84">{{ t.sub }}</span></div>
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isPPlans }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="P6 Plans and Pricing" style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:clamp(22px,5.5vw,27px);font-weight:700;line-height:1.2">Plans &amp; Pricing</h1><div style="font-size:15px;color:#6A7A84;max-width:760px;line-height:1.5">Edits apply to new subscriptions only. Existing churches keep their contract price, including grandfathered and negotiated prices.</div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:14px">
+      <sc-for list="{{ planCards }}" as="p" hint-placeholder-count="4">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:17px;font-weight:700">{{ p.name }}</span><span style="font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;background:{{ p.bg }};color:{{ p.fg }}">{{ p.count }} churches</span></div>
+          <sc-if value="{{ p.isCustom }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;color:#4F5F68;line-height:1.45">Custom pricing and capacity, set per church on its account page.</div></sc-if>
+          <sc-if value="{{ p.isStd }}" hint-placeholder-val="{{ true }}">
+            <label style="display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px">Monthly ($)<input type="number" value="{{ p.monthly }}" onChange="{{ p.onMonthly }}" style="width:100px;border:1px solid #CBD5DA;border-radius:8px;padding:8px 10px;font-size:15px"></label>
+            <label style="display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px">Annual ($)<input type="number" value="{{ p.annual }}" onChange="{{ p.onAnnual }}" style="width:100px;border:1px solid #CBD5DA;border-radius:8px;padding:8px 10px;font-size:15px"></label>
+            <label style="display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px">Active Partner limit<input type="number" value="{{ p.limit }}" onChange="{{ p.onLimit }}" style="width:100px;border:1px solid #CBD5DA;border-radius:8px;padding:8px 10px;font-size:15px"></label>
+          </sc-if>
+          <div style="font-size:12px;color:#6A7A84">{{ p.note }}</div>
+          <sc-if value="{{ p.isStd }}" hint-placeholder-val="{{ true }}"><button onClick="{{ p.save }}" style="border:none;border-radius:8px;min-height:40px;background:#075D61;color:#FFFFFF;font-size:14px;font-weight:600;cursor:pointer">Save for new subscriptions</button></sc-if>
+        </div>
+      </sc-for>
+    </div>
+    <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;font-size:14px;line-height:1.5;color:#4F5F68">Billing definition: a Partner counts as <strong>active</strong> when they used the app in the preceding 30 days. Churches over their limit see a warning; Partner accounts and deposits are never removed or interrupted.</div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isPPartners }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="P7 Partners by Church" style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:clamp(22px,5.5vw,27px);font-weight:700;line-height:1.2">Partners</h1><div style="font-size:15px;color:#6A7A84">Counts only. Partner statements, deposits and notes are never visible here.</div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,200px),1fr));gap:12px">
+      <sc-for list="{{ ppKpis }}" as="k" hint-placeholder-count="3"><div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:#4F5F68">{{ k.label }}</span><span style="font-size:26px;font-weight:700;font-variant-numeric:tabular-nums">{{ k.value }}</span></div></sc-for>
+    </div>
+    <sc-if value="{{ tableView }}" hint-placeholder-val="{{ true }}"><div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;overflow-x:auto"><div style="min-width:680px">
+      <div style="display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.6fr;gap:8px;padding:10px 16px;background:#F4F7F7;font-size:12px;font-weight:700;color:#4F5F68;text-transform:uppercase;letter-spacing:.04em"><span>Church</span><span>Enrolled</span><span>Active (30 days)</span><span>Plan limit</span><span>Utilization</span></div>
+      <sc-for list="{{ ppRows }}" as="r" hint-placeholder-count="8">
+        <button onClick="{{ r.open }}" style="width:100%;display:grid;grid-template-columns:2fr 1fr 1fr 1fr 1.6fr;gap:8px;padding:10px 16px;border:none;border-top:1px solid #EEF2F3;background:#FFFFFF;cursor:pointer;color:#173344;text-align:left;font-size:14px;align-items:center">
+          <span style="font-weight:600">{{ r.name }}</span><span style="font-variant-numeric:tabular-nums">{{ r.enrolled }}</span><span style="font-variant-numeric:tabular-nums">{{ r.active }}</span><span>{{ r.limit }}</span>
+          <span style="display:flex;align-items:center;gap:8px"><span style="flex:1;height:8px;border-radius:4px;background:#E8EEF0;overflow:hidden"><span style="display:block;height:100%;background:{{ r.color }};width:{{ r.pct }}"></span></span><span style="width:42px;text-align:right;font-size:13px">{{ r.pct }}</span></span>
+        </button>
+      </sc-for>
+    </div></div></sc-if>
+<sc-if value="{{ cardView }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <sc-for list="{{ ppRows }}" as="r" hint-placeholder-count="4">
+      <button onClick="{{ r.open }}" style="width:100%;text-align:left;background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:14px;cursor:pointer;color:#173344;display:flex;flex-direction:column;gap:10px">
+        <span style="font-size:15px;font-weight:700">{{ r.name }}</span>
+        <span style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px"><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:12px;color:#6A7A84">Enrolled</span><span style="font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere">{{ r.enrolled }}</span></div><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:12px;color:#6A7A84">Active 30d</span><span style="font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere">{{ r.active }}</span></div><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:12px;color:#6A7A84">Limit</span><span style="font-size:14px;font-weight:600;font-variant-numeric:tabular-nums;overflow-wrap:anywhere">{{ r.limit }}</span></div></span>
+        <span style="display:flex;align-items:center;gap:8px"><span style="flex:1;height:8px;border-radius:4px;background:#E8EEF0;overflow:hidden"><span style="display:block;height:100%;background:{{ r.color }};width:{{ r.pct }}"></span></span><span style="font-size:13px">{{ r.pct }}</span></span>
+      </button>
+    </sc-for>
+  </div></sc-if>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isPReports }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="P8 Business Reports" style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;justify-content:space-between">
+      <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:clamp(22px,5.5vw,27px);font-weight:700;line-height:1.2">Business Reports</h1><div style="font-size:15px;color:#6A7A84">Calculated from subscription and invoice records. No spiritual records are included.</div></div>
+      <button onClick="{{ exportInvoices }}" style="border:1px solid #075D61;border-radius:10px;min-height:42px;padding:0 16px;background:#FFFFFF;color:#075D61;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="icon-download"></i>Export invoices</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:12px">
+      <sc-for list="{{ rKpis }}" as="k" hint-placeholder-count="4"><div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:#4F5F68">{{ k.label }}</span><span style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums">{{ k.value }}</span><span style="font-size:12px;color:#6A7A84">{{ k.sub }}</span></div></sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,380px),1fr));gap:16px">
+      <sc-for list="{{ reportTables }}" as="t" hint-placeholder-count="5">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:15px;font-weight:700;padding-bottom:4px">{{ t.title }}</div>
+          <div style="display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:8px;padding:6px 0;font-size:12px;font-weight:700;color:#4F5F68;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #E1E7EA"><span>{{ t.h1 }}</span><span style="text-align:right">{{ t.h2 }}</span><span style="text-align:right">{{ t.h3 }}</span></div>
+          <sc-for list="{{ t.rows }}" as="r" hint-placeholder-count="4"><div style="display:grid;grid-template-columns:1.6fr 1fr 1fr;gap:8px;padding:7px 0;border-bottom:1px solid #EEF2F3;font-size:13px"><span>{{ r.a }}</span><span style="text-align:right;font-variant-numeric:tabular-nums">{{ r.b }}</span><span style="text-align:right;font-variant-numeric:tabular-nums;color:#4F5F68">{{ r.c }}</span></div></sc-for>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isPSettings }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="P9 Platform Settings" style="display:flex;flex-direction:column;gap:18px;max-width:1000px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:clamp(22px,5.5vw,27px);font-weight:700;line-height:1.2">Platform Settings</h1><div style="font-size:15px;color:#6A7A84">Branding, policies, billing configuration, feature activation and audit history.</div></div>
+    <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px">
+        <sc-for list="{{ setFields }}" as="fl" hint-placeholder-count="5"><label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600">{{ fl.label }}<input type="{{ fl.type }}" value="{{ fl.value }}" onChange="{{ fl.on }}" style="border:1px solid #CBD5DA;border-radius:8px;padding:10px 12px;font-size:15px;font-weight:400;color:#173344"></label></sc-for>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span style="font-size:13px;font-weight:600;margin-right:4px">Default enrollment policy</span><sc-for list="{{ policyOpts }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.pick }}" style="border:1px solid {{ o.border }};border-radius:999px;min-height:36px;padding:0 14px;background:{{ o.bg }};color:{{ o.fg }};font-size:13px;font-weight:600;cursor:pointer">{{ o.name }}</button></sc-for></div>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600">Administrator invitation email template<textarea value="{{ setTemplate }}" onChange="{{ onSetTemplate }}" rows="3" style="border:1px solid #CBD5DA;border-radius:8px;padding:10px 12px;font-size:14px;font-weight:400;line-height:1.45;color:#173344;resize:vertical"></textarea></label>
+      <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:center;background:#F4F7F7;border-radius:10px;padding:12px 14px;font-size:14px"><span><strong>Billing provider:</strong> {{ providerLine }}. Card details are collected only by the provider's hosted pages.</span></div>
+      <button onClick="{{ saveSettings }}" style="align-self:flex-start;border:none;border-radius:8px;min-height:42px;padding:0 18px;background:#075D61;color:#FFFFFF;font-size:14px;font-weight:600;cursor:pointer">Save settings</button>
+    </div>
+    <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:16px;font-weight:700">Feature activation</div>
+      <div style="font-size:13px;color:#6A7A84">Globally available modules can then be switched on per church from its account page.</div>
+      <sc-for list="{{ globalFeatures }}" as="f" hint-placeholder-count="3">
+        <div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #EEF2F3">
+          <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:14px;font-weight:600">{{ f.label }}</span><span style="font-size:12px;color:#6A7A84">{{ f.sub }}</span></span>
+          <button onClick="{{ f.toggle }}" role="switch" aria-checked="{{ f.on }}" aria-label="{{ f.label }}" style="flex:none;width:48px;height:28px;border-radius:999px;border:none;background:{{ f.bg }};cursor:pointer;padding:3px;display:flex;justify-content:{{ f.justify }}"><span style="width:22px;height:22px;border-radius:50%;background:#FFFFFF"></span></button>
+        </div>
+      </sc-for>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:16px">
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:16px;font-weight:700">Administrator roles</div>
+        <sc-for list="{{ roleRows }}" as="r" hint-placeholder-count="5"><div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #EEF2F3;font-size:13px"><span style="display:flex;flex-direction:column"><span style="font-weight:600">{{ r.name }}</span><span style="color:#6A7A84">{{ r.scope }}</span></span><span style="color:#4F5F68">{{ r.role }}</span></div></sc-for>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:16px;font-weight:700">Email outbox · test mode</div>
+        <div style="font-size:12px;color:#6A7A84">Emails are not delivered in test mode. Invitation links open the secure acceptance page.</div>
+        <sc-for list="{{ outbox }}" as="m" hint-placeholder-count="4"><div style="display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #EEF2F3;font-size:13px;align-items:center"><span style="display:flex;flex-direction:column;min-width:0"><span style="font-weight:600">{{ m.subject }}</span><span style="color:#6A7A84">To {{ m.to }} · {{ m.when }}</span></span><sc-if value="{{ m.hasLink }}" hint-placeholder-val="{{ false }}"><button onClick="{{ m.open }}" style="flex:none;border:1px solid #CBD5DA;border-radius:8px;min-height:32px;padding:0 10px;background:#FFFFFF;color:#075D61;font-size:12px;font-weight:600;cursor:pointer">Open link</button></sc-if></div></sc-for>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:16px;font-weight:700">Audit history</div>
+        <sc-for list="{{ auditRows }}" as="a" hint-placeholder-count="6"><div style="display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-bottom:1px solid #EEF2F3;font-size:13px"><span><span style="font-weight:600">{{ a.action }}</span> <span style="color:#6A7A84">· {{ a.actor }}</span></span><span style="color:#6A7A84;white-space:nowrap">{{ a.when }}</span></div></sc-for>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:16px;font-weight:700">Test data</div>
+        <div style="font-size:13px;color:#6A7A84;line-height:1.45">Restore the 12 demonstration churches. Partner app accounts are not affected.</div>
+        <button onClick="{{ resetData }}" style="align-self:flex-start;border:1px solid #C9574A;border-radius:8px;min-height:38px;padding:0 14px;background:#FFFFFF;color:#A33A2E;font-size:13px;font-weight:600;cursor:pointer">Reset demo data</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isCDash }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="C1 Church Dashboard" style="display:flex;flex-direction:column;gap:18px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:clamp(22px,5.5vw,27px);font-weight:700;line-height:1.2">{{ ch.name }}</h1><div style="font-size:15px;color:#6A7A84">Your 144(P) Plan dashboard for Partner engagement and participation.</div></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button onClick="{{ toCPartners }}" style="border:none;border-radius:10px;min-height:42px;padding:0 16px;background:#075D61;color:#FFFFFF;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="icon-user-plus"></i>Invite Partners</button>
+      <button onClick="{{ toCTables }}" style="border:1px solid #CBD5DA;border-radius:10px;min-height:42px;padding:0 14px;background:#FFFFFF;color:#173344;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="icon-table-2"></i>Manage Tables</button>
+      <button onClick="{{ toCBilling }}" style="border:1px solid #CBD5DA;border-radius:10px;min-height:42px;padding:0 14px;background:#FFFFFF;color:#173344;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="icon-credit-card"></i>View Billing</button>
+      <button onClick="{{ toCSettings }}" style="border:1px solid #CBD5DA;border-radius:10px;min-height:42px;padding:0 14px;background:#FFFFFF;color:#173344;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="icon-settings"></i>Church Settings</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));gap:12px">
+      <sc-for list="{{ cKpis }}" as="k" hint-placeholder-count="4">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:16px 10px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:6px">
+          <i class="{{ k.icon }}" style="font-size:24px;color:#075D61"></i><span style="font-size:13px;color:#4F5F68">{{ k.label }}</span><span style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums">{{ k.value }}</span>
+        </div>
+      </sc-for>
+      <div style="grid-column:1 / -1;min-width:0;background:#E8F5F3;border:1px solid #BFE2DC;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px"><i class="icon-book-open" style="font-size:24px;color:#075D61"></i><div style="display:flex;flex-direction:column"><span style="font-size:13px;color:#4F5F68">Current subscription plan</span><span style="font-size:18px;font-weight:700">{{ ch.plan }}</span></div></div>
+        <div style="display:flex;gap:24px;flex-wrap:wrap;font-size:13px"><div style="display:flex;flex-direction:column;gap:2px"><span style="color:#4F5F68">Billing status</span><span style="font-weight:700;color:{{ ch.stFg }}">{{ ch.status }}</span></div><div style="display:flex;flex-direction:column;gap:2px"><span style="color:#4F5F68">{{ ch.renewLabel }}</span><span style="font-weight:700">{{ ch.renewal }}</span></div></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px">
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;gap:16px;flex-wrap:wrap">
+        <div style="flex:1;min-width:200px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:16px;font-weight:700;display:flex;gap:8px;align-items:center"><i class="icon-link" style="color:#075D61"></i>Your church invitation link</div>
+          <div style="font-size:13px;color:#4F5F68;line-height:1.45">Share this link or QR code to invite new Partners to join your church in the 144(P) Plan.</div>
+          <div style="border:1px solid #CBD5DA;border-radius:8px;padding:8px 10px;font-size:13px;background:#F8FAFA;word-break:break-all">{{ ch.joinUrl }}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ ch.copyLink }}" style="border:1px solid #CBD5DA;border-radius:8px;min-height:36px;padding:0 12px;background:#FFFFFF;color:#173344;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="icon-copy"></i>Copy link</button><button onClick="{{ ch.openJoin }}" style="border:1px solid #CBD5DA;border-radius:8px;min-height:36px;padding:0 12px;background:#FFFFFF;color:#173344;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="icon-external-link"></i>Preview sign-up</button></div>
+        </div>
+        <sc-if value="{{ ch.hasQr }}" hint-placeholder-val="{{ false }}"><div role="img" aria-label="QR code for your church invitation link" style="flex:none;width:132px;height:132px;background-image:url({{ ch.qr }});background-size:contain;background-repeat:no-repeat;image-rendering:pixelated;border:1px solid #E1E7EA;border-radius:8px"></div></sc-if>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:16px;font-weight:700;display:flex;gap:8px;align-items:center"><i class="icon-table-2" style="color:#075D61"></i>Table management</div>
+        <div style="font-size:13px;color:#4F5F68">Create and manage your church's Tables.</div>
+        <sc-for list="{{ tableTop }}" as="t" hint-placeholder-count="3"><div style="display:flex;justify-content:space-between;font-size:14px;padding:6px 0;border-bottom:1px solid #EEF2F3"><span>{{ t.name }}</span><span style="color:#6A7A84">{{ t.members }} Partners</span></div></sc-for>
+        <button onClick="{{ toCTables }}" style="align-self:flex-start;border:none;border-radius:8px;min-height:38px;padding:0 14px;background:#075D61;color:#FFFFFF;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px">Manage Tables<i class="icon-arrow-right"></i></button>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px">
+      <div style="grid-column:1 / -1;min-width:0;background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:16px;font-weight:700">Participation trend · hours per week</div>
+        <sc-if value="{{ partSuppressed }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;color:#6A7A84;padding:30px 0;text-align:center">Hidden to protect privacy until at least {{ threshold }} Partners participate.</div></sc-if>
+        <sc-if value="{{ partShown }}" hint-placeholder-val="{{ true }}">
+          <div style="position:relative;height:170px;margin-top:10px">
+            <sc-for list="{{ partChart.ys }}" as="y" hint-placeholder-count="4"><div style="position:absolute;left:0;right:0;top:{{ y.top }};border-top:1px dashed #E6ECEE"><span style="position:absolute;left:0;top:-9px;font-size:11px;color:#6A7A84;background:#FFFFFF;padding-right:4px">{{ y.label }}</span></div></sc-for>
+            <svg viewBox="0 0 600 170" preserveAspectRatio="none" style="position:absolute;left:48px;top:0;width:calc(100% - 48px);height:100%;overflow:visible" aria-hidden="true"><polygon points="{{ partChart.area }}" style="fill:#E8F5F3"></polygon><polyline points="{{ partChart.line }}" fill="none" style="stroke:#0E8A7E;stroke-width:3;vector-effect:non-scaling-stroke"></polyline></svg>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding-left:48px;font-size:11px;color:#6A7A84"><sc-for list="{{ partChart.xs }}" as="x" hint-placeholder-count="6"><span>{{ x }}</span></sc-for></div>
+        </sc-if>
+      </div>
+      <div style="background:#FFF8EA;border:1px solid #F1E2C4;border-radius:16px;padding:18px;display:flex;gap:10px;font-size:14px;line-height:1.5;color:#5A4618"><i class="icon-info" style="font-size:20px;color:#B7791F"></i><span>Your church sees aggregate totals only, never individual deposits, notes, balances or personal statements.</span></div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isCPartners }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="C2 Church Partners" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:clamp(22px,5.5vw,27px);font-weight:700;line-height:1.2">Partners</h1><div style="font-size:15px;color:#6A7A84">Membership associations only. Each Partner's time account belongs to them.</div></div>
+    <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:16px;font-weight:700">Invite Partners</div>
+      <textarea value="{{ inviteEmails }}" onChange="{{ onInviteEmails }}" rows="2" placeholder="Email addresses, separated by commas" aria-label="Partner emails" style="border:1px solid #CBD5DA;border-radius:8px;padding:10px 12px;font-size:15px;line-height:1.45;color:#173344;resize:vertical"></textarea>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><button onClick="{{ sendPartnerInvites }}" style="border:none;border-radius:8px;min-height:40px;padding:0 16px;background:#075D61;color:#FFFFFF;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="icon-send"></i>Send invitations</button><span style="font-size:13px;color:#6A7A84">Invitations contain your enrollment link. Policy: {{ ch.policy }}.</span></div>
+    </div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap">
+      <sc-for list="{{ memTabs }}" as="t" hint-placeholder-count="3"><button onClick="{{ t.pick }}" style="border:none;border-radius:999px;min-height:36px;padding:0 14px;background:{{ t.bg }};color:{{ t.fg }};font-size:14px;font-weight:600;cursor:pointer">{{ t.label }}</button></sc-for>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;border:1px solid #CBD5DA;border-radius:10px;padding:0 12px;background:#FFFFFF;max-width:420px"><i class="icon-search" style="color:#6A7A84"></i><input value="{{ memQ }}" onChange="{{ onMemQ }}" placeholder="Search Partners by name or email" aria-label="Search Partners" style="flex:1;border:none;outline:none;min-height:42px;font-size:15px;background:transparent"></label>
+    <sc-if value="{{ tableView }}" hint-placeholder-val="{{ true }}"><div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;overflow-x:auto"><div style="min-width:760px">
+      <div style="display:grid;grid-template-columns:1.4fr 1.6fr 1.2fr .9fr .9fr 1.4fr;gap:8px;padding:10px 16px;background:#F4F7F7;font-size:12px;font-weight:700;color:#4F5F68;text-transform:uppercase;letter-spacing:.04em"><span>Name</span><span>Email</span><span>Table</span><span>Status</span><span>Joined</span><span>Actions</span></div>
+      <sc-if value="{{ memEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:20px;text-align:center;color:#6A7A84">No Partners here.</div></sc-if>
+      <sc-for list="{{ memRows }}" as="m" hint-placeholder-count="8">
+        <div style="display:grid;grid-template-columns:1.4fr 1.6fr 1.2fr .9fr .9fr 1.4fr;gap:8px;padding:10px 16px;border-top:1px solid #EEF2F3;font-size:14px;align-items:center">
+          <span style="font-weight:600">{{ m.name }}</span><span style="color:#4F5F68;overflow:hidden;text-overflow:ellipsis">{{ m.email }}</span>
+          <button onClick="{{ m.assign }}" style="justify-self:start;border:1px dashed #CBD5DA;border-radius:8px;min-height:32px;padding:0 10px;background:#FFFFFF;color:#173344;font-size:13px;cursor:pointer">{{ m.table }}</button>
+          <span><span style="font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;background:{{ m.stBg }};color:{{ m.stFg }}">{{ m.status }}</span></span>
+          <span style="color:#4F5F68">{{ m.joined }}</span>
+          <span style="display:flex;gap:6px;flex-wrap:wrap"><sc-if value="{{ m.pending }}" hint-placeholder-val="{{ false }}"><button onClick="{{ m.approve }}" style="border:none;border-radius:8px;min-height:32px;padding:0 10px;background:#075D61;color:#FFFFFF;font-size:12px;font-weight:600;cursor:pointer">Approve</button></sc-if><button onClick="{{ m.remove }}" style="border:1px solid #CBD5DA;border-radius:8px;min-height:32px;padding:0 10px;background:#FFFFFF;color:#A33A2E;font-size:12px;font-weight:600;cursor:pointer">Remove association</button></span>
+        </div>
+      </sc-for>
+    </div></div></sc-if>
+<sc-if value="{{ cardView }}" hint-placeholder-val="{{ false }}">
+  <div style="display:flex;flex-direction:column;gap:10px">
+    <sc-if value="{{ memEmpty }}" hint-placeholder-val="{{ false }}"><div style="padding:20px;text-align:center;color:#6A7A84;background:#FFFFFF;border-radius:14px">No Partners here.</div></sc-if>
+    <sc-for list="{{ memRows }}" as="m" hint-placeholder-count="4">
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font-size:15px;font-weight:700">{{ m.name }}</span><span style="font-size:13px;color:#4F5F68;overflow-wrap:anywhere">{{ m.email }}</span></div><span style="font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;white-space:nowrap;background:{{ m.stBg }};color:{{ m.stFg }}">{{ m.status }}</span></div>
+        <div style="font-size:13px;color:#6A7A84">Joined {{ m.joined }}</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onClick="{{ m.assign }}" style="border:1px dashed #CBD5DA;border-radius:8px;min-height:44px;padding:0 12px;background:#FFFFFF;color:#173344;font-size:14px;cursor:pointer">{{ m.table }}</button>
+          <sc-if value="{{ m.pending }}" hint-placeholder-val="{{ false }}"><button onClick="{{ m.approve }}" style="border:none;border-radius:8px;min-height:44px;padding:0 14px;background:#075D61;color:#FFFFFF;font-size:14px;font-weight:600;cursor:pointer">Approve</button></sc-if>
+          <button onClick="{{ m.remove }}" style="border:1px solid #CBD5DA;border-radius:8px;min-height:44px;padding:0 12px;background:#FFFFFF;color:#A33A2E;font-size:14px;font-weight:600;cursor:pointer">Remove</button>
+        </div>
+      </div>
+    </sc-for>
+  </div></sc-if>
+    <div style="display:flex;justify-content:space-between;align-items:center;font-size:14px;color:#4F5F68;flex-wrap:wrap;gap:10px"><span>{{ memShowing }}</span><div style="display:flex;gap:6px"><button onClick="{{ memPrev }}" aria-label="Previous page" style="width:36px;height:36px;border:1px solid #CBD5DA;border-radius:8px;background:#FFFFFF;cursor:pointer"><i class="icon-chevron-left"></i></button><button onClick="{{ memNext }}" aria-label="Next page" style="width:36px;height:36px;border:1px solid #CBD5DA;border-radius:8px;background:#FFFFFF;cursor:pointer"><i class="icon-chevron-right"></i></button></div></div>
+    <div style="font-size:13px;color:#6A7A84;line-height:1.5">Removing an association never deletes a Partner's account, deposits or lifetime record. Minutes, notes and balances are not available to church administrators.</div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isCTables }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="C3 Tables" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:clamp(22px,5.5vw,27px);font-weight:700;line-height:1.2">Tables</h1><div style="font-size:15px;color:#6A7A84">Reading groups, study groups and teams for your church.</div></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap"><input value="{{ newTable }}" onChange="{{ onNewTable }}" placeholder="New Table name" aria-label="New Table name" style="flex:1;min-width:220px;max-width:420px;border:1px solid #CBD5DA;border-radius:10px;padding:10px 12px;font-size:15px"><button onClick="{{ addTable }}" style="border:none;border-radius:10px;min-height:44px;padding:0 16px;background:#075D61;color:#FFFFFF;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="icon-plus"></i>Add Table</button></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));gap:12px">
+      <sc-for list="{{ tableCards }}" as="t" hint-placeholder-count="6">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:16px;font-weight:700">{{ t.name }}</span><span style="font-size:13px;color:#6A7A84">{{ t.members }} Partners</span></div>
+          <div style="font-size:13px;color:#4F5F68">Leader: {{ t.leader }}</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ t.assignLeader }}" style="border:1px solid #CBD5DA;border-radius:8px;min-height:34px;padding:0 12px;background:#FFFFFF;color:#173344;font-size:13px;font-weight:600;cursor:pointer">Assign leader</button><button onClick="{{ t.remove }}" style="border:1px solid #CBD5DA;border-radius:8px;min-height:34px;padding:0 12px;background:#FFFFFF;color:#A33A2E;font-size:13px;font-weight:600;cursor:pointer">Archive</button></div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="font-size:13px;color:#6A7A84;line-height:1.5">{{ leaderNote }}</div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isCParticipation }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="C4 Participation" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:clamp(22px,5.5vw,27px);font-weight:700;line-height:1.2">Participation</h1><div style="font-size:15px;color:#6A7A84">Aggregate reports. Weeks with fewer than {{ threshold }} participants are suppressed.</div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr));gap:12px">
+      <sc-for list="{{ cpKpis }}" as="k" hint-placeholder-count="4"><div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:#4F5F68">{{ k.label }}</span><span style="font-size:24px;font-weight:700;font-variant-numeric:tabular-nums">{{ k.value }}</span><span style="font-size:12px;color:#6A7A84">{{ k.sub }}</span></div></sc-for>
+    </div>
+    <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column">
+      <div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px;padding:6px 0;font-size:12px;font-weight:700;color:#4F5F68;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #E1E7EA"><span>Week of</span><span style="text-align:right">Participants</span><span style="text-align:right">Recorded hours</span></div>
+      <sc-for list="{{ partRows }}" as="r" hint-placeholder-count="8"><div style="display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:8px;padding:9px 0;border-bottom:1px solid #EEF2F3;font-size:14px"><span>{{ r.week }}</span><span style="text-align:right;font-variant-numeric:tabular-nums">{{ r.p }}</span><span style="text-align:right;font-variant-numeric:tabular-nums">{{ r.h }}</span></div></sc-for>
+    </div>
+    <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column">
+      <div style="font-size:15px;font-weight:700;padding-bottom:6px">Table enrollment totals</div>
+      <sc-for list="{{ tableTotals }}" as="t" hint-placeholder-count="4"><div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #EEF2F3;font-size:14px"><span>{{ t.name }}</span><span style="font-variant-numeric:tabular-nums">{{ t.members }}</span></div></sc-for>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isCBilling }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="C5 Church Billing" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:clamp(22px,5.5vw,27px);font-weight:700;line-height:1.2">Billing</h1><div style="font-size:15px;color:#6A7A84">Your subscription and invoices.</div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px">
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px">
+        <div style="font-size:16px;font-weight:700">Subscription</div>
+        <sc-for list="{{ cSubRows }}" as="r" hint-placeholder-count="5"><div style="display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid #EEF2F3;font-size:14px"><span style="color:#6A7A84">{{ r.label }}</span><span style="font-weight:600;text-align:right">{{ r.value }}</span></div></sc-for>
+        <div style="font-size:13px;font-weight:700;color:#4F5F68;padding-top:4px">Change plan</div>
+        <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">
+          <sc-for list="{{ cPlanOpts }}" as="o" hint-placeholder-count="3"><button onClick="{{ o.pick }}" style="border:2px solid {{ o.border }};border-radius:10px;padding:10px;background:#FFFFFF;cursor:pointer;color:#173344;text-align:left;display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;font-weight:700">{{ o.name }}</span><span style="font-size:12px;color:#6A7A84">{{ o.price }}</span></button></sc-for>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button onClick="{{ cApplyPlan }}" style="border:none;border-radius:8px;min-height:40px;padding:0 16px;background:#075D61;color:#FFFFFF;font-size:14px;font-weight:600;cursor:pointer">{{ cApplyLabel }}</button>
+          <button onClick="{{ cToggleCancel }}" style="border:1px solid #CBD5DA;border-radius:8px;min-height:40px;padding:0 14px;background:#FFFFFF;color:#173344;font-size:14px;font-weight:600;cursor:pointer">{{ cCancelLabel }}</button>
+        </div>
+        <div style="font-size:12px;color:#6A7A84">For Enterprise pricing, contact {{ support }}.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:18px;display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:16px;font-weight:700">Payment method</div>
+          <div style="font-size:14px;display:flex;gap:8px;align-items:center"><i class="icon-credit-card" style="color:#075D61"></i>{{ ch.card }}</div>
+          <button onClick="{{ openPortal }}" style="align-self:flex-start;border:1px solid #CBD5DA;border-radius:8px;min-height:38px;padding:0 14px;background:#FFFFFF;color:#173344;font-size:14px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:6px"><i class="icon-external-link"></i>Update in secure billing portal</button>
+          <div style="font-size:12px;color:#6A7A84">Card details are handled by the payment provider and never stored by 144(P).</div>
+        </div>
+        <div style="background:#F4F7F7;border-radius:16px;padding:16px;font-size:13px;line-height:1.5;color:#4F5F68">{{ policyText }}</div>
+      </div>
+    </div>
+    <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column">
+      <div style="font-size:15px;font-weight:700;padding-bottom:6px">Invoices</div>
+      <sc-if value="{{ cNoInvoices }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;color:#6A7A84;padding:8px 0">No invoices yet.</div></sc-if>
+      <sc-for list="{{ cInvoices }}" as="i" hint-placeholder-count="5"><div style="display:grid;grid-template-columns:1fr 1fr .8fr .8fr;gap:8px;padding:9px 0;border-bottom:1px solid #EEF2F3;font-size:14px;align-items:center"><span style="font-weight:600">{{ i.number }}</span><span style="color:#6A7A84">{{ i.date }}</span><span style="font-variant-numeric:tabular-nums">{{ i.amount }}</span><span><span style="font-size:12px;font-weight:600;border-radius:999px;padding:3px 9px;background:{{ i.bg }};color:{{ i.fg }}">{{ i.status }}</span></span></div></sc-for>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isCSettings }}" hint-placeholder-val="{{ false }}">
+  <div data-screen-label="C6 Church Settings" style="display:flex;flex-direction:column;gap:16px;max-width:880px">
+    <div style="display:flex;flex-direction:column;gap:4px"><h1 style="margin:0;font-size:clamp(22px,5.5vw,27px);font-weight:700;line-height:1.2">Church Settings</h1><div style="font-size:15px;color:#6A7A84">Profile and enrollment policy for {{ ch.name }}.</div></div>
+    <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:14px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,220px),1fr));gap:12px">
+        <sc-for list="{{ churchFields }}" as="fl" hint-placeholder-count="7"><label style="display:flex;flex-direction:column;gap:6px;font-size:13px;font-weight:600">{{ fl.label }}<input value="{{ fl.value }}" onChange="{{ fl.on }}" style="border:1px solid #CBD5DA;border-radius:8px;padding:10px 12px;font-size:15px;font-weight:400;color:#173344"></label></sc-for>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center"><span style="font-size:13px;font-weight:600;margin-right:4px">Enrollment policy</span><sc-for list="{{ cPolicyOpts }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.pick }}" style="border:1px solid {{ o.border }};border-radius:999px;min-height:36px;padding:0 14px;background:{{ o.bg }};color:{{ o.fg }};font-size:13px;font-weight:600;cursor:pointer">{{ o.name }}</button></sc-for></div>
+      <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}"><div role="alert" style="background:#FBEAE7;color:#8A2E22;border-radius:10px;padding:10px 14px;font-size:14px">{{ err }}</div></sc-if>
+      <button onClick="{{ saveChurchSettings }}" style="align-self:flex-start;border:none;border-radius:8px;min-height:42px;padding:0 18px;background:#075D61;color:#FFFFFF;font-size:14px;font-weight:600;cursor:pointer">Save changes</button>
+    </div>
+    <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:8px">
+      <div style="font-size:16px;font-weight:700">Program modules</div>
+      <sc-for list="{{ cFeatures }}" as="f" hint-placeholder-count="2"><div style="display:flex;justify-content:space-between;gap:10px;padding:8px 0;border-bottom:1px solid #EEF2F3;font-size:14px"><span>{{ f.label }}</span><span style="color:{{ f.fg }};font-weight:600">{{ f.state }}</span></div></sc-for>
+      <div style="font-size:12px;color:#6A7A84">Modules are activated by the 144(P) Plan team when they're ready for your church.</div>
+    </div>
+  </div>
+</sc-if>
+    </main>
+  </div>
+</div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+  <div role="status" style="position:fixed;left:50%;transform:translateX(-50%);bottom:24px;z-index:40;max-width:520px;width:calc(100% - 32px);background:#173344;color:#FFFFFF;border-radius:12px;padding:13px 16px;font-size:14px;display:flex;gap:10px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.2)"><i class="icon-circle-check" style="color:#7FD6C8;font-size:18px"></i>{{ toast }}</div>
+</sc-if>
+<sc-if value="{{ hasConfirm }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:50;background:rgba(18,60,86,.45);display:flex;align-items:center;justify-content:center;padding:16px">
+    <div role="dialog" aria-modal="true" style="width:100%;max-width:460px;background:#FFFFFF;border-radius:18px;padding:24px;display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:19px;font-weight:700">{{ cf.title }}</div>
+      <div style="font-size:15px;line-height:1.5">{{ cf.body }}</div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;padding-top:6px">
+        <button onClick="{{ cfCancel }}" style="border:1px solid #CBD5DA;border-radius:10px;min-height:44px;padding:0 18px;background:#FFFFFF;color:#173344;font-size:15px;font-weight:600;cursor:pointer">Cancel</button>
+        <button onClick="{{ cfOk }}" style="border:none;border-radius:10px;min-height:44px;padding:0 18px;background:{{ cf.bg }};color:#FFFFFF;font-size:15px;font-weight:600;cursor:pointer">{{ cf.ok }}</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+<sc-if value="{{ hasPicker }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:50;background:rgba(18,60,86,.45);display:flex;align-items:center;justify-content:center;padding:16px">
+    <div role="dialog" aria-modal="true" style="width:100%;max-width:460px;max-height:80vh;overflow:auto;background:#FFFFFF;border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:10px">
+      <div style="font-size:18px;font-weight:700">{{ pk.title }}</div>
+      <sc-for list="{{ pk.options }}" as="o" hint-placeholder-count="4">
+        <button onClick="{{ o.pick }}" style="display:flex;justify-content:space-between;gap:10px;text-align:left;border:1px solid {{ o.border }};border-radius:10px;padding:12px 14px;background:#FFFFFF;cursor:pointer;color:#173344;font-size:15px"><span>{{ o.label }}</span><span style="color:#6A7A84;font-size:13px">{{ o.sub }}</span></button>
+      </sc-for>
+      <button onClick="{{ pkClose }}" style="align-self:flex-end;border:1px solid #CBD5DA;border-radius:10px;min-height:42px;padding:0 16px;background:#FFFFFF;color:#173344;font-size:14px;font-weight:600;cursor:pointer">Close</button>
+    </div>
+  </div>
+</sc-if>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+const STATUS = { active: ['Active', '#E3F4EA', '#1E7A45', '#1E9E6A'], pilot: ['Pilot', '#E3EEF8', '#2A62A6', '#3B7DD8'], past_due: ['Past Due', '#FFF1D6', '#8A5A00', '#E0A100'], suspended: ['Suspended', '#FBE4E1', '#A33A2E', '#C9452F'], canceled: ['Canceled', '#EEF1F2', '#4F5F68', '#9AA8B0'] };
+const PLANC = { small: ['#EEE6F6', '#6E4699', '#7A55B0'], growing: ['#E2ECF8', '#2A62A6', '#2F6DB0'], large: ['#FBEBDC', '#B4601A', '#D9822B'], enterprise: ['#E3F2EF', '#075D61', '#0E8A7E'] };
+const INV = { paid: ['Paid', '#E3F4EA', '#1E7A45'], open: ['Open', '#E3EEF8', '#2A62A6'], failed: ['Failed', '#FBE4E1', '#A33A2E'], void: ['Void', '#EEF1F2', '#4F5F68'] };
+const EVT = {
+  'church.registered': ['New church added', 'icon-plus', '#E3F4EA', '#1E7A45', c => `${c} joined the platform`],
+  'subscription.created': ['New subscription', 'icon-file-plus', '#E3EEF8', '#2A62A6', (c, e) => `${c} · ${e.pilot ? 'founding pilot' : 'paid plan'}`],
+  'invoice.paid': ['Successful payment', 'icon-check', '#E3F4EA', '#1E7A45', (c, e) => `${c} — $${Number(e.amount || 0).toFixed(2)}`],
+  'invoice.payment_failed': ['Failed payment', 'icon-x', '#FBE4E1', '#A33A2E', (c, e) => `${c} — $${Number(e.amount || 0).toFixed(2)} (card declined)`],
+  'plan.upgraded': ['Plan upgrade', 'icon-arrow-up', '#E3EEF8', '#2A62A6', c => `${c} upgraded`],
+  'plan.downgraded': ['Plan downgrade', 'icon-arrow-down', '#FFF1D6', '#8A5A00', c => `${c} downgraded`],
+  'subscription.canceled': ['Canceled membership', 'icon-minus', '#FBE4E1', '#A33A2E', c => `${c} canceled`],
+  'subscription.cancel_scheduled': ['Cancellation scheduled', 'icon-calendar-x', '#FFF1D6', '#8A5A00', c => `${c} cancels at period end`],
+  'subscription.cancel_resumed': ['Cancellation withdrawn', 'icon-calendar-check', '#E3F4EA', '#1E7A45', c => `${c} will renew`],
+  'subscription.suspended': ['Access suspended', 'icon-power', '#FBE4E1', '#A33A2E', c => `${c} suspended`],
+  'subscription.reactivated': ['Access reactivated', 'icon-power', '#E3F4EA', '#1E7A45', c => `${c} reactivated`],
+  'pilot.converted': ['Pilot converted', 'icon-sparkles', '#E3F2EF', '#075D61', c => `${c} moved from pilot to paid`],
+  'invite.sent': ['Administrator invited', 'icon-send', '#E3EEF8', '#2A62A6', c => `${c} invitation sent`],
+  'admin.verified': ['Administrator verified', 'icon-shield-check', '#E3F4EA', '#1E7A45', c => `${c} administrator accepted`] };
+const money = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+const money2 = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const num = n => Math.round(n || 0).toLocaleString('en-US');
+const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+const fD = s => { if (!s) return '—'; const [y, m, d] = s.split('-').map(Number); return `${MON[m - 1]} ${d}, ${y}`; };
+const fDs = s => { const [, m, d] = s.split('-').map(Number); return `${MON[m - 1]} ${d}`; };
+const fTs = ts => new Date(ts).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const niceMax = v => { const p = Math.pow(10, Math.floor(Math.log10(Math.max(v, 1)))); for (const m of [1, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10]) if (m * p >= v) return m * p; return 10 * p; };
+const short = v => v >= 1000 ? (v / 1000).toFixed(v % 1000 ? 1 : 0).replace('.0', '') + 'K' : String(Math.round(v));
+function lineChart(vals, labels, prefix) {
+  const max = niceMax(Math.max(...vals, 1)), n = vals.length;
+  const line = vals.map((v, i) => `${(i / Math.max(1, n - 1) * 600).toFixed(1)},${(170 - v / max * 165).toFixed(1)}`).join(' ');
+  return { line, area: `0,170 ${line} 600,170`, xs: labels, ys: [0, 1, 2, 3].map(i => ({ top: (i / 3 * 97) + '%', label: (prefix || '') + short(max * (1 - i / 3)) })) };
+}
+function donut(parts) {
+  const total = parts.reduce((a, p) => a + p.value, 0); let acc = 0;
+  const segs = parts.filter(p => p.value).map(p => { const a = acc / total * 100; acc += p.value; return `${p.color} ${a.toFixed(2)}% ${(acc / total * 100).toFixed(2)}%`; });
+  return { total, bg: total ? `conic-gradient(${segs.join(',')})` : '#E8EEF0', legend: parts.map(p => ({ color: p.color, name: p.name, value: `${p.value} (${total ? Math.round(p.value / total * 100) : 0}%)` })) };
+}
+const toggleSty = on => ({ on, bg: on ? '#075D61' : '#CBD5DA', justify: on ? 'flex-end' : 'flex-start' });
+const chip = (on) => ({ border: on ? '#123C56' : '#CBD5DA', bg: on ? '#123C56' : '#FFFFFF', fg: on ? '#FFFFFF' : '#173344' });
+
+class Component extends DCLogic {
+  state = { db: null, screen: 'login', vw: typeof window !== 'undefined' ? window.innerWidth : 1200, lf: {}, af: {}, err: '', toast: '', confirm: null, picker: null,
+    dir: { tab: 'all', q: '', plan: 'all', sort: 'name', page: 1, sel: null }, churchId: null, pc: null, invF: {}, fm: null, subQ: '', planDrafts: {}, setDraft: null,
+    inviteEmails: '', mem: { tab: 'all', q: '', page: 1 }, newTable: '', cPlan: null, cDraft: null, acceptToken: null, acceptHash: null, menuOpen: false };
+
+  componentDidMount() {
+    this.qrCache = {};
+    const boot = () => {
+      if (!window.AdminData) return setTimeout(boot, 60);
+      const db = window.AdminData.loadLive() || window.AdminData.load();
+      const token = new URLSearchParams(location.search).get('invite');
+      let screen = 'login';
+      if (token) screen = 'accept';
+      else if (db.session && db.session.role === 'platform') screen = 'p.dash';
+      else if (db.session && db.session.role === 'church' && db.admins.some(a => a.id === db.session.adminId && a.verifiedAt && !a.revokedAt)) screen = 'c.dash';
+      this.setState({ db, screen });
+      if (token) this.openAccept(token);
+      if (db.cloud) this.cloudReload();
+    };
+    boot();
+    this.qrWait = setInterval(() => { if (window.qrcode) { clearInterval(this.qrWait); this.forceUpdate(); } }, 150);
+    this.onResize = () => this.setState({ vw: window.innerWidth });
+    window.addEventListener('resize', this.onResize);
+    this.onStore = e => { if (window.AdminData && e.key === window.AdminData.AKEY) this.setState({ db: window.AdminData.load() }); };
+    window.addEventListener('storage', this.onStore);
+  }
+  componentWillUnmount() { clearInterval(this.qrWait); clearTimeout(this.tt); window.removeEventListener('resize', this.onResize); window.removeEventListener('storage', this.onStore); }
+
+  H() { return window.AdminData.helpers; }
+  today() { return this.H().ymd(new Date()); }
+  commit(fn) {
+    const prev = this.state.db; let db = JSON.parse(JSON.stringify(prev)); const r = fn(db);
+    if (db.cloud) { db = window.AdminData.uuidify(db); window.AdminData.cloudSync(prev, db).catch(e => this.flash("Couldn't save to the server: " + (e.message || e) + '. Reloading live data.') || this.cloudReload()); }
+    window.AdminData.save(db); this.setState({ db }); return r;
+  }
+  async cloudReload() {
+    try {
+      const s = this.state.db && this.state.db.session; if (!navigator.onLine || !(await window.Cloud.session())) return;
+      const roles = await window.Cloud.rpc('my_admin_roles'); if (!roles.length) return;
+      const db = await window.AdminData.cloudLoad(roles); db.session = s; window.AdminData.save(db); this.setState({ db });
+    } catch (e) {}
+  }
+  async cloudLogin(email, pw) {
+    const roles = await window.AdminData.cloudAdminSession(email, pw);
+    const user = (await window.Cloud.session()).user, db = await window.AdminData.cloudLoad(roles);
+    const plat = roles.some(r => r.role === 'platform_admin');
+    db.session = plat ? { role: 'platform', userId: user.id } : { role: 'church', adminId: user.id };
+    window.AdminData.save(db); this.setState({ db, lf: {}, err: '' });
+    this.go(plat ? 'p.dash' : 'c.dash');
+  }
+  audit(db, action, rt, rid, org) { const s = db.session || {}; db.audit.push({ id: this.H().uid(), actor: s.role === 'platform' ? 'Platform Administrator' : (db.admins.find(a => a.id === s.adminId) || {}).name || 'system', org: org || null, action, resourceType: rt, resourceId: rid, at: Date.now() }); }
+  event(db, type, churchId, extra) { const e = { id: this.H().uid(), type, churchId, occurredAt: Date.now(), providerEventId: 'evt_test_' + this.H().uid(), ...(extra || {}) }; db.events.push(e); return e; }
+  flash(m) { this.setState({ toast: m }); clearTimeout(this.tt); this.tt = setTimeout(() => this.setState({ toast: '' }), 3200); }
+  fail(m) { this.setState({ err: m }); }
+  go(screen, extra) { this.setState({ screen, err: '', menuOpen: false, ...(extra || {}) }); window.scrollTo(0, 0); }
+  ask(title, body, ok, action, danger) { this.setState({ confirm: { title, body, ok, action, danger } }); }
+  qr(text) { if (!window.qrcode) return ''; if (!this.qrCache[text]) { const q = window.qrcode(0, 'M'); q.addData(text); q.make(); this.qrCache[text] = 'data:image/svg+xml,' + encodeURIComponent(q.createSvgTag({ cellSize: 4, margin: 2 })).replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29'); } return this.qrCache[text]; }
+  joinLinks(slug) { const dir = location.href.split('?')[0].split('#')[0].replace(/[^/]*$/, ''); return { display: `https://144pplan.com/join/${slug}`, local: `${dir}144P-Plan-v2.dc.html?join=${encodeURIComponent(slug)}` }; }
+  csv(name, rows) { const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([rows.map(r => r.map(esc).join(',')).join('\n')], { type: 'text/csv' })); a.download = name; a.click(); }
+
+  // ---------- derived lookups ----------
+  sub(db, cid) { return db.subs.find(s => s.churchId === cid); }
+  plan(db, id) { return db.plans.find(p => p.id === id) || db.plans[0]; }
+  limit(db, s) { return s.includedPartners || this.plan(db, s.planId).limit || 0; }
+  activeN(db, cid) { const t = this.today(), H = this.H(); return db.memberships.filter(m => m.churchId === cid && m.status === 'verified' && H.diffDays(m.lastActive, t) <= 30).length; }
+  enrolledN(db, cid) { return db.memberships.filter(m => m.churchId === cid && m.status === 'verified').length; }
+  mrr(s) { if (!['active', 'past_due'].includes(s.status)) return 0; const base = s.freq === 'monthly' ? s.contractPrice : s.contractPrice / 12; return base * (1 - (s.discountPct || 0) / 100); }
+  amountLabel(s) { const v = s.contractPrice * (1 - (s.discountPct || 0) / 100); return s.status === 'pilot' ? 'Pilot · $0' : `${money2(v)} / ${s.freq === 'monthly' ? 'mo' : 'yr'}`; }
+  readOnly(db, cid) {
+    const s = this.sub(db, cid); if (!s) return false;
+    if (s.status === 'canceled' || s.status === 'suspended') return true;
+    if (s.status === 'past_due') { const f = db.invoices.filter(i => i.subId === s.id && i.status === 'failed').sort((a, b) => b.issuedAt.localeCompare(a.issuedAt))[0]; return f ? this.H().diffDays(f.issuedAt, this.today()) > db.settings.graceDays : false; }
+    return false;
+  }
+
+  // ---------- auth ----------
+  async openAccept(token) {
+    const h = await this.H().sha(token); this.setState({ screen: 'accept', acceptToken: token, acceptHash: h, af: {}, err: '' });
+    if (this.state.db.invites.some(i => i.tokenHash === h) || !window.Cloud) return;
+    try {
+      const r = (await window.Cloud.rpc('invitation_preview', { p_token: token }))[0]; if (!r) return;
+      const db = JSON.parse(JSON.stringify(this.state.db)); db.churches.push({ id: 'live-invite', name: r.church_name, slug: '', features: {} });
+      db.invites.push({ id: 'live-invite', churchId: 'live-invite', email: r.invited_email, name: r.invited_name || '', title: r.invited_title || '', tokenHash: h, expiresAt: String(r.expires_at).slice(0, 10), acceptedAt: r.accepted ? Date.now() : null, createdAt: Date.now(), live: true });
+      this.setState({ db });
+    } catch (e) {}
+  }
+  async acceptInvite() {
+    const s = this.state, db = s.db, inv = db.invites.find(i => i.tokenHash && i.tokenHash === s.acceptHash);
+    if (!inv || inv.acceptedAt || inv.expiresAt < this.today()) return this.fail('This invitation is no longer valid.');
+    const name = (s.af.name || '').trim(), pw = s.af.password || '';
+    if (!name) return this.fail('Enter your full name.');
+    if (pw.length < 10) return this.fail('Use a password with at least 10 characters.');
+    if (inv.live) {
+      try {
+        let r = null; try { r = await window.Cloud.signUp(inv.email, pw, { name, title: inv.title }); } catch (e) { if (!/already/i.test(e.message || '')) throw e; }
+        if (!r || !r.session) await window.Cloud.signIn(inv.email, pw);
+        await window.Cloud.rpc('accept_invitation', { p_token: s.acceptToken });
+        history.replaceState(null, '', location.pathname);
+        const roles = await window.Cloud.rpc('my_admin_roles'), user = (await window.Cloud.session()).user, db2 = await window.AdminData.cloudLoad(roles);
+        db2.session = { role: 'church', adminId: user.id }; window.AdminData.save(db2); this.setState({ db: db2 });
+        this.go('c.dash', { acceptToken: null, acceptHash: null }); return this.flash('Welcome. Your administrator account is verified.');
+      } catch (e) { return this.fail(/confirm/i.test(e.message || '') ? 'Confirm your email from the link we sent, then open this invitation again.' : (e.message || 'Could not accept the invitation.')); }
+    }
+    const pwh = await this.H().sha(pw + '|' + inv.email);
+    this.commit(d => {
+      const i = d.invites.find(x => x.id === inv.id); i.acceptedAt = Date.now();
+      const a = { id: 'adm_' + this.H().uid(), name, email: inv.email, title: inv.title || 'Administrator', churchId: inv.churchId, role: 'church_admin', verifiedAt: Date.now(), revokedAt: null, pw: pwh };
+      d.admins.push(a); d.session = { role: 'church', adminId: a.id };
+      this.event(d, 'admin.verified', inv.churchId); this.audit(d, 'admin.invitation_accepted', 'church_administrator', a.id, inv.churchId);
+    });
+    history.replaceState(null, '', location.pathname);
+    this.go('c.dash', { acceptToken: null, acceptHash: null }); this.flash('Welcome. Your administrator account is verified.');
+  }
+  async login() {
+    const db = this.state.db, email = (this.state.lf.email || '').trim().toLowerCase(), pw = this.state.lf.password || '';
+    const a = db.admins.find(x => x.email.toLowerCase() === email && x.pw && !x.revokedAt);
+    if (!a && window.Cloud) { if (!email || !pw) return this.fail('Enter your email and password.'); try { return await this.cloudLogin(email, pw); } catch (e) { return this.fail(/invalid login/i.test(e.message || '') ? "That email and password don't match a verified administrator." : (e.message || 'Sign-in failed.')); } }
+    if (!a || a.pw !== await this.H().sha(pw + '|' + a.email)) return this.fail("That email and password don't match a verified administrator.");
+    this.commit(d => { d.session = { role: 'church', adminId: a.id }; this.audit(d, 'session.signin', 'church_administrator', a.id, a.churchId); });
+    this.go('c.dash', { lf: {} });
+  }
+  signOut() { if (this.state.db && this.state.db.cloud) { window.Cloud.signOut(); window.AdminData.clearLive(); this.setState({ db: window.AdminData.load() }); } else this.commit(d => { d.session = null; }); this.go('login', { churchId: null, lf: {}, af: {}, fm: null, pc: null, invF: {}, setDraft: null, cDraft: null, planDrafts: {}, inviteEmails: '', picker: null, confirm: null, dir: { tab: 'all', q: '', plan: 'all', sort: 'name', page: 1, sel: null }, mem: { tab: 'all', q: '', page: 1 } }); try { sessionStorage.clear(); } catch (e) {} }
+
+  // ---------- billing (test-mode provider events) ----------
+  applyEvent(db, cid, kind, evtId) {
+    if (db.processed.includes(evtId)) return 'duplicate';
+    db.processed.push(evtId);
+    const H = this.H(), t = this.today(), s = this.sub(db, cid), step = s.freq === 'monthly' ? 1 : 12;
+    if (s.status === 'canceled') return 'canceled';
+    const amt = Math.round((s.status === 'pilot' ? (s.freq === 'monthly' ? this.plan(db, s.planId).monthly || s.contractPrice : this.plan(db, s.planId).annual || s.contractPrice) : s.contractPrice) * (1 - (s.discountPct || 0) / 100) * 100) / 100;
+    let inv = db.invoices.filter(i => i.subId === s.id && (i.status === 'open' || i.status === 'failed')).sort((a, b) => b.issuedAt.localeCompare(a.issuedAt))[0];
+    if (kind === 'paid') {
+      if (!inv) { const issued = s.periodEnd && s.periodEnd <= t ? s.periodEnd : t; inv = { id: 'in_' + H.uid(), number: 'INV-' + (db.invSeq++), churchId: cid, subId: s.id, amount: amt, status: 'paid', issuedAt: issued, paidAt: t, method: s.card }; db.invoices.push(inv); s.periodStart = issued; s.periodEnd = H.addMonths(issued, step); }
+      else { inv.status = 'paid'; inv.paidAt = t; }
+      if (s.status === 'pilot') { s.status = 'active'; s.wasPilot = true; s.pilotEnd = s.pilotEnd || t; s.periodStart = t; s.periodEnd = H.addMonths(t, step); s.contractPrice = amt / (1 - (s.discountPct || 0) / 100); this.event(db, 'pilot.converted', cid); }
+      if (s.status === 'past_due') s.status = 'active';
+      this.event(db, 'invoice.paid', cid, { amount: inv.amount, providerEventId: evtId });
+    } else {
+      if (s.status === 'pilot') return 'pilot';
+      if (!inv) { inv = { id: 'in_' + H.uid(), number: 'INV-' + (db.invSeq++), churchId: cid, subId: s.id, amount: amt, status: 'failed', issuedAt: t, paidAt: null, method: s.card }; db.invoices.push(inv); }
+      else inv.status = 'failed';
+      if (s.status === 'active') s.status = 'past_due';
+      this.event(db, 'invoice.payment_failed', cid, { amount: inv.amount, providerEventId: evtId });
+      const adm = db.admins.find(a => a.churchId === cid && a.verifiedAt && !a.revokedAt);
+      if (adm) db.outbox.push({ id: H.uid(), to: adm.email, subject: `Payment failed · ${db.churches.find(c => c.id === cid).name}`, kind: 'billing', at: Date.now() });
+    }
+    this.audit(db, 'billing.webhook_processed', 'subscription', s.id, cid);
+    return 'ok';
+  }
+  simulate(cid, kind) {
+    const evtId = 'evt_test_' + this.H().uid(); this.lastEvt = { cid, kind, evtId };
+    const r = this.commit(db => this.applyEvent(db, cid, kind, evtId));
+    this.flash({ ok: kind === 'paid' ? 'Test payment succeeded. Status updated from the provider event.' : 'Test payment failed. Subscription is now Past Due; the church admin was notified.', pilot: "Pilots aren't billed yet. Simulate a successful payment to convert.", canceled: 'Subscription is canceled; no billing events apply.', duplicate: 'Duplicate event ignored.' }[r]);
+  }
+  replay() { const e = this.lastEvt; if (!e) return this.flash('No event to replay yet.'); const r = this.commit(db => this.applyEvent(db, e.cid, e.kind, e.evtId)); this.flash(r === 'duplicate' ? `Duplicate event ${e.evtId.slice(0, 18)}… ignored. Nothing changed.` : 'Processed.'); }
+  changePlan(cid, planId, freq, customPrice, customLimit, discount) {
+    const db = this.state.db, s = this.sub(db, cid), p = this.plan(db, planId);
+    let price = p.custom ? Number(customPrice) : (freq === 'monthly' ? p.monthly : p.annual);
+    if (!(price > 0)) return this.flash('Enter a negotiated price for Enterprise.');
+    const disc = Math.max(0, Math.min(50, Number(discount) || 0));
+    const oldEq = (s.freq === 'monthly' ? s.contractPrice : s.contractPrice / 12), newEq = freq === 'monthly' ? price : price / 12;
+    const same = s.planId === planId && s.freq === freq && (!p.custom || s.contractPrice === price) && (s.discountPct || 0) === disc && (!p.custom || s.includedPartners === Number(customLimit));
+    if (same) return this.flash('No changes to apply.');
+    const members = this.enrolledN(db, cid);
+    this.commit(d => {
+      const x = this.sub(d, cid);
+      if (x.planId !== planId || x.freq !== freq || x.contractPrice !== price) this.event(d, newEq >= oldEq ? 'plan.upgraded' : 'plan.downgraded', cid, { planId });
+      Object.assign(x, { planId, freq, contractPrice: price, includedPartners: p.custom ? Number(customLimit) || null : null, discountPct: disc });
+      this.audit(d, 'subscription.plan_changed', 'subscription', x.id, cid);
+    });
+    this.setState({ pc: null, cPlan: null }); this.flash(`Plan updated to ${p.name}. All ${members} Partner associations unchanged.`);
+  }
+  toggleCancel(cid) {
+    const s = this.sub(this.state.db, cid);
+    if (s.status === 'canceled') return this.flash('Already canceled.');
+    this.commit(d => { const x = this.sub(d, cid); x.cancelAtPeriodEnd = !x.cancelAtPeriodEnd; this.event(d, x.cancelAtPeriodEnd ? 'subscription.cancel_scheduled' : 'subscription.cancel_resumed', cid); this.audit(d, x.cancelAtPeriodEnd ? 'subscription.cancel_scheduled' : 'subscription.cancel_withdrawn', 'subscription', x.id, cid); });
+    this.flash(s.cancelAtPeriodEnd ? 'Cancellation withdrawn. The subscription will renew.' : `Cancels on ${fD(s.periodEnd)}. Partner records are always preserved.`);
+  }
+  toggleSuspend(cid) {
+    const db = this.state.db, s = this.sub(db, cid), c = db.churches.find(x => x.id === cid);
+    if (s.status === 'suspended') return this.commit(d => { const x = this.sub(d, cid); x.status = x.prevStatus && x.prevStatus !== 'suspended' ? x.prevStatus : 'active'; this.event(d, 'subscription.reactivated', cid); this.audit(d, 'subscription.reactivated', 'subscription', x.id, cid); }), this.flash(`${c.name} reactivated.`);
+    this.ask(`Suspend ${c.name}?`, 'The church dashboard becomes read-only. Partners keep full access to their personal accounts, and no records are deleted.', 'Suspend access', () => {
+      this.commit(d => { const x = this.sub(d, cid); x.prevStatus = x.status; x.status = 'suspended'; this.event(d, 'subscription.suspended', cid); this.audit(d, 'subscription.suspended', 'subscription', x.id, cid); });
+      this.flash(`${c.name} suspended. Partner records untouched.`);
+    }, true);
+  }
+  async sendAdminInvite(cid, name, email, title, quiet) {
+    email = (email || '').trim().toLowerCase(); name = (name || '').trim();
+    if (!name || !EMAIL_RE.test(email)) { this.flash('Enter the administrator’s name and a valid email.'); return false; }
+    const H = this.H(), token = H.uid() + H.uid() + H.uid(), hash = await H.sha(token);
+    this.commit(d => {
+      const c = d.churches.find(x => x.id === cid);
+      d.invites.filter(i => i.churchId === cid && i.email === email && !i.acceptedAt).forEach(i => { i.expiresAt = H.addDays(this.today(), -1); });
+      const inv = { id: 'inv_' + H.uid(), churchId: cid, email, name, title: (title || '').trim(), tokenHash: hash, expiresAt: H.addDays(this.today(), 7), acceptedAt: null, createdAt: Date.now() };
+      d.invites.push(inv);
+      d.outbox.unshift({ id: H.uid(), to: email, subject: `Administrator invitation · ${c.name}`, kind: 'admin_invite', inviteId: inv.id, token, at: Date.now() });
+      this.event(d, 'invite.sent', cid); this.audit(d, 'admin.invitation_sent', 'church_invitation', inv.id, cid);
+    });
+    if (!quiet) this.flash(`Invitation sent to ${email}. It expires in 7 days.`);
+    return true;
+  }
+  async saveForm() {
+    const s = this.state, f = s.fm, db = s.db, H = this.H(), t = this.today();
+    const req = ['name', 'address', 'city', 'state', 'postal'];
+    if (req.some(k => !(f[k] || '').trim())) return this.fail('Name, address, city, state and postal code are required.');
+    if (f.contactEmail && !EMAIL_RE.test(f.contactEmail.trim())) return this.fail('Enter a valid contact email.');
+    if (f.id) {
+      this.commit(d => { const c = d.churches.find(x => x.id === f.id); ['name', 'address', 'city', 'state', 'postal', 'website', 'phone', 'contactEmail'].forEach(k => { c[k] = (f[k] || '').trim(); }); this.audit(d, 'church.updated', 'church', c.id, c.id); });
+      this.go('p.church', { churchId: f.id, fm: null }); return this.flash('Church information saved.');
+    }
+    if (!(f.adminName || '').trim() || !EMAIL_RE.test((f.adminEmail || '').trim())) return this.fail('Enter the church administrator’s name and a valid email.');
+    const p = this.plan(db, f.planId);
+    if (p.custom && !(Number(f.customPrice) > 0)) return this.fail('Enter a negotiated price for Enterprise.');
+    if (f.pilot && (!f.pilotEnd || f.pilotEnd <= f.pilotStart)) return this.fail('Pilot end must be after pilot start.');
+    let slug = H.slugify(f.name), n = 2; while (db.churches.some(c => c.slug === slug)) slug = H.slugify(f.name) + '-' + n++;
+    const id = 'ch_' + H.uid(), price = p.custom ? Number(f.customPrice) : (f.freq === 'monthly' ? p.monthly : p.annual), step = f.freq === 'monthly' ? 1 : 12;
+    this.commit(d => {
+      const code = `144P-${1001 + d.churches.length}`;
+      d.churches.push({ id, code, slug, name: f.name.trim(), address: f.address.trim(), city: f.city.trim(), state: f.state.trim().toUpperCase(), postal: f.postal.trim(), website: (f.website || '').trim(), phone: (f.phone || '').trim(), contactEmail: (f.contactEmail || f.adminEmail).trim().toLowerCase(), createdAt: t, enrollmentPolicy: d.settings.enrollmentPolicy, features: { tableLeader: false, churchRedemptions: false } });
+      const sub = { id: 'sub_' + H.uid(), churchId: id, planId: p.id, freq: f.freq, contractPrice: price, status: f.pilot ? 'pilot' : 'active', prevStatus: null, periodStart: f.pilot ? f.pilotStart : t, periodEnd: f.pilot ? f.pilotEnd : H.addMonths(t, step), pilotEnd: f.pilot ? f.pilotEnd : null, wasPilot: !!f.pilot, cancelAtPeriodEnd: false, providerCustomerId: 'cus_test_' + H.uid().slice(0, 8), providerSubId: 'sub_test_' + H.uid().slice(0, 8), includedPartners: Number(f.included) || (p.custom ? null : null), discountPct: 0, card: 'Awaiting hosted checkout', createdAt: t };
+      d.subs.push(sub);
+      if (!f.pilot) d.invoices.push({ id: 'in_' + H.uid(), number: 'INV-' + (d.invSeq++), churchId: id, subId: sub.id, amount: price, status: 'open', issuedAt: t, paidAt: null, method: 'Hosted checkout link sent' });
+      this.event(d, 'church.registered', id); this.event(d, 'subscription.created', id, { pilot: !!f.pilot, planId: p.id });
+      this.audit(d, 'church.registered', 'church', id, id);
+    });
+    await this.sendAdminInvite(id, f.adminName, f.adminEmail, f.adminTitle, true);
+    this.go('p.church', { churchId: id, fm: null, pc: null });
+    this.flash(`${f.name.trim()} registered. Invitation sent to ${f.adminEmail.trim()}.`);
+  }
+  newForm() { const t = this.today(), db = this.state.db; return { name: '', address: '', city: '', state: '', postal: '', website: '', phone: '', contactEmail: '', adminName: '', adminEmail: '', adminTitle: '', planId: 'small', freq: 'monthly', pilot: false, pilotStart: t, pilotEnd: this.H().addDays(t, db.settings.pilotDays), included: '', customPrice: '' }; }
+  editForm(cid) { const c = this.state.db.churches.find(x => x.id === cid); return { id: c.id, name: c.name, address: c.address, city: c.city, state: c.state, postal: c.postal, website: c.website, phone: c.phone, contactEmail: c.contactEmail }; }
+
+  renderVals() {
+    const s = this.state, db = s.db;
+    if (!db) return { isLoading: true };
+    const H = this.H(), t = this.today(), scr = s.screen, sess = db.session;
+    const role = sess && sess.role;
+    const admin = role === 'church' ? db.admins.find(a => a.id === sess.adminId && a.verifiedAt && !a.revokedAt) : null;
+    const isP = role === 'platform' && scr.startsWith('p.'), isC = !!admin && scr.startsWith('c.');
+    const setObj = (key, k) => e => { const v = e.target.value; this.setState(st => ({ [key]: { ...(st[key] || {}), [k]: v }, err: '' })); };
+    const church = id => db.churches.find(c => c.id === id);
+    const stPill = st => { const x = STATUS[st] || STATUS.active; return { status: x[0], stBg: x[1], stFg: x[2] }; };
+    const planPill = id => { const x = PLANC[id] || PLANC.small; return { plan: this.plan(db, id).name, planBg: x[0], planFg: x[1] }; };
+    const invPill = st => { const x = INV[st] || INV.open; return { status: x[0], bg: x[1], fg: x[2] }; };
+
+    const pendingInvite = db.invites.find(i => i.tokenHash && i.tokenHash === s.acceptHash);
+    const acReason = !pendingInvite ? 'This link is not recognized.' : pendingInvite.acceptedAt ? 'It has already been accepted.' : pendingInvite.expiresAt < t ? 'It has expired.' : '';
+    const base = {
+      isLoading: false, isLogin: scr === 'login' || (!isP && !isC && scr !== 'accept'), isAccept: scr === 'accept', isShell: isP || isC,
+      lf: { email: '', password: '', ...s.lf }, lfOn: { email: setObj('lf', 'email'), password: setObj('lf', 'password') },
+      af: { name: (pendingInvite && pendingInvite.name) || '', password: '', ...s.af }, afOn: { name: setObj('af', 'name'), password: setObj('af', 'password') },
+      hasErr: !!s.err, err: s.err, hasToast: !!s.toast, toast: s.toast,
+      doLogin: () => this.login(), toLogin: () => { history.replaceState(null, '', location.pathname); this.go(sess && sess.role === 'platform' ? 'p.settings' : 'login', { acceptHash: null, acceptToken: null }); },
+      loginPlatform: () => { this.commit(d => { d.session = { role: 'platform' }; this.audit(d, 'session.signin', 'platform_administrator', 'owner'); }); this.go('p.dash'); },
+      demoChurchAdmins: db.admins.filter(a => a.verifiedAt && !a.revokedAt).slice(0, 4).map(a => ({ name: a.name, church: (church(a.churchId) || {}).name, initials: a.name.split(' ').map(x => x[0]).join('').slice(0, 2), pick: () => { this.commit(d => { d.session = { role: 'church', adminId: a.id }; }); this.go('c.dash'); } })),
+      acValid: !!pendingInvite && !acReason, acInvalid: !pendingInvite || !!acReason, acReason, acChurch: pendingInvite ? (church(pendingInvite.churchId) || {}).name : '', acEmail: pendingInvite ? pendingInvite.email : '',
+      acceptInvite: () => this.acceptInvite(),
+      hasConfirm: !!s.confirm, cf: s.confirm ? { title: s.confirm.title, body: s.confirm.body, ok: s.confirm.ok, bg: s.confirm.danger ? '#A33A2E' : '#075D61' } : { title: '', body: '', ok: '', bg: '#075D61' },
+      cfCancel: () => this.setState({ confirm: null }), cfOk: () => { const a = s.confirm && s.confirm.action; this.setState({ confirm: null }); if (a) a(); },
+      hasPicker: !!s.picker, pk: s.picker || { title: '', options: [] }, pkClose: () => this.setState({ picker: null }),
+      platformName: db.settings.platformName, isNarrow: s.vw < 900, showSidebar: s.vw >= 900, isWide: s.vw >= 600, tableView: s.vw >= 760, cardView: s.vw < 760,
+      menuOpen: !!s.menuOpen && s.vw < 900, openMenu: () => this.setState({ menuOpen: true }), closeMenu: () => this.setState({ menuOpen: false }), signOut: () => this.signOut(),
+    };
+    if (!isP && !isC) return base;
+
+    // ---------- shared nav ----------
+    const pNav = [['p.dash', 'Dashboard', 'icon-layout-dashboard'], ['p.churches', 'Churches', 'icon-church'], ['p.billing', 'Billing', 'icon-credit-card'], ['p.plans', 'Plans & Pricing', 'icon-layers'], ['p.partners', 'Partners', 'icon-users'], ['p.reports', 'Reports', 'icon-chart-column'], ['p.settings', 'Settings', 'icon-settings']];
+    const cNav = [['c.dash', 'Dashboard', 'icon-layout-dashboard'], ['c.partners', 'Partners', 'icon-users'], ['c.tables', 'Tables', 'icon-table-2'], ['c.participation', 'Participation', 'icon-chart-line'], ['c.billing', 'Billing', 'icon-credit-card'], ['c.settings', 'Settings', 'icon-settings']];
+    const activeKey = scr === 'p.church' || scr === 'p.form' ? 'p.churches' : scr;
+    const navItems = (isP ? pNav : cNav).map(([k, label, icon]) => { const on = activeKey === k; return { label, icon, current: on ? 'page' : 'false', bg: on ? '#E8F5F3' : 'transparent', fg: on ? '#075D61' : '#DDF0ED', weight: on ? 700 : 500, pick: () => this.go(k, { fm: null }) }; });
+
+    // ---------- platform metrics (from records) ----------
+    const subs = db.subs, byStatus = st => subs.filter(x => x.status === st).length;
+    const mrr = subs.reduce((a, x) => a + this.mrr(x), 0);
+    const months = Array.from({ length: 6 }, (_, i) => H.addMonths(t.slice(0, 7) + '-01', i - 5).slice(0, 7));
+    const paidIn = m => db.invoices.filter(i => i.status === 'paid' && i.paidAt && i.paidAt.slice(0, 7) === m).reduce((a, i) => a + i.amount, 0);
+    const revVals = months.map(paidIn), revNow = revVals[5], revPrev = revVals[4];
+    const revChart = lineChart(revVals, months.map(m => MON[Number(m.slice(5)) - 1]), '$');
+    const attention = [];
+    db.churches.forEach(c => {
+      const x = this.sub(db, c.id); if (!x) return;
+      const lim = this.limit(db, x), act = this.activeN(db, c.id);
+      if (x.status === 'past_due') attention.push({ c, reason: 'Payment failed · past due' });
+      if (x.status === 'suspended') attention.push({ c, reason: 'Access suspended' });
+      if (x.status === 'pilot' && x.pilotEnd && H.diffDays(t, x.pilotEnd) <= 30) attention.push({ c, reason: `Pilot ends ${fD(x.pilotEnd)}` });
+      if (x.cancelAtPeriodEnd) attention.push({ c, reason: `Cancels ${fD(x.periodEnd)}` });
+      if (lim && act / lim >= 0.9 && x.status !== 'canceled') attention.push({ c, reason: `${act} of ${lim} active Partners (${Math.round(act / lim * 100)}%)` });
+      if (!db.admins.some(a => a.churchId === c.id && a.verifiedAt && !a.revokedAt) && x.status !== 'canceled') attention.push({ c, reason: 'No verified administrator yet' });
+    });
+    const openChurch = id => () => this.go('p.church', { churchId: id, pc: null, invF: {} });
+
+    if (isP) {
+      const totalPartners = db.memberships.filter(m => m.status === 'verified').length;
+      const pKpis = [
+        ['icon-church', 'Total churches', num(db.churches.length), 'p.churches', 'all'], ['icon-circle-check', 'Active paid churches', num(byStatus('active')), 'p.churches', 'active'],
+        ['icon-flask-conical', 'Pilot churches', num(byStatus('pilot')), 'p.churches', 'pilot'], ['icon-users', 'Enrolled Partners', num(totalPartners), 'p.partners'],
+        ['icon-coins', 'MRR', money(mrr), 'p.reports'], ['icon-calendar-range', 'ARR', money(mrr * 12), 'p.reports'], ['icon-triangle-alert', 'Requiring attention', num(attention.length), 'p.dash', null, true],
+      ].map(([icon, label, value, to, tab, warn]) => ({ icon, label, value, bg: warn ? '#FFF8EA' : '#FFFFFF', border: warn ? '#F1E2C4' : '#E1E7EA', fg: warn ? '#B7791F' : '#075D61', valueColor: warn ? '#B7791F' : '#173344', open: () => this.go(to, tab ? { dir: { ...s.dir, tab, page: 1 } } : {}) }));
+      const enrVals = months.map(m => db.churches.filter(c => c.createdAt.slice(0, 7) === m).length), enrMax = Math.max(1, ...enrVals);
+      const planCounts = db.plans.map(p => ({ name: p.name, value: subs.filter(x => x.planId === p.id && ['active', 'past_due', 'pilot'].includes(x.status)).length, color: PLANC[p.id][2] }));
+      const activity = [...db.events].sort((a, b) => b.occurredAt - a.occurredAt).slice(0, 7).map(e => { const m = EVT[e.type] || ['Activity', 'icon-dot', '#EEF1F2', '#4F5F68', c => c]; return { title: m[0], icon: m[1], bg: m[2], fg: m[3], text: m[4]((church(e.churchId) || {}).name || '', e), when: fTs(e.occurredAt) }; });
+
+      // directory
+      const d = s.dir, q = d.q.trim().toLowerCase();
+      const all = db.churches.map(c => { const x = this.sub(db, c.id), adm = db.admins.find(a => a.churchId === c.id && a.verifiedAt && !a.revokedAt), inv = db.invites.filter(i => i.churchId === c.id && !i.acceptedAt).slice(-1)[0]; return { c, x, adm, inv, act: this.activeN(db, c.id), lim: this.limit(db, x) }; });
+      const counts = st => all.filter(r => r.x.status === st).length;
+      let rows = all.filter(r => (d.tab === 'all' || r.x.status === d.tab) && (d.plan === 'all' || r.x.planId === d.plan) && (!q || [r.c.name, r.c.city, r.c.state, r.adm && r.adm.name, r.adm && r.adm.email, r.c.code].some(v => (v || '').toLowerCase().includes(q))));
+      const sorters = { name: (a, b) => a.c.name.localeCompare(b.c.name), partners: (a, b) => b.act - a.act, amount: (a, b) => this.mrr(b.x) - this.mrr(a.x), renewal: (a, b) => (a.x.periodEnd || '9').localeCompare(b.x.periodEnd || '9'), newest: (a, b) => b.c.createdAt.localeCompare(a.c.createdAt) };
+      rows.sort(sorters[d.sort] || sorters.name);
+      const per = 10, pages = Math.max(1, Math.ceil(rows.length / per)), page = Math.min(d.page, pages), slice = rows.slice((page - 1) * per, page * per);
+      const setDir = p => this.setState(st => ({ dir: { ...st.dir, ...p } }));
+      const sel = all.find(r => r.c.id === d.sel);
+
+      // church account
+      const cid = s.churchId, cc = cid && church(cid), cs = cc && this.sub(db, cid);
+      let ca = {};
+      if (cc) {
+        const pc = s.pc || { planId: cs.planId, freq: cs.freq, custom: String(cs.contractPrice), limit: String(cs.includedPartners || ''), discount: String(cs.discountPct || 0) };
+        const setPc = p => this.setState(st => ({ pc: { ...(st.pc || pc), ...p } }));
+        const lim = this.limit(db, cs), act = this.activeN(db, cid), links = this.joinLinks(cc.slug);
+        const invs = db.invoices.filter(i => i.churchId === cid).sort((a, b) => b.issuedAt.localeCompare(a.issuedAt));
+        const p = this.plan(db, cs.planId), current = cs.freq === 'monthly' ? p.monthly : p.annual;
+        ca = {
+          name: cc.name, code: cc.code, location: `${cc.city}, ${cc.state}`, ...stPill(cs.status), ...planPill(cs.planId),
+          edit: () => this.go('p.form', { fm: this.editForm(cid), err: '' }),
+          suspend: () => this.toggleSuspend(cid), suspendLabel: cs.status === 'suspended' ? 'Reactivate' : 'Suspend', suspendFg: cs.status === 'suspended' ? '#1E7A45' : '#A33A2E', suspendBorder: cs.status === 'suspended' ? '#9FD3B4' : '#F0B8AF',
+          subRows: [
+            { label: 'Plan', value: `${p.name}${cs.includedPartners ? ` · ${cs.includedPartners} Partners` : ''}` }, { label: 'Billing frequency', value: cs.freq === 'monthly' ? 'Monthly' : 'Annual' },
+            { label: 'Contract price', value: `${money2(cs.contractPrice)}${!p.custom && current !== cs.contractPrice ? ` (grandfathered · list ${money2(current)})` : ''}` },
+            { label: 'Approved discount', value: cs.discountPct ? `${cs.discountPct}%` : 'None' }, { label: 'Status', value: STATUS[cs.status][0] + (cs.cancelAtPeriodEnd ? ' · cancels at period end' : '') },
+            { label: cs.status === 'pilot' ? 'Pilot period' : 'Current period', value: `${fD(cs.periodStart)} – ${fD(cs.periodEnd)}` },
+            { label: 'Provider IDs', value: `${cs.providerCustomerId} · ${cs.providerSubId}` }],
+          planOpts: db.plans.map(o => ({ name: o.name, price: o.custom ? 'Custom' : `${money(o.monthly)}/mo · ${money(o.annual)}/yr`, border: pc.planId === o.id ? '#075D61' : '#E1E7EA', pick: () => setPc({ planId: o.id }) })),
+          freqOpts: [['monthly', 'Monthly'], ['annual', 'Annual']].map(([k, name]) => ({ name, ...chip(pc.freq === k), pick: () => setPc({ freq: k }) })),
+          needsCustom: this.plan(db, pc.planId).custom, customPrice: pc.custom, onCustom: e => setPc({ custom: e.target.value }), customLimit: pc.limit, onCustomLimit: e => setPc({ limit: e.target.value }),
+          discount: pc.discount, onDiscount: e => setPc({ discount: e.target.value }),
+          applyPlan: () => this.changePlan(cid, pc.planId, pc.freq, pc.custom, pc.limit, pc.discount), applyLabel: 'Apply plan change',
+          toggleCancel: () => this.toggleCancel(cid), cancelLabel: cs.cancelAtPeriodEnd ? 'Withdraw cancellation' : 'Cancel at period end',
+          active: num(act), limit: lim ? num(lim) : '—', usagePct: lim ? Math.min(100, Math.round(act / lim * 100)) + '%' : '0%', usageColor: lim && act > lim ? '#C9452F' : lim && act / lim >= 0.9 ? '#E0A100' : '#0E8A7E',
+          usageWarn: !!lim && act / lim >= 0.9, usageWarnText: act > lim ? `Over the plan limit by ${act - lim}. Suggest an upgrade; no accounts are affected.` : `Approaching the plan limit (${Math.round(act / lim * 100)}%).`,
+          enrolled: num(this.enrolledN(db, cid)), tables: db.tables.filter(x => x.churchId === cid && x.status === 'active').length,
+          policy: cc.enrollmentPolicy === 'open' ? 'open sign-up' : 'administrator approval', joinUrl: links.display, qr: this.qr(links.display), hasQr: !!this.qr(links.display),
+          copyLink: () => { try { navigator.clipboard.writeText(links.display); } catch (e) {} this.flash('Enrollment link copied.'); }, openJoin: () => window.open(links.local, '_blank'),
+          admins: db.admins.filter(a => a.churchId === cid).map(a => ({ name: a.name, email: a.email, title: a.title, status: a.revokedAt ? 'Revoked' : `Verified ${fD(H.fromUTC(a.verifiedAt))}` })),
+          invites: db.invites.filter(i => i.churchId === cid && !i.acceptedAt).map(i => { const exp = i.expiresAt < t; return { email: i.email, sub: `Invited ${fTs(i.createdAt)} · expires ${fD(i.expiresAt)}`, status: exp || !i.tokenHash ? 'Expired · resend' : 'Pending', fg: exp || !i.tokenHash ? '#A33A2E' : '#8A5A00' }; }),
+          sendInvite: async () => { const f = s.invF; if (await this.sendAdminInvite(cid, f.name, f.email, f.title)) this.setState({ invF: {} }); },
+          resendInvite: () => { const last = db.invites.filter(i => i.churchId === cid).slice(-1)[0]; if (!last) return this.flash('No invitation to resend. Fill in the form to invite an administrator.'); this.sendAdminInvite(cid, last.name, last.email, last.title); },
+          noInvoices: invs.length === 0, noInvoicesWhy: cs.status === 'pilot' ? ' · pilot churches are not billed until conversion' : '',
+          invoices: invs.slice(0, 8).map(i => ({ number: i.number, date: fD(i.issuedAt), amount: money2(i.amount), ...invPill(i.status) })),
+          simPaid: () => this.simulate(cid, 'paid'), simFail: () => this.simulate(cid, 'failed'), simDup: () => this.replay(),
+          features: [['tableLeader', 'Table leader view', 'Attendance and logged-this-week only'], ['churchRedemptions', 'Church redemption list', 'Church-set offerings and prices']].map(([k, label, sub]) => { const glob = db.settings.features[k], on = !!(cc.features || {})[k]; return { label, sub: glob ? sub : 'Not yet activated platform-wide (Settings)', ...toggleSty(on && glob), toggle: () => { if (!glob) return this.flash('Activate this module platform-wide in Settings first.'); this.commit(dd => { const x = dd.churches.find(y => y.id === cid); x.features = { ...(x.features || {}), [k]: !on }; this.audit(dd, `feature.${k}.${on ? 'off' : 'on'}`, 'church', cid, cid); }); } }; }),
+        };
+      }
+
+      // form
+      const fm = s.fm || this.newForm(), setFm = p => this.setState(st => ({ fm: { ...(st.fm || fm), ...p }, err: '' }));
+      const fField = (k, label, ph) => ({ label, value: fm[k] || '', ph: ph || '', on: e => setFm({ [k]: e.target.value }) });
+
+      // billing
+      const failedInv = db.invoices.filter(i => i.status === 'failed'), openInv = db.invoices.filter(i => i.status === 'open');
+      const renewals = subs.filter(x => ['active', 'past_due'].includes(x.status) && x.periodEnd && x.periodEnd.slice(0, 7) === t.slice(0, 7));
+      const sq = s.subQ.trim().toLowerCase();
+      const subRows = subs.filter(x => x.status !== 'canceled').map(x => ({ x, c: church(x.churchId) })).filter(r => !sq || r.c.name.toLowerCase().includes(sq)).sort((a, b) => a.c.name.localeCompare(b.c.name)).map(({ x, c }) => {
+        const li = db.invoices.filter(i => i.subId === x.id).sort((a, b) => b.issuedAt.localeCompare(a.issuedAt))[0]; const ip = li ? invPill(li.status) : { status: x.status === 'pilot' ? 'Pilot' : '—', bg: '#EEF1F2', fg: '#4F5F68' };
+        return { name: c.name, ...planPill(x.planId), freq: x.freq === 'monthly' ? 'Monthly' : 'Annual', inv: ip.status, invBg: ip.bg, invFg: ip.fg, next: x.status === 'pilot' ? `Pilot ends ${fDs(x.pilotEnd)}` : fD(x.periodEnd), card: x.card, open: openChurch(c.id) };
+      });
+      const statusDonut = donut(['active', 'pilot', 'past_due', 'suspended', 'canceled'].map(k => ({ name: STATUS[k][0], value: byStatus(k), color: STATUS[k][3] })));
+
+      // reports
+      const pilots = subs.filter(x => x.wasPilot), converted = db.events.filter(e => e.type === 'pilot.converted').length;
+      const ytd = db.invoices.filter(i => i.status === 'paid' && i.paidAt && i.paidAt.slice(0, 4) === t.slice(0, 4)).reduce((a, i) => a + i.amount, 0);
+      const reportTables = [
+        { title: 'Revenue by plan (MRR)', h1: 'Plan', h2: 'Paying churches', h3: 'MRR', rows: db.plans.map(p => { const xs = subs.filter(x => x.planId === p.id && ['active', 'past_due'].includes(x.status)); return { a: p.name, b: num(xs.length), c: money2(xs.reduce((a, x) => a + this.mrr(x), 0)) }; }) },
+        { title: 'Subscriptions by status', h1: 'Status', h2: 'Churches', h3: 'MRR', rows: Object.keys(STATUS).map(k => ({ a: STATUS[k][0], b: num(byStatus(k)), c: money2(subs.filter(x => x.status === k).reduce((a, x) => a + this.mrr(x), 0)) })) },
+        { title: 'New and canceled churches', h1: 'Month', h2: 'New', h3: 'Canceled', rows: months.map(m => ({ a: `${MON[Number(m.slice(5)) - 1]} ${m.slice(0, 4)}`, b: num(db.churches.filter(c => c.createdAt.slice(0, 7) === m).length), c: num(db.events.filter(e => e.type === 'subscription.canceled' && H.ymd(new Date(e.occurredAt)).slice(0, 7) === m).length) })) },
+        { title: 'Renewal schedule · next 90 days', h1: 'Church', h2: 'Renews', h3: 'Amount', rows: subs.filter(x => ['active', 'past_due'].includes(x.status) && x.periodEnd && x.periodEnd >= t && H.diffDays(t, x.periodEnd) <= 90).sort((a, b) => a.periodEnd.localeCompare(b.periodEnd)).map(x => ({ a: church(x.churchId).name + (x.cancelAtPeriodEnd ? ' (cancels)' : ''), b: fD(x.periodEnd), c: x.cancelAtPeriodEnd ? '—' : money2(x.contractPrice * (1 - (x.discountPct || 0) / 100)) })) },
+        { title: 'Invoice and payment history', h1: 'Invoice', h2: 'Date', h3: 'Amount · status', rows: [...db.invoices].sort((a, b) => b.issuedAt.localeCompare(a.issuedAt)).slice(0, 12).map(i => ({ a: `${i.number} · ${church(i.churchId).name}`, b: fD(i.issuedAt), c: `${money2(i.amount)} · ${INV[i.status][0]}` })) },
+        { title: 'Active Partners by church', h1: 'Church', h2: 'Active (30d)', h3: 'Enrolled', rows: db.churches.map(c => ({ a: c.name, n: this.activeN(db, c.id), c: num(this.enrolledN(db, c.id)) })).sort((a, b) => b.n - a.n).map(r => ({ a: r.a, b: num(r.n), c: r.c })) }];
+
+      // settings
+      const sd = s.setDraft || db.settings, setSd = p => this.setState(st => ({ setDraft: { ...(st.setDraft || db.settings), ...p } }));
+      const planDraft = id => s.planDrafts[id] || this.plan(db, id);
+
+      return {
+        ...base, navItems, roleLabel: 'Platform Administrator', avatar: 'PA', hasBell: attention.length > 0, bellCount: attention.length, bellClick: () => this.go('p.dash'),
+        hasBanner: true, bannerBg: '#EEF4F6', bannerFg: '#123C56', bannerText: `Test mode: ${db.settings.provider} is not connected. Payments, webhooks and emails are simulated and clearly marked.`,
+        isPDash: scr === 'p.dash', isPChurches: scr === 'p.churches', isPChurch: scr === 'p.church' && !!cc, isPForm: scr === 'p.form', isPBilling: scr === 'p.billing', isPPlans: scr === 'p.plans', isPPartners: scr === 'p.partners', isPReports: scr === 'p.reports', isPSettings: scr === 'p.settings',
+        addChurch: () => this.go('p.form', { fm: this.newForm(), err: '' }), toReports: () => this.go('p.reports'), toPlans: () => this.go('p.plans'), toDirectory: () => this.go('p.churches'),
+        pKpis, revThisMonth: money2(revNow), revDelta: revPrev ? `${revNow >= revPrev ? '▲' : '▼'} ${Math.abs(Math.round((revNow - revPrev) / revPrev * 100))}% vs. last month (collected)` : 'Collected from paid invoices', revDeltaColor: revNow >= revPrev ? '#1E7A45' : '#A33A2E', revChart,
+        enrThisMonth: enrVals[5], enrBars: enrVals.map((v, i) => ({ v, h: Math.round(v / enrMax * 120) + 'px', color: i === 5 ? '#075D61' : '#5CB8AC', label: MON[Number(months[i].slice(5)) - 1] })),
+        activity, planDonut: donut(planCounts), noAttention: attention.length === 0, attention: attention.slice(0, 6).map(a => ({ name: a.c.name, reason: a.reason, open: openChurch(a.c.id) })),
+
+        dirTabs: [['all', 'All', all.length], ['active', 'Active', counts('active')], ['pilot', 'Pilot', counts('pilot')], ['past_due', 'Past Due', counts('past_due')], ['suspended', 'Suspended', counts('suspended')], ['canceled', 'Canceled', counts('canceled')]].map(([k, l, n]) => ({ label: `${l} (${n})`, bg: d.tab === k ? '#075D61' : '#FFFFFF', fg: d.tab === k ? '#FFFFFF' : '#173344', pick: () => setDir({ tab: k, page: 1 }) })),
+        dirQ: d.q, onDirQ: e => setDir({ q: e.target.value, page: 1 }), dirPlan: d.plan, onDirPlan: e => setDir({ plan: e.target.value, page: 1 }), dirSort: d.sort, onDirSort: e => setDir({ sort: e.target.value }),
+        dirEmpty: rows.length === 0,
+        dirRows: slice.map(r => ({ name: r.c.name, code: r.c.code, city: `${r.c.city}, ${r.c.state}`, admin: r.adm ? r.adm.name : r.inv ? `${r.inv.name} (invited)` : '—', email: r.adm ? r.adm.email : r.inv ? r.inv.email : r.c.contactEmail, ...planPill(r.x.planId), active: `${num(r.act)} / ${r.lim ? num(r.lim) : '∞'}`, warn: !!r.lim && r.act / r.lim >= 0.9, amount: this.amountLabel(r.x), ...stPill(r.x.status), renewal: r.x.status === 'canceled' ? '—' : r.x.status === 'pilot' ? `Pilot ends ${fDs(r.x.pilotEnd)}` : fD(r.x.periodEnd), bg: d.sel === r.c.id ? '#E8F5F3' : '#FFFFFF', select: () => setDir({ sel: r.c.id }), open: openChurch(r.c.id) })),
+        dirShowing: rows.length ? `Showing ${(page - 1) * per + 1}–${Math.min(page * per, rows.length)} of ${rows.length} churches` : 'Showing 0 churches',
+        dirPrev: () => setDir({ page: Math.max(1, page - 1) }), dirNext: () => setDir({ page: Math.min(pages, page + 1) }),
+        dirPages: Array.from({ length: pages }, (_, i) => ({ n: i + 1, border: i + 1 === page ? '#075D61' : '#CBD5DA', bg: i + 1 === page ? '#075D61' : '#FFFFFF', fg: i + 1 === page ? '#FFFFFF' : '#173344', pick: () => setDir({ page: i + 1 }) })),
+        selLabel: sel ? sel.c.name : 'Select a church row',
+        selActions: [['View', 'icon-eye', () => sel && openChurch(sel.c.id)()], ['Edit', 'icon-pencil', () => sel && this.go('p.form', { fm: this.editForm(sel.c.id) })], ['Billing', 'icon-receipt', () => sel && openChurch(sel.c.id)()],
+          ['Invite admin', 'icon-user-plus', () => { if (!sel) return; const last = db.invites.filter(i => i.churchId === sel.c.id).slice(-1)[0]; if (last && !sel.adm) this.sendAdminInvite(sel.c.id, last.name, last.email, last.title); else openChurch(sel.c.id)(); }],
+          [sel && sel.x.status === 'suspended' ? 'Reactivate' : 'Suspend', 'icon-power', () => sel && this.toggleSuspend(sel.c.id)]].map(([label, icon, run]) => ({ label, icon, run: sel ? run : () => this.flash('Select a church row first.'), fg: sel ? '#173344' : '#9AA8B0' })),
+        exportDirectory: () => { this.csv('144p-church-directory.csv', [['Church ID', 'Code', 'Name', 'City', 'State', 'Primary admin', 'Contact email', 'Plan', 'Active Partners', 'Limit', 'Billing amount', 'Status', 'Next renewal'], ...rows.map(r => [r.c.id, r.c.code, r.c.name, r.c.city, r.c.state, r.adm ? r.adm.name : '', r.adm ? r.adm.email : r.c.contactEmail, this.plan(db, r.x.planId).name, r.act, r.lim || '', this.amountLabel(r.x), STATUS[r.x.status][0], r.x.periodEnd || ''])]); this.commit(dd => this.audit(dd, 'directory.exported', 'church', null)); },
+
+        ca, invF: { name: '', email: '', title: '', ...s.invF }, invOn: { name: setObj('invF', 'name'), email: setObj('invF', 'email'), title: setObj('invF', 'title') },
+
+        formTitle: fm.id ? 'Edit Church' : 'Register a New Church', formSub: fm.id ? 'Update church information. Subscription changes are made on the account page.' : 'Creates the church account, enrollment link and QR code, and sends a secure administrator invitation.',
+        formIsNew: !fm.id, formCta: fm.id ? 'Save changes' : 'Register church & send invitation', cancelForm: () => (fm.id ? this.go('p.church', { churchId: fm.id, fm: null }) : this.go('p.churches', { fm: null })),
+        churchFields: [fField('name', 'Legal or operating name'), fField('address', 'Address'), fField('city', 'City'), fField('state', 'State', 'SC'), fField('postal', 'Postal code'), fField('website', 'Website (optional)'), fField('phone', 'Phone (optional)'), fField('contactEmail', 'Contact email')],
+        adminFields: [fField('adminName', 'Full name'), fField('adminEmail', 'Email'), fField('adminTitle', 'Role / title')],
+        formPlans: db.plans.map(p => ({ name: p.name, price: p.custom ? 'Custom pricing' : `${money(p.monthly)}/mo · ${money(p.annual)}/yr`, limit: p.custom ? 'Custom capacity' : `Up to ${p.limit} active Partners`, border: fm.planId === p.id ? '#075D61' : '#E1E7EA', pick: () => setFm({ planId: p.id }) })),
+        formFreqs: [['monthly', 'Monthly'], ['annual', 'Annually']].map(([k, name]) => ({ name, ...chip(fm.freq === k), pick: () => setFm({ freq: k }) })),
+        formPilot: !!fm.pilot, formPilotBg: fm.pilot ? '#075D61' : '#CBD5DA', formPilotJustify: fm.pilot ? 'flex-end' : 'flex-start', toggleFormPilot: () => setFm({ pilot: !fm.pilot }),
+        fm, fmOn: { pilotStart: e => setFm({ pilotStart: e.target.value }), pilotEnd: e => setFm({ pilotEnd: e.target.value }), included: e => setFm({ included: e.target.value }), customPrice: e => setFm({ customPrice: e.target.value }) },
+        formIsEnterprise: this.plan(db, fm.planId).custom, saveForm: () => this.saveForm(),
+
+        providerLine: `${db.settings.provider} · ${db.settings.providerMode}`,
+        bKpis: [
+          ['icon-wallet', 'Collected this month', money2(revNow), revPrev ? `${revNow >= revPrev ? '+' : ''}${Math.round((revNow - revPrev) / revPrev * 100)}% vs. last month` : 'From paid invoices', '#FFFFFF', '#E1E7EA', '#075D61'],
+          ['icon-file-clock', 'Outstanding invoices', num(openInv.length), `${money2(openInv.reduce((a, i) => a + i.amount, 0))} total`, '#FFFBF2', '#F1E2C4', '#B7791F'],
+          ['icon-triangle-alert', 'Failed payments', num(failedInv.length), `${money2(failedInv.reduce((a, i) => a + i.amount, 0))} total`, '#FDF4F2', '#F0CFC9', '#A33A2E'],
+          ['icon-calendar', 'Renewals this month', num(renewals.length), `${money2(renewals.reduce((a, x) => a + x.contractPrice * (1 - (x.discountPct || 0) / 100), 0))} scheduled`, '#F2FAF8', '#BFE2DC', '#075D61']].map(([icon, label, value, sub, bg, border, fg]) => ({ icon, label, value, sub, bg, border, fg })),
+        statusDonut,
+        discounts: subs.filter(x => x.discountPct || (!this.plan(db, x.planId).custom && x.contractPrice !== (x.freq === 'monthly' ? this.plan(db, x.planId).monthly : this.plan(db, x.planId).annual) && x.status !== 'pilot')).map(x => ({ name: church(x.churchId).name, note: x.discountPct ? `${x.discountPct}% approved discount` : `Grandfathered at ${money2(x.contractPrice)}`, open: openChurch(x.churchId) })),
+        retryLabel: failedInv.length ? `Retry ${failedInv.length} failed payment${failedInv.length > 1 ? 's' : ''} (test mode)` : 'No failed payments',
+        retryFailed: () => { if (!failedInv.length) return this.flash('No failed payments to retry.'); const ids = [...new Set(failedInv.map(i => i.churchId))]; this.commit(dd => ids.forEach(c => { if (this.sub(dd, c).status !== 'suspended') this.applyEvent(dd, c, 'paid', 'evt_test_' + H.uid()); })); this.flash('Retries processed. Suspended churches need reactivation first.'); },
+        subCount: subRows.length, subQ: s.subQ, onSubQ: e => this.setState({ subQ: e.target.value }), subRows,
+        recentTx: [...db.invoices].sort((a, b) => (b.paidAt || b.issuedAt).localeCompare(a.paidAt || a.issuedAt)).slice(0, 6).map(i => ({ icon: i.status === 'paid' ? 'icon-circle-check' : i.status === 'failed' ? 'icon-circle-x' : 'icon-clock', fg: INV[i.status][2], title: `${money2(i.amount)} — ${church(i.churchId).name}`, sub: `${INV[i.status][0]} · ${fD(i.paidAt || i.issuedAt)} · ${i.number}` })),
+
+        planCards: db.plans.map(p => { const dft = planDraft(p.id), set = k => e => { const v = e.target.value; this.setState(st => ({ planDrafts: { ...st.planDrafts, [p.id]: { ...(st.planDrafts[p.id] || p), [k]: v } } })); }; const on = subs.filter(x => x.planId === p.id && x.status !== 'canceled'); const older = on.filter(x => x.status !== 'pilot' && x.contractPrice !== (x.freq === 'monthly' ? p.monthly : p.annual)).length;
+          return { name: p.name, bg: PLANC[p.id][0], fg: PLANC[p.id][1], count: on.length, isCustom: !!p.custom, isStd: !p.custom, monthly: dft.monthly, annual: dft.annual, limit: dft.limit, onMonthly: set('monthly'), onAnnual: set('annual'), onLimit: set('limit'),
+            note: p.custom ? `${on.length} on negotiated contracts` : `${older} on an older or negotiated price · ${(p.features || []).join(', ')}`,
+            save: () => { const m = Number(dft.monthly), a = Number(dft.annual), l = Number(dft.limit); if (!(m > 0 && a > 0 && l > 0)) return this.flash('Prices and limit must be positive numbers.'); this.commit(dd => { Object.assign(dd.plans.find(x => x.id === p.id), { monthly: m, annual: a, limit: l }); this.audit(dd, 'plan.price_changed', 'subscription_plan', p.id); }); this.setState(st => { const pd = { ...st.planDrafts }; delete pd[p.id]; return { planDrafts: pd }; }); this.flash(`${p.name} updated for new subscriptions. Existing contracts unchanged.`); } }; }),
+
+        ppKpis: [{ label: 'Enrolled Partners', value: num(db.memberships.filter(m => m.status === 'verified').length) }, { label: 'Active Partners (30 days)', value: num(db.churches.reduce((a, c) => a + this.activeN(db, c.id), 0)) }, { label: 'Pending associations', value: num(db.memberships.filter(m => m.status === 'pending').length) }],
+        ppRows: db.churches.map(c => { const x = this.sub(db, c.id), lim = this.limit(db, x), act = this.activeN(db, c.id); return { name: c.name, enrolled: num(this.enrolledN(db, c.id)), active: num(act), limit: lim ? num(lim) : 'Custom', pct: lim ? Math.round(act / lim * 100) + '%' : '—', color: lim && act > lim ? '#C9452F' : lim && act / lim >= 0.9 ? '#E0A100' : '#0E8A7E', open: openChurch(c.id), n: act }; }).sort((a, b) => b.n - a.n),
+
+        rKpis: [{ label: 'Monthly recurring revenue', value: money2(mrr), sub: 'Active + past-due contracts' }, { label: 'Annual recurring revenue', value: money2(mrr * 12), sub: 'MRR × 12' }, { label: 'Pilot → paid conversion', value: pilots.length ? Math.round(converted / pilots.length * 100) + '%' : '—', sub: `${converted} of ${pilots.length} pilots converted` }, { label: 'Collected year to date', value: money2(ytd), sub: 'Paid invoices only' }],
+        reportTables, exportInvoices: () => this.csv('144p-invoices.csv', [['Invoice', 'Church', 'Issued', 'Paid', 'Amount', 'Status'], ...db.invoices.map(i => [i.number, church(i.churchId).name, i.issuedAt, i.paidAt || '', i.amount, INV[i.status][0]])]),
+
+        setFields: [['platformName', 'Platform name', 'text'], ['support', 'Customer support contact', 'text'], ['pilotDays', 'Pilot duration (days)', 'number'], ['privacyThreshold', 'Privacy reporting threshold (min. participants)', 'number'], ['graceDays', 'Past-due grace period (days)', 'number']].map(([k, label, type]) => ({ label, type, value: sd[k], on: e => setSd({ [k]: type === 'number' ? e.target.value : e.target.value }) })),
+        policyOpts: [['approval', 'Administrator approval'], ['open', 'Open sign-up']].map(([k, name]) => ({ name, ...chip(sd.enrollmentPolicy === k), pick: () => setSd({ enrollmentPolicy: k }) })),
+        setTemplate: sd.inviteTemplate, onSetTemplate: e => setSd({ inviteTemplate: e.target.value }),
+        saveSettings: () => { const x = { ...sd, pilotDays: Math.max(7, Number(sd.pilotDays) || 90), privacyThreshold: Math.max(3, Number(sd.privacyThreshold) || 5), graceDays: Math.max(0, Number(sd.graceDays) || 14) }; if (!x.platformName.trim()) return this.flash('Platform name is required.'); this.commit(dd => { dd.settings = { ...dd.settings, ...x }; this.audit(dd, 'settings.updated', 'platform', null); }); this.setState({ setDraft: null }); this.flash('Settings saved.'); },
+        globalFeatures: [['churchReports', 'Church aggregate reports', 'Participation totals with privacy suppression'], ['tableLeader', 'Table leader role', 'Attendance and logged-this-week visibility only'], ['churchRedemptions', 'Church redemption catalogs', 'Church-configured offerings and prices']].map(([k, label, sub]) => ({ label, sub, ...toggleSty(!!db.settings.features[k]), toggle: () => this.commit(dd => { dd.settings.features[k] = !dd.settings.features[k]; this.audit(dd, `feature.${k}.${dd.settings.features[k] ? 'activated' : 'deactivated'}`, 'platform', null); }) })),
+        roleRows: [{ name: 'Platform Owner', scope: 'All churches · business data only', role: 'Platform Administrator' }, ...db.admins.filter(a => !a.revokedAt).slice(0, 12).map(a => ({ name: a.name, scope: (church(a.churchId) || {}).name, role: 'Church Administrator' }))],
+        outbox: db.outbox.slice(0, 8).map(m => ({ subject: m.subject, to: m.to, when: fTs(m.at), hasLink: !!m.token, open: () => this.openAccept(m.token) })),
+        auditRows: [...db.audit].reverse().slice(0, 12).map(a => ({ action: a.action, actor: a.actor, when: fTs(a.at) })),
+        resetData: () => this.ask('Reset demo data?', 'Restores the 12 demonstration churches and clears changes made here.', 'Reset', () => { const nd = window.AdminData.reset(); nd.session = { role: 'platform' }; window.AdminData.save(nd); this.setState({ db: nd, screen: 'p.dash' }); this.flash('Demo data restored.'); }, true),
+      };
+    }
+
+    // ---------- church administrator (tenant-scoped by verified role) ----------
+    const cid = admin.churchId, c = church(cid), cs = this.sub(db, cid), ro = this.readOnly(db, cid), thr = db.settings.privacyThreshold;
+    const guard = fn => (...a) => (ro ? this.flash('Read-only while this subscription is ' + STATUS[cs.status][0].toLowerCase() + '. Partner records are unaffected.') : fn(...a));
+    const mems = db.memberships.filter(m => m.churchId === cid && m.status !== 'removed');
+    const tables = db.tables.filter(x => x.churchId === cid && x.status === 'active');
+    const tName = id => (tables.find(x => x.id === id) || {}).name;
+    const act = this.activeN(db, cid), enr = mems.filter(m => m.status === 'verified').length;
+    const part = db.participation.filter(x => x.churchId === cid).sort((a, b) => a.week.localeCompare(b.week));
+    const qStart = `${t.slice(0, 4)}-${pad2(Math.floor((Number(t.slice(5, 7)) - 1) / 3) * 3 + 1)}-01`;
+    function pad2(n) { return String(n).padStart(2, '0'); }
+    const qMin = part.filter(x => x.week >= qStart && x.participants >= thr).reduce((a, x) => a + x.minutes, 0);
+    const shown = part.filter(x => x.participants >= thr);
+    const links = this.joinLinks(c.slug), p = this.plan(db, cs.planId);
+    const m = s.mem, mq = m.q.trim().toLowerCase();
+    const memList = mems.filter(x => (m.tab === 'all' || x.status === m.tab) && (!mq || x.name.toLowerCase().includes(mq) || x.email.includes(mq))).sort((a, b) => (a.status === 'pending' ? -1 : 0) - (b.status === 'pending' ? -1 : 0) || a.name.localeCompare(b.name));
+    const mPer = 12, mPages = Math.max(1, Math.ceil(memList.length / mPer)), mPage = Math.min(m.page, mPages);
+    const setMem = x => this.setState(st => ({ mem: { ...st.mem, ...x } }));
+    const cPlan = s.cPlan || cs.planId;
+    const cd = s.cDraft || c, setCd = x => this.setState(st => ({ cDraft: { ...(st.cDraft || c), ...x }, err: '' }));
+    const cField = (k, label) => ({ label, value: cd[k] || '', ph: '', on: e => setCd({ [k]: e.target.value }) });
+    const pendingN = mems.filter(x => x.status === 'pending').length;
+    let bannerText = '';
+    if (cs.status === 'past_due') bannerText = ro ? `Payment is past due beyond the ${db.settings.graceDays}-day grace period. The dashboard is read-only until billing is resolved. Partners keep full access to their personal records.` : `A payment failed. Update your payment method within the ${db.settings.graceDays}-day grace period to avoid read-only access. Partners are unaffected.`;
+    if (cs.status === 'suspended' || cs.status === 'canceled') bannerText = `This subscription is ${STATUS[cs.status][0].toLowerCase()}. The church dashboard is read-only. Every Partner keeps full access to their personal account, and no records are deleted.`;
+    return {
+      ...base, navItems, roleLabel: c.name, avatar: admin.name.split(' ').map(x => x[0]).join('').slice(0, 2), hasBell: pendingN > 0, bellCount: pendingN, bellClick: () => this.go('c.partners', { mem: { ...m, tab: 'pending', page: 1 } }),
+      hasBanner: !!bannerText, bannerText, bannerBg: ro ? '#FBE4E1' : '#FFF4DC', bannerFg: ro ? '#7A2A20' : '#6B4E12',
+      isCDash: scr === 'c.dash', isCPartners: scr === 'c.partners', isCTables: scr === 'c.tables', isCParticipation: scr === 'c.participation', isCBilling: scr === 'c.billing', isCSettings: scr === 'c.settings',
+      toCPartners: () => this.go('c.partners'), toCTables: () => this.go('c.tables'), toCBilling: () => this.go('c.billing'), toCSettings: () => this.go('c.settings', { cDraft: null }),
+      ch: { name: c.name, plan: p.name, ...stPill(cs.status), stFg: STATUS[cs.status][2], renewLabel: cs.status === 'pilot' ? 'Pilot ends' : cs.cancelAtPeriodEnd ? 'Cancels on' : 'Renewal date', renewal: fD(cs.status === 'pilot' ? cs.pilotEnd : cs.periodEnd), joinUrl: links.display, qr: this.qr(links.display), hasQr: !!this.qr(links.display), copyLink: () => { try { navigator.clipboard.writeText(links.display); } catch (e) {} this.flash('Invitation link copied.'); }, openJoin: () => window.open(links.local, '_blank'), policy: c.enrollmentPolicy === 'open' ? 'open sign-up' : 'administrator approval', card: cs.card },
+      cKpis: [['icon-users', 'Enrolled Partners', num(enr)], ['icon-circle-check', 'Active Partners', num(act)], ['icon-table-2', 'Active Tables', num(tables.length)], ['icon-clock', 'Aggregate hours this quarter', act >= thr ? num(qMin / 60) : 'Hidden']].map(([icon, label, value]) => ({ icon, label, value })),
+      tableTop: tables.slice(0, 4).map(x => ({ name: x.name, members: num(mems.filter(mm => mm.tableId === x.id && mm.status === 'verified').length) })),
+      threshold: thr, partSuppressed: shown.length < 2, partShown: shown.length >= 2, partChart: lineChart(shown.map(x => Math.round(x.minutes / 60)), shown.filter((_, i) => i % 2 === 0 || shown.length <= 6).map(x => fDs(x.week)).slice(0, 7), ''),
+
+      inviteEmails: s.inviteEmails, onInviteEmails: e => this.setState({ inviteEmails: e.target.value }),
+      sendPartnerInvites: guard(() => { const list = s.inviteEmails.split(/[\s,;]+/).map(x => x.trim().toLowerCase()).filter(Boolean); const bad = list.filter(x => !EMAIL_RE.test(x)); if (!list.length) return this.flash('Enter at least one email address.'); if (bad.length) return this.flash(`Check these addresses: ${bad.slice(0, 3).join(', ')}`); this.commit(dd => { list.forEach(to => dd.outbox.unshift({ id: H.uid(), to, subject: `Join ${c.name} on The 144(P) Plan`, kind: 'partner_invite', link: links.display, at: Date.now() })); this.audit(dd, 'partner.invitations_sent', 'church', cid, cid); }); this.setState({ inviteEmails: '' }); this.flash(`${list.length} invitation${list.length > 1 ? 's' : ''} sent with your enrollment link.`); }),
+      memTabs: [['all', 'All', mems.length], ['verified', 'Verified', enr], ['pending', 'Pending approval', pendingN]].map(([k, l, n]) => ({ label: `${l} (${n})`, bg: m.tab === k ? '#075D61' : '#FFFFFF', fg: m.tab === k ? '#FFFFFF' : '#173344', pick: () => setMem({ tab: k, page: 1 }) })),
+      memQ: m.q, onMemQ: e => setMem({ q: e.target.value, page: 1 }), memEmpty: memList.length === 0,
+      memRows: memList.slice((mPage - 1) * mPer, mPage * mPer).map(x => ({ name: x.name, email: x.email, table: tName(x.tableId) || 'Assign table', pending: x.status === 'pending', ...stPill(x.status === 'pending' ? 'past_due' : 'active'), status: x.status === 'pending' ? 'Pending' : 'Verified', joined: fD(x.joinedAt),
+        approve: guard(() => { this.commit(dd => { dd.memberships.find(y => y.id === x.id).status = 'verified'; this.audit(dd, 'membership.verified', 'membership', x.id, cid); }); this.flash(`${x.name} verified.`); }),
+        remove: guard(() => this.ask(`Remove ${x.name}'s association?`, 'They leave your church list. Their personal 144(P) account, deposits and lifetime record stay intact and private.', 'Remove association', () => { this.commit(dd => { const y = dd.memberships.find(z => z.id === x.id); y.status = 'removed'; y.tableId = null; this.audit(dd, 'membership.removed', 'membership', x.id, cid); }); this.flash('Association removed. Partner account untouched.'); }, true)),
+        assign: guard(() => this.setState({ picker: { title: `Assign ${x.name} to a Table`, options: [...tables.map(tb => ({ label: tb.name, sub: tb.id === x.tableId ? 'Current' : '', border: tb.id === x.tableId ? '#075D61' : '#E1E7EA', pick: () => { this.commit(dd => { dd.memberships.find(y => y.id === x.id).tableId = tb.id; this.audit(dd, 'membership.table_assigned', 'membership', x.id, cid); }); this.setState({ picker: null }); this.flash(`${x.name} assigned to ${tb.name}.`); } })), { label: 'No Table', sub: '', border: '#E1E7EA', pick: () => { this.commit(dd => { dd.memberships.find(y => y.id === x.id).tableId = null; }); this.setState({ picker: null }); } }] } })) })),
+      memShowing: memList.length ? `Showing ${(mPage - 1) * mPer + 1}–${Math.min(mPage * mPer, memList.length)} of ${memList.length}` : '',
+      memPrev: () => setMem({ page: Math.max(1, mPage - 1) }), memNext: () => setMem({ page: Math.min(mPages, mPage + 1) }),
+
+      newTable: s.newTable, onNewTable: e => this.setState({ newTable: e.target.value }),
+      addTable: guard(() => { const n = s.newTable.trim(); if (!n) return this.flash('Enter a Table name.'); if (tables.some(x => x.name.toLowerCase() === n.toLowerCase())) return this.flash('A Table with that name exists.'); this.commit(dd => { const tb = { id: 'tbl_' + H.uid(), churchId: cid, name: n, leaderId: null, status: 'active', createdAt: t }; dd.tables.push(tb); this.audit(dd, 'table.created', 'table', tb.id, cid); }); this.setState({ newTable: '' }); this.flash(`${n} added.`); }),
+      tableCards: tables.map(x => { const tm = mems.filter(y => y.tableId === x.id && y.status === 'verified'), ld = mems.find(y => y.id === x.leaderId); return { name: x.name, members: num(tm.length), leader: ld ? ld.name : 'Not assigned',
+        assignLeader: guard(() => this.setState({ picker: { title: `Choose a leader for ${x.name}`, options: tm.slice(0, 40).map(y => ({ label: y.name, sub: y.id === x.leaderId ? 'Current leader' : '', border: y.id === x.leaderId ? '#075D61' : '#E1E7EA', pick: () => { this.commit(dd => { dd.tables.find(z => z.id === x.id).leaderId = y.id; this.audit(dd, 'table.leader_assigned', 'table', x.id, cid); }); this.setState({ picker: null }); this.flash(`${y.name} recorded as leader of ${x.name}.`); } })) } })),
+        remove: guard(() => this.ask(`Archive ${x.name}?`, 'Partners in this Table stay in your church without a Table. Nothing else changes.', 'Archive', () => { this.commit(dd => { dd.tables.find(z => z.id === x.id).status = 'archived'; dd.memberships.filter(z => z.tableId === x.id).forEach(z => { z.tableId = null; }); this.audit(dd, 'table.archived', 'table', x.id, cid); }); this.flash('Table archived.'); }, true)) }; }),
+      leaderNote: db.settings.features.tableLeader && (c.features || {}).tableLeader ? 'Table leaders see attendance and whether each Partner logged any deposit that week — never minutes, notes, allocation or balances.' : 'Table leader access is not yet activated for your church. Leaders you assign are recorded now and gain attendance-only visibility when the module is activated.',
+
+      cpKpis: [{ label: 'Active participants', value: act >= thr ? num(act) : 'Hidden', sub: 'Used the app in the last 30 days' }, { label: 'Recorded hours this quarter', value: act >= thr ? num(qMin / 60) : 'Hidden', sub: `Since ${fD(qStart)}` }, { label: 'Average hours per week', value: shown.length ? num(shown.reduce((a, x) => a + x.minutes, 0) / 60 / shown.length) : 'Hidden', sub: 'Across reportable weeks' }, (() => { const n = mems.filter(y => y.status === 'verified' && H.diffDays(y.joinedAt, t) >= 84).length; return { label: 'Members enrolled 12+ weeks', value: n >= thr ? num(n) : 'Hidden', sub: 'Approximate program completion' }; })()],
+      partRows: [...part].reverse().map(x => ({ week: fD(x.week), p: x.participants >= thr ? num(x.participants) : `Suppressed (< ${thr})`, h: x.participants >= thr ? num(x.minutes / 60) : '—' })),
+      tableTotals: tables.map(x => { const n = mems.filter(y => y.tableId === x.id && y.status === 'verified').length; return { name: x.name, members: n >= thr ? `${num(n)} Partners` : `Fewer than ${thr}` }; }),
+
+      cSubRows: [{ label: 'Plan', value: p.name }, { label: 'Billing', value: cs.freq === 'monthly' ? 'Monthly' : 'Annual' }, { label: 'Price', value: cs.status === 'pilot' ? 'Founding pilot · no charge' : `${money2(cs.contractPrice * (1 - (cs.discountPct || 0) / 100))} / ${cs.freq === 'monthly' ? 'month' : 'year'}` }, { label: 'Status', value: STATUS[cs.status][0] + (cs.cancelAtPeriodEnd ? ' · cancels at period end' : '') }, { label: cs.status === 'pilot' ? 'Pilot ends' : 'Next renewal', value: fD(cs.status === 'pilot' ? cs.pilotEnd : cs.periodEnd) }, { label: 'Active Partners', value: `${num(act)} of ${num(this.limit(db, cs))} included` }],
+      cPlanOpts: db.plans.filter(x => !x.custom).map(x => ({ name: x.name, price: `${money(cs.freq === 'monthly' ? x.monthly : x.annual)}/${cs.freq === 'monthly' ? 'mo' : 'yr'} · ${x.limit}`, border: cPlan === x.id ? '#075D61' : '#E1E7EA', pick: () => this.setState({ cPlan: x.id }) })),
+      cApplyLabel: cPlan === cs.planId ? 'Current plan' : `Switch to ${this.plan(db, cPlan).name}`,
+      cApplyPlan: guard(() => { if (cPlan === cs.planId) return this.flash('That is your current plan.'); if (p.custom) return this.flash('Enterprise changes go through the 144(P) Plan team.'); this.changePlan(cid, cPlan, cs.freq, 0, 0, cs.discountPct || 0); }),
+      cToggleCancel: guard(() => this.toggleCancel(cid)), cCancelLabel: cs.cancelAtPeriodEnd ? 'Keep my subscription' : 'Cancel at period end', support: db.settings.support,
+      openPortal: () => this.flash('Opens the provider’s hosted billing portal (not connected in test mode).'),
+      policyText: `If a payment fails, access continues for a ${db.settings.graceDays}-day grace period. After that, or if the subscription ends, this dashboard becomes read-only. Partner accounts, deposits and statements are never paused or deleted because of billing.`,
+      cNoInvoices: !db.invoices.some(i => i.churchId === cid),
+      cInvoices: db.invoices.filter(i => i.churchId === cid).sort((a, b) => b.issuedAt.localeCompare(a.issuedAt)).slice(0, 12).map(i => ({ number: i.number, date: fD(i.issuedAt), amount: money2(i.amount), ...invPill(i.status) })),
+
+      churchFields: [cField('name', 'Church name'), cField('address', 'Address'), cField('city', 'City'), cField('state', 'State'), cField('postal', 'Postal code'), cField('website', 'Website'), cField('phone', 'Phone'), cField('contactEmail', 'Contact email')],
+      cPolicyOpts: [['approval', 'Administrator approval'], ['open', 'Open sign-up']].map(([k, name]) => ({ name, ...chip((cd.enrollmentPolicy || c.enrollmentPolicy) === k), pick: () => setCd({ enrollmentPolicy: k }) })),
+      saveChurchSettings: guard(() => { if (!(cd.name || '').trim()) return this.fail('Church name is required.'); if (cd.contactEmail && !EMAIL_RE.test(cd.contactEmail)) return this.fail('Enter a valid contact email.'); this.commit(dd => { const x = dd.churches.find(y => y.id === cid); ['name', 'address', 'city', 'state', 'postal', 'website', 'phone', 'contactEmail', 'enrollmentPolicy'].forEach(k => { if (cd[k] !== undefined) x[k] = typeof cd[k] === 'string' ? cd[k].trim() : cd[k]; }); this.audit(dd, 'church.settings_updated', 'church', cid, cid); }); this.setState({ cDraft: null }); this.flash('Church settings saved.'); }),
+      cFeatures: [['churchReports', 'Aggregate participation reports', db.settings.features.churchReports], ['tableLeader', 'Table leader view', db.settings.features.tableLeader && (c.features || {}).tableLeader], ['churchRedemptions', 'Church redemption list', db.settings.features.churchRedemptions && (c.features || {}).churchRedemptions]].map(([k, label, on]) => ({ label, state: on ? 'Active' : 'Not yet activated', fg: on ? '#1E7A45' : '#6A7A84' })),
+    };
+  }
+}
+</script>
+</body>
+</html>

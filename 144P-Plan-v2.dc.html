@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#123C56">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="144(P) Plan">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/lucide-static@0.460.0/font/lucide.css">
+<script src="./cloud.js"></script>
+<style>
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+html,body{margin:0;overflow-x:hidden;background:#E3EAEC;font-family:'Public Sans',system-ui,sans-serif;color:#173344;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+a{color:#075D61}a:hover{color:#123C56}
+input,textarea,button,select{font-family:inherit}
+button:focus-visible,input:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #0E8A7E;outline-offset:2px}
+html,body{width:100%;min-height:100%}
+.desktop-preview{min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;background:#E8EDF0}
+.phone-frame{position:relative;width:390px;height:844px;max-height:calc(100dvh - 48px);border-radius:35px;overflow:hidden;background:#F8F5EE;box-shadow:0 0 0 1px rgba(23,51,68,.08),0 18px 55px rgba(0,0,0,.22);isolation:isolate;transform:translateZ(0)}
+.phone-content{width:100%;height:100%;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;container-type:size;--app-h:100cqh;scrollbar-width:none}
+.phone-content::-webkit-scrollbar{display:none}
+@media (max-width:600px){
+.desktop-preview{display:block;min-height:100dvh;padding:0;background:#F8F5EE}
+.phone-frame{width:100%;height:auto;min-height:100dvh;max-height:none;border-radius:0;box-shadow:none;overflow:visible;transform:none}
+.phone-content{height:auto;overflow:visible;container-type:normal;--app-h:100dvh}
+}
+@media print{[data-noprint]{display:none!important}body{background:#FFFFFF}.desktop-preview{display:block;padding:0;background:#FFFFFF}.phone-frame{width:auto;height:auto;max-height:none;border-radius:0;box-shadow:none;overflow:visible;transform:none}.phone-content{height:auto;overflow:visible;container-type:normal}}
+</style>
+</helmet>
+<div class="desktop-preview">
+<div class="phone-frame">
+<div class="phone-content" data-app-scroller="">
+<div style="width:100%;min-width:0;min-height:var(--app-h,100dvh);background:#F8F5EE;position:relative;display:flex;flex-direction:column;overflow-x:clip">
+
+<sc-if value="{{ isWelcome }}" hint-placeholder-val="{{ true }}">
+  <div data-screen-label="01 Welcome" style="position:relative;min-height:var(--app-h,100dvh);display:flex;flex-direction:column;background:#2C5E86 url('./welcome-sunrise.jpg') center top / cover no-repeat;overflow:hidden">
+    <h1 style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;margin:0">The 144(P) Plan — Give your time to God. Watch it grow.</h1>
+    <div style="position:absolute;left:0;right:0;bottom:0;height:42%;background:linear-gradient(180deg,rgba(18,60,86,0) 0%,rgba(18,60,86,.55) 100%);pointer-events:none"></div>
+    <div style="position:relative;flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:16px;padding:calc(24px + env(safe-area-inset-top)) calc(24px + env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left))">
+      <sc-if value="{{ hasJoin }}" hint-placeholder-val="{{ false }}"><div style="align-self:center;background:rgba(255,255,255,.92);color:#123C56;border-radius:999px;padding:8px 16px;font-size:14px;font-weight:600">Invited by {{ joinName }}</div></sc-if>
+      <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:420px;align-self:center">
+        <button onClick="{{ toRegister }}" style="border:none;border-radius:12px;min-height:54px;background:#123C56;color:#FFFFFF;font-size:17px;font-weight:600;cursor:pointer;box-shadow:0 6px 18px rgba(18,60,86,.35)">Get Started</button>
+        <button onClick="{{ toSignin }}" style="border:1px solid rgba(255,255,255,.7);border-radius:12px;min-height:50px;background:rgba(18,60,86,.35);color:#FFFFFF;font-size:16px;font-weight:600;cursor:pointer">Sign In</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isAuthForm }}" hint-placeholder-val="{{ false }}">
+  <div style="min-height:var(--app-h,100dvh);display:flex;flex-direction:column">
+    <div style="background:#123C56;color:#FFFFFF;padding:env(safe-area-inset-top) 8px 0">
+      <div style="height:56px;display:flex;align-items:center">
+        <button onClick="{{ toWelcome }}" aria-label="Back" style="width:44px;height:44px;border:none;background:transparent;color:#FFFFFF;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="icon-chevron-left"></i></button>
+        <div style="flex:1;text-align:center;font-size:17px;font-weight:600">{{ authTitle }}</div>
+        <div style="width:44px"></div>
+      </div>
+    </div>
+    <div style="flex:1;padding:24px 20px calc(32px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:16px">
+      <sc-if value="{{ isRegister }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:24px;font-weight:700">Create your Partner account</div>
+          <div style="font-size:15px;color:#6A7A84;line-height:1.45">Week 1 of your 12-week starter phase begins the day you join.</div>
+          <sc-if value="{{ hasJoin }}" hint-placeholder-val="{{ false }}"><div style="background:#E8F5F3;color:#075D61;border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.45;margin-top:6px">Joining <strong>{{ joinName }}</strong>. Your church sees totals only; your statement, deposits and notes stay private.</div></sc-if>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px">
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">First name<input value="{{ f.first }}" onChange="{{ on.first }}" autocomplete="given-name" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none" style-focus="border-color:#075D61;box-shadow:0 0 0 3px #CFEAE6"></label>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Last name<input value="{{ f.last }}" onChange="{{ on.last }}" autocomplete="family-name" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none" style-focus="border-color:#075D61;box-shadow:0 0 0 3px #CFEAE6"></label>
+        </div>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Email address<input type="email" value="{{ f.email }}" onChange="{{ on.email }}" autocomplete="email" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none" style-focus="border-color:#075D61;box-shadow:0 0 0 3px #CFEAE6"></label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Password<input type="password" value="{{ f.password }}" onChange="{{ on.password }}" autocomplete="new-password" placeholder="At least 8 characters" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none" style-focus="border-color:#075D61;box-shadow:0 0 0 3px #CFEAE6"></label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Church <span style="font-weight:400;color:#6A7A84">(optional)</span><input value="{{ f.church }}" onChange="{{ on.church }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none" style-focus="border-color:#075D61;box-shadow:0 0 0 3px #CFEAE6"></label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Table <span style="font-weight:400;color:#6A7A84">(optional)</span><input value="{{ f.table }}" onChange="{{ on.table }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none" style-focus="border-color:#075D61;box-shadow:0 0 0 3px #CFEAE6"></label>
+        <button onClick="{{ on.consent }}" role="checkbox" aria-checked="{{ f.consent }}" style="display:flex;gap:12px;align-items:flex-start;text-align:left;border:none;background:transparent;padding:4px 0;cursor:pointer;color:#173344;font-size:14px;line-height:1.45">
+          <span style="flex:none;width:24px;height:24px;border-radius:6px;border:2px solid #075D61;background:{{ consentBg }};color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:15px"><i class="icon-check"></i></span>
+          <span>I agree to the <a href="#terms">Terms</a> and <a href="#privacy">Privacy Policy</a>. My statement, deposits and notes stay private to me.</span>
+        </button>
+      </sc-if>
+      <sc-if value="{{ isSignin }}" hint-placeholder-val="{{ false }}">
+        <div style="font-size:24px;font-weight:700">Welcome back</div>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Email address<input type="email" value="{{ f.email }}" onChange="{{ on.email }}" autocomplete="email" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none" style-focus="border-color:#075D61;box-shadow:0 0 0 3px #CFEAE6"></label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Password<input type="password" value="{{ f.password }}" onChange="{{ on.password }}" autocomplete="current-password" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none" style-focus="border-color:#075D61;box-shadow:0 0 0 3px #CFEAE6"></label>
+      </sc-if>
+      <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="background:#FBEAE7;color:#8A2E22;border-radius:12px;padding:12px 14px;font-size:14px">{{ err }}</div>
+      </sc-if>
+      <button onClick="{{ authSubmit }}" style="border:none;border-radius:12px;min-height:54px;background:#123C56;color:#FFFFFF;font-size:17px;font-weight:600;cursor:pointer">{{ authCta }}</button>
+      <button onClick="{{ authSwap }}" style="border:none;background:transparent;min-height:44px;color:#075D61;font-size:15px;font-weight:600;cursor:pointer">{{ authSwapLabel }}</button>
+      <sc-if value="{{ isSignin }}" hint-placeholder-val="{{ false }}">
+        <div style="border-top:1px solid #E1E7EA;padding-top:18px;display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6A7A84">Try a sample account · demonstration data</div>
+          <sc-for list="{{ demoAccounts }}" as="d" hint-placeholder-count="2">
+            <button onClick="{{ d.pick }}" style="display:flex;align-items:center;gap:12px;text-align:left;background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:14px;cursor:pointer;color:#173344">
+              <span style="width:40px;height:40px;border-radius:50%;background:#E8F5F3;color:#075D61;display:flex;align-items:center;justify-content:center;font-size:19px"><i class="icon-user-round"></i></span>
+              <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">{{ d.name }}</span><span style="font-size:13px;color:#6A7A84">{{ d.sub }}</span></span>
+              <i class="icon-chevron-right" style="color:#6A7A84"></i>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</sc-if>
+
+<sc-if value="{{ isApp }}" hint-placeholder-val="{{ false }}">
+<div style="min-height:var(--app-h,100dvh);display:flex;flex-direction:column">
+  <header data-noprint="" style="position:sticky;top:0;z-index:5;background:#123C56;color:#FFFFFF;padding:env(safe-area-inset-top) 8px 0">
+    <div style="height:56px;display:flex;align-items:center;gap:4px">
+      <sc-if value="{{ hdrHome }}" hint-placeholder-val="{{ true }}">
+        <div style="flex:1;padding-left:10px;font-family:'Source Serif 4',serif;font-size:21px;font-weight:600">The 144(P) Plan</div>
+        <button onClick="{{ toMore }}" aria-label="Profile" style="width:44px;height:44px;border:none;background:transparent;color:#FFFFFF;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="icon-circle-user-round"></i></button>
+      </sc-if>
+      <sc-if value="{{ hdrInner }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ hdrBack }}" aria-label="Back" style="width:44px;height:44px;border:none;background:transparent;color:#FFFFFF;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="icon-chevron-left"></i></button>
+        <div style="flex:1;text-align:center;font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ hdrTitle }}</div>
+        <div style="width:44px"></div>
+      </sc-if>
+    </div>
+  </header>
+  <sc-if value="{{ isDemo }}" hint-placeholder-val="{{ false }}">
+    <div data-noprint="" style="background:#FFF4DC;color:#6B4E12;font-size:13px;padding:8px 16px;display:flex;gap:8px;align-items:center"><i class="icon-info"></i><span>Sample account · demonstration data, not a real Partner.</span></div>
+  </sc-if>
+
+  <main style="flex:1;padding:18px 16px 32px;display:flex;flex-direction:column;gap:16px">
+
+  <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+    <div data-screen-label="02 Home" style="display:flex;flex-direction:column;gap:16px">
+      <div style="display:flex;flex-direction:column;gap:3px">
+        <div style="font-size:22px;font-weight:700">{{ greeting }}</div>
+        <div style="font-size:14px;color:#6A7A84">{{ phaseLine }}</div>
+      </div>
+      <sc-if value="{{ joinOffer }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #BFE2DC;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:10px;align-items:flex-start"><i class="icon-church" style="font-size:22px;color:#075D61"></i><div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:700">Join {{ joinName }}?</span><span style="font-size:14px;line-height:1.45;color:#173344">Your lifetime deposits, statements and notes stay yours and move with you. The church sees aggregate totals only.</span></div></div>
+          <div style="display:flex;gap:8px"><button onClick="{{ joinAccept }}" style="border:none;border-radius:10px;min-height:44px;padding:0 16px;background:#075D61;color:#FFFFFF;font-size:15px;font-weight:600;cursor:pointer">Join church</button><button onClick="{{ joinDismiss }}" style="border:1px solid #CBD5DA;border-radius:10px;min-height:44px;padding:0 16px;background:#FFFFFF;color:#173344;font-size:15px;font-weight:600;cursor:pointer">Not now</button></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ timerActive }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ resumeTimer }}" style="display:flex;align-items:center;gap:12px;background:#E8F5F3;border:1px solid #BFE2DC;border-radius:14px;padding:12px 14px;cursor:pointer;color:#075D61;text-align:left">
+          <i class="icon-timer" style="font-size:20px"></i>
+          <span style="flex:1;font-size:15px;font-weight:600">Timer {{ timerState }} · {{ timerCat }}</span>
+          <span style="font-variant-numeric:tabular-nums;font-size:16px;font-weight:600">{{ timerClock }}</span>
+        </button>
+      </sc-if>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:18px;padding:18px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center">
+        <div style="position:relative;width:136px;height:136px">
+          <svg width="136" height="136" viewBox="0 0 136 136" aria-hidden="true"><circle cx="68" cy="68" r="58" fill="none" style="stroke:#E8F5F3;stroke-width:12"></circle><circle cx="68" cy="68" r="58" fill="none" transform="rotate(-90 68 68)" style="stroke:#0E8A7E;stroke-width:12;stroke-linecap:round;stroke-dasharray:364.42;stroke-dashoffset:{{ ringOffset }}"></circle></svg>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
+            <span style="font-size:12px;color:#6A7A84">This week</span>
+            <span style="font-size:32px;font-weight:700;line-height:1.1;font-variant-numeric:tabular-nums">{{ weekMin }}</span>
+            <span style="font-size:12px;color:#6A7A84">of 1,008 min</span>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:16px">
+          <div style="display:flex;gap:10px;align-items:flex-start"><i class="icon-calendar-check" style="font-size:20px;color:#075D61"></i><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;color:#6A7A84">Days at 144</span><span style="font-size:20px;font-weight:700">{{ weekDays144 }}</span></div></div>
+          <div style="display:flex;gap:10px;align-items:flex-start"><i class="icon-target" style="font-size:20px;color:#075D61"></i><div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:13px;color:#6A7A84">Goal reached</span><span style="font-size:20px;font-weight:700">{{ weekPct }}</span></div></div>
+        </div>
+        <sc-if value="{{ goalMet }}" hint-placeholder-val="{{ false }}">
+          <div style="grid-column:1 / -1;background:#E8F5F3;color:#075D61;border-radius:12px;padding:10px 12px;font-size:14px">You reached this week's goal. Thank you for the time you gave.</div>
+        </sc-if>
+      </div>
+      <button onClick="{{ toStatement }}" style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:18px;padding:4px 16px;cursor:pointer;color:#173344;text-align:left;display:flex;flex-direction:column">
+        <span style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #EEF2F3;font-size:15px"><span>Opening balance</span><span style="font-variant-numeric:tabular-nums">{{ homeOpen }} min</span></span>
+        <span style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #EEF2F3;font-size:15px"><span>Deposits this week</span><span style="font-variant-numeric:tabular-nums;color:#075D61">+{{ homeDep }} min</span></span>
+        <span style="display:flex;justify-content:space-between;align-items:center;padding:12px 0;font-size:16px;font-weight:700"><span>Closing balance</span><span style="display:flex;gap:6px;align-items:center;font-variant-numeric:tabular-nums">{{ homeClose }} min <i class="icon-chevron-right" style="color:#6A7A84;font-weight:400"></i></span></span>
+      </button>
+      <button onClick="{{ newDeposit }}" style="border:none;border-radius:14px;min-height:56px;background:#123C56;color:#FFFFFF;font-size:17px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:#0D2E43"><i class="icon-plus" style="font-size:20px"></i>Deposit</button>
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="font-size:17px;font-weight:700">Today's activity</div>
+        <button onClick="{{ toHistory }}" style="border:none;background:transparent;color:#075D61;font-size:14px;font-weight:600;cursor:pointer;min-height:44px">All deposits</button>
+      </div>
+      <sc-if value="{{ todayEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px dashed #CBD5DA;border-radius:16px;padding:18px;font-size:15px;color:#6A7A84;text-align:center;line-height:1.45">No deposits yet today. Any time you give counts.</div>
+      </sc-if>
+      <sc-if value="{{ todayHas }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:0 14px">
+          <sc-for list="{{ todayList }}" as="d" hint-placeholder-count="3">
+            <button onClick="{{ d.open }}" style="width:100%;display:flex;align-items:center;gap:12px;padding:12px 0;border:none;border-bottom:1px solid #EEF2F3;background:transparent;cursor:pointer;color:#173344;text-align:left">
+              <span style="flex:none;width:38px;height:38px;border-radius:50%;background:{{ d.tint }};color:{{ d.color }};display:flex;align-items:center;justify-content:center;font-size:19px"><i class="{{ d.icon }}"></i></span>
+              <span style="flex:1;font-size:15px;font-weight:500">{{ d.name }}</span>
+              <span style="font-size:15px;font-variant-numeric:tabular-nums">{{ d.min }} min</span>
+              <span style="width:68px;text-align:right;font-size:13px;color:#6A7A84">{{ d.time }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <button onClick="{{ toStatement }}" style="border:1px solid #123C56;border-radius:14px;min-height:50px;background:transparent;color:#123C56;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><i class="icon-file-text"></i>View full weekly statement</button>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px">
+        <button onClick="{{ toHistory }}" style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:14px;cursor:pointer;text-align:left;color:#173344;display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font-size:13px;color:#6A7A84">Today's deposits</span><span style="font-size:clamp(17px,5vw,19px);font-weight:700;font-variant-numeric:tabular-nums">{{ todayTotal }} min</span></button>
+        <button onClick="{{ toBalance }}" style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:14px;cursor:pointer;text-align:left;color:#173344;display:flex;flex-direction:column;gap:4px;min-width:0"><span style="font-size:13px;color:#6A7A84">Lifetime deposits</span><span style="font-size:clamp(17px,5vw,19px);font-weight:700;font-variant-numeric:tabular-nums;overflow-wrap:anywhere">{{ lifetimeFmt }} min</span></button>
+        <button onClick="{{ toBalance }}" style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:14px;cursor:pointer;text-align:left;color:#173344;display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:#6A7A84">Available to give</span><span style="font-size:19px;font-weight:700;font-variant-numeric:tabular-nums">{{ availableFmt }} min</span></button>
+        <button onClick="{{ toJourney }}" style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:14px;cursor:pointer;text-align:left;color:#173344;display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;color:#6A7A84">{{ journeyTileLabel }}</span><span style="font-size:19px;font-weight:700">{{ journeyTileValue }}</span></button>
+      </div>
+      <sc-if value="{{ hasReflection }}" hint-placeholder-val="{{ false }}">
+        <button onClick="{{ toNotes }}" style="background:#E8F5F3;border:none;border-radius:16px;padding:16px;cursor:pointer;text-align:left;color:#173344;display:flex;gap:12px">
+          <i class="icon-quote" style="font-size:22px;color:#075D61"></i>
+          <span style="display:flex;flex-direction:column;gap:6px"><span style="font-size:15px;line-height:1.5;font-style:italic;text-wrap:pretty">{{ reflectionText }}</span><span style="font-size:13px;color:#6A7A84">My notes · private</span></span>
+        </button>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isDeposit }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="03 Make a Deposit" style="display:flex;flex-direction:column;gap:20px">
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:4px 0">
+        <sc-for list="{{ depSteps }}" as="st" hint-placeholder-count="4">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px">
+            <span style="width:30px;height:30px;border-radius:50%;border:2px solid {{ st.border }};background:{{ st.bg }};color:{{ st.fg }};display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700">{{ st.n }}</span>
+            <span style="font-size:12px;color:#6A7A84">{{ st.label }}</span>
+          </div>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ dStep1 }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:21px;font-weight:700">How was the time given?</div><div style="font-size:15px;color:#6A7A84">Choose one option.</div></div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px">
+          <sc-for list="{{ catCards }}" as="c" hint-placeholder-count="4">
+            <button onClick="{{ c.pick }}" aria-pressed="{{ c.sel }}" style="position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;min-height:120px;padding:14px 8px;border-radius:16px;border:2px solid {{ c.border }};background:#FFFFFF;cursor:pointer;color:#173344;text-align:left">
+              <span style="flex:none;width:44px;height:44px;border-radius:50%;background:{{ c.tint }};color:{{ c.color }};display:flex;align-items:center;justify-content:center;font-size:22px"><i class="{{ c.icon }}"></i></span>
+              <span style="font-size:clamp(14px,4.2vw,17px);font-weight:600;line-height:1.2">{{ c.name }}</span>
+              <span style="position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:50%;background:{{ c.checkBg }};color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:15px"><i class="icon-check"></i></span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ dStep2 }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:21px;font-weight:700">Time</div><div style="font-size:15px;color:#6A7A84">Enter minutes or use a timer.</div></div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;background:#E8EEF0;border-radius:12px;padding:4px;gap:4px">
+          <sc-for list="{{ depModes }}" as="m" hint-placeholder-count="2">
+            <button onClick="{{ m.pick }}" style="border:none;border-radius:9px;min-height:44px;font-size:15px;font-weight:600;cursor:pointer;background:{{ m.bg }};color:{{ m.fg }}">{{ m.name }}</button>
+          </sc-for>
+        </div>
+        <sc-if value="{{ isManual }}" hint-placeholder-val="{{ true }}">
+          <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:18px;padding:20px 16px;display:flex;flex-direction:column;align-items:center;gap:16px">
+            <div style="display:flex;align-items:center;gap:14px;width:100%">
+              <button onClick="{{ minDec }}" aria-label="Fewer minutes" style="flex:none;width:52px;height:52px;border-radius:50%;border:1px solid #CBD5DA;background:#F8F5EE;font-size:22px;cursor:pointer;color:#173344;display:flex;align-items:center;justify-content:center"><i class="icon-minus"></i></button>
+              <div style="flex:1;display:flex;flex-direction:column;align-items:center">
+                <input type="number" inputmode="numeric" min="1" value="{{ depMinutes }}" onChange="{{ onMinutes }}" aria-label="Minutes" style="width:100%;border:none;background:transparent;text-align:center;font-size:52px;font-weight:600;color:#173344;outline:none;font-variant-numeric:tabular-nums">
+                <span style="font-size:15px;color:#6A7A84">minutes</span>
+              </div>
+              <button onClick="{{ minInc }}" aria-label="More minutes" style="flex:none;width:52px;height:52px;border-radius:50%;border:1px solid #CBD5DA;background:#F8F5EE;font-size:22px;cursor:pointer;color:#173344;display:flex;align-items:center;justify-content:center"><i class="icon-plus"></i></button>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;justify-content:center">
+              <sc-for list="{{ quickMins }}" as="q" hint-placeholder-count="4">
+                <button onClick="{{ q.pick }}" style="border:1px solid #CBD5DA;background:#FFFFFF;border-radius:999px;min-height:40px;padding:0 14px;font-size:14px;cursor:pointer;color:#173344">{{ q.label }}</button>
+              </sc-for>
+            </div>
+            <sc-if value="{{ fromTimer }}" hint-placeholder-val="{{ false }}">
+              <div style="font-size:13px;color:#075D61">From your timer · rounded to the nearest minute</div>
+            </sc-if>
+          </div>
+        </sc-if>
+        <sc-if value="{{ isTimerMode }}" hint-placeholder-val="{{ false }}">
+          <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:18px;padding:22px 16px;display:flex;flex-direction:column;align-items:center;gap:18px">
+            <div style="position:relative;width:200px;height:200px">
+              <svg width="200" height="200" viewBox="0 0 200 200" aria-hidden="true"><circle cx="100" cy="100" r="88" fill="none" style="stroke:#E8F5F3;stroke-width:12"></circle><circle cx="100" cy="100" r="88" fill="none" transform="rotate(-90 100 100)" style="stroke:#0E8A7E;stroke-width:12;stroke-linecap:round;stroke-dasharray:552.92;stroke-dashoffset:{{ timerOffset }}"></circle></svg>
+              <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center">
+                <span style="font-size:44px;font-weight:600;font-variant-numeric:tabular-nums">{{ timerClock }}</span>
+                <span style="font-size:14px;color:#6A7A84">{{ timerSub }}</span>
+              </div>
+            </div>
+            <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center">
+              <sc-if value="{{ tNone }}" hint-placeholder-val="{{ true }}">
+                <button onClick="{{ timerStart }}" style="border:none;border-radius:999px;min-height:50px;padding:0 26px;background:#075D61;color:#FFFFFF;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="icon-play"></i>Start</button>
+              </sc-if>
+              <sc-if value="{{ tRunning }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ timerPause }}" style="border:1px solid #075D61;border-radius:999px;min-height:50px;padding:0 22px;background:#FFFFFF;color:#075D61;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="icon-pause"></i>Pause</button>
+              </sc-if>
+              <sc-if value="{{ tPaused }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ timerResume }}" style="border:1px solid #075D61;border-radius:999px;min-height:50px;padding:0 22px;background:#FFFFFF;color:#075D61;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="icon-play"></i>Resume</button>
+              </sc-if>
+              <sc-if value="{{ tActive }}" hint-placeholder-val="{{ false }}">
+                <button onClick="{{ timerStop }}" style="border:none;border-radius:999px;min-height:50px;padding:0 22px;background:#123C56;color:#FFFFFF;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px"><i class="icon-square"></i>Stop &amp; use</button>
+              </sc-if>
+            </div>
+            <sc-if value="{{ tActive }}" hint-placeholder-val="{{ false }}">
+              <button onClick="{{ timerDiscard }}" style="border:none;background:transparent;color:#6A7A84;font-size:14px;cursor:pointer;min-height:40px">Discard timer</button>
+            </sc-if>
+            <div style="font-size:13px;color:#6A7A84;text-align:center;line-height:1.45;max-width:300px">The timer keeps counting if you leave the app, refresh, or switch devices. The screen stays on while it runs. Ring fills at 144 minutes.</div>
+          </div>
+        </sc-if>
+      </sc-if>
+
+      <sc-if value="{{ dStep3 }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:21px;font-weight:700">When</div><div style="font-size:15px;color:#6A7A84">Log time from today or earlier, like recording a check written yesterday.</div></div>
+        <div style="display:flex;gap:8px">
+          <sc-for list="{{ whenChips }}" as="w" hint-placeholder-count="2">
+            <button onClick="{{ w.pick }}" style="border:1px solid {{ w.border }};background:{{ w.bg }};color:{{ w.fg }};border-radius:999px;min-height:44px;padding:0 18px;font-size:15px;font-weight:600;cursor:pointer">{{ w.name }}</button>
+          </sc-for>
+        </div>
+        <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px">
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Date<input type="date" value="{{ depDate }}" min="{{ startDate }}" max="{{ todayStr }}" onChange="{{ onDate }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:12px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Time <span style="font-weight:400;color:#6A7A84">(optional)</span><input type="time" value="{{ depTime }}" onChange="{{ onTime }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:12px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
+        </div>
+        <div style="background:#E8F5F3;color:#075D61;border-radius:12px;padding:12px 14px;font-size:14px;display:flex;gap:8px;align-items:center"><i class="icon-calendar"></i>{{ filedUnder }}</div>
+      </sc-if>
+
+      <sc-if value="{{ dStep4 }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:4px"><div style="font-size:21px;font-weight:700">Add a note</div><div style="font-size:15px;color:#6A7A84">Optional. Notes are always private.</div></div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <textarea value="{{ depNote }}" onChange="{{ onNote }}" rows="3" placeholder="Read Psalm 90 with my son." aria-label="Note" style="border:1px solid #CBD5DA;border-radius:12px;padding:12px 14px;font-size:16px;line-height:1.45;background:#FFFFFF;color:#173344;resize:none;outline:none"></textarea>
+          <div style="font-size:12px;color:#6A7A84;text-align:right">{{ depNoteCount }}/300</div>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:4px 16px">
+          <sc-for list="{{ reviewRows }}" as="r" hint-placeholder-count="4">
+            <div style="display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #EEF2F3;font-size:15px"><span style="color:#6A7A84">{{ r.label }}</span><span style="font-weight:600;text-align:right">{{ r.value }}</span></div>
+          </sc-for>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="background:#FBEAE7;color:#8A2E22;border-radius:12px;padding:12px 14px;font-size:14px">{{ err }}</div>
+      </sc-if>
+      <button onClick="{{ depNext }}" style="border:none;border-radius:14px;min-height:56px;background:{{ depNextBg }};color:#FFFFFF;font-size:17px;font-weight:600;cursor:pointer">{{ depNextLabel }}</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isStatement }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="04 Statement" style="display:flex;flex-direction:column;gap:14px">
+      <div data-noprint="" style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:#E8EEF0;border-radius:12px;padding:4px;gap:4px">
+        <sc-for list="{{ periods }}" as="p" hint-placeholder-count="3">
+          <button onClick="{{ p.pick }}" style="border:none;border-radius:9px;min-height:42px;font-size:14px;font-weight:600;cursor:pointer;background:{{ p.bg }};color:{{ p.fg }}">{{ p.name }}</button>
+        </sc-for>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:12px;display:flex;align-items:center;gap:8px">
+        <button data-noprint="" onClick="{{ stPrev }}" aria-label="Previous period" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #E1E7EA;background:#FFFFFF;color:#123C56;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="icon-chevron-left"></i></button>
+        <div style="flex:1;display:flex;flex-direction:column;gap:3px;min-width:0">
+          <div style="font-size:19px;font-weight:700">{{ stTitle }}</div>
+          <div style="font-size:13px;color:#6A7A84">Partner: {{ fullName }} · {{ phaseShort }}{{ levelSuffix }}</div>
+          <div style="font-size:13px;color:#6A7A84">{{ stRange }}</div>
+        </div>
+        <button data-noprint="" onClick="{{ stNext }}" aria-label="Next period" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #E1E7EA;background:#FFFFFF;color:#123C56;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="icon-chevron-right"></i></button>
+      </div>
+      <div data-noprint="" style="display:flex;gap:8px">
+        <sc-for list="{{ stViews }}" as="v" hint-placeholder-count="2">
+          <button onClick="{{ v.pick }}" style="border:1px solid {{ v.border }};background:{{ v.bg }};color:{{ v.fg }};border-radius:999px;min-height:40px;padding:0 16px;font-size:14px;font-weight:600;cursor:pointer">{{ v.name }}</button>
+        </sc-for>
+      </div>
+
+      <sc-if value="{{ stSummary }}" hint-placeholder-val="{{ true }}">
+        <div style="font-size:17px;font-weight:700">Account summary</div>
+        <sc-if value="{{ stStack }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <sc-for list="{{ stAllRows }}" as="r" hint-placeholder-count="6">
+              <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+                <span style="font-size:14px;font-weight:700">{{ r.label }}</span>
+                <span style="display:flex;justify-content:space-between;gap:10px;font-size:14px"><span style="color:#6A7A84">{{ stCol1 }}</span><span style="font-weight:600;font-variant-numeric:tabular-nums;text-align:right">{{ r.a }}</span></span>
+                <span style="display:flex;justify-content:space-between;gap:10px;font-size:14px"><span style="color:#6A7A84">{{ stCol2 }}</span><span style="font-variant-numeric:tabular-nums;text-align:right;color:#4F5F68">{{ r.b }}</span></span>
+              </div>
+            </sc-for>
+          </div>
+        </sc-if>
+        <sc-if value="{{ stTable }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);gap:8px;padding:10px 14px;background:#E8F5F3;font-size:12px;font-weight:700;color:#123C56"><span>Line</span><span style="text-align:right">{{ stCol1 }}</span><span style="text-align:right">{{ stCol2 }}</span></div>
+          <sc-for list="{{ stSumRows }}" as="r" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);gap:8px;padding:12px 14px;border-top:1px solid #EEF2F3;font-size:14px;font-weight:{{ r.w }}"><span>{{ r.label }}</span><span style="text-align:right;font-variant-numeric:tabular-nums">{{ r.a }}</span><span style="text-align:right;font-variant-numeric:tabular-nums;color:#6A7A84">{{ r.b }}</span></div>
+          </sc-for>
+        </div>
+        <div style="font-size:17px;font-weight:700">Goal &amp; progress</div>
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;overflow:hidden">
+          <sc-for list="{{ stGoalRows }}" as="r" hint-placeholder-count="3">
+            <div style="display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr) minmax(0,1fr);gap:8px;padding:12px 14px;border-top:1px solid #EEF2F3;font-size:14px"><span>{{ r.label }}</span><span style="text-align:right;font-variant-numeric:tabular-nums">{{ r.a }}</span><span style="text-align:right;font-variant-numeric:tabular-nums;color:#6A7A84">{{ r.b }}</span></div>
+          </sc-for>
+        </div>
+        </sc-if>
+        <div style="font-size:13px;color:#6A7A84;line-height:1.45">Every figure is calculated from your recorded deposits. Corrections and backdated deposits update this statement and every later opening balance.</div>
+        <button data-noprint="" onClick="{{ printStatement }}" style="border:1px solid #123C56;border-radius:14px;min-height:50px;background:transparent;color:#123C56;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><i class="icon-printer"></i>Print or save as PDF</button>
+      </sc-if>
+
+      <sc-if value="{{ stAlloc }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:2px"><div style="font-size:17px;font-weight:700">Allocation {{ stAllocLabel }}</div><div style="font-size:13px;color:#6A7A84">(like a portfolio mix)</div></div>
+        <div style="display:flex;height:14px;border-radius:7px;overflow:hidden;background:#E8EEF0">
+          <sc-for list="{{ alloc }}" as="a" hint-placeholder-count="4"><div style="height:100%;background:{{ a.color }};width:{{ a.share }}"></div></sc-for>
+        </div>
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;overflow:hidden">
+          <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,.8fr);gap:8px;padding:10px 14px;background:#E8F5F3;font-size:12px;font-weight:700;color:#123C56"><span>How given</span><span style="text-align:right">Minutes</span><span style="text-align:right">Share</span></div>
+          <sc-for list="{{ alloc }}" as="a" hint-placeholder-count="4">
+            <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,.8fr);gap:8px;padding:10px 14px;border-top:1px solid #EEF2F3;font-size:14px;align-items:center">
+              <span style="display:flex;align-items:center;gap:10px"><span style="flex:none;width:32px;height:32px;border-radius:50%;background:{{ a.tint }};color:{{ a.color }};display:flex;align-items:center;justify-content:center;font-size:16px"><i class="{{ a.icon }}"></i></span>{{ a.name }}</span>
+              <span style="text-align:right;font-variant-numeric:tabular-nums">{{ a.min }}</span>
+              <span style="text-align:right;font-variant-numeric:tabular-nums">{{ a.share }}</span>
+            </div>
+          </sc-for>
+          <div style="display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr) minmax(0,.8fr);gap:8px;padding:12px 14px;border-top:1px solid #E1E7EA;font-size:14px;font-weight:700"><span>Total</span><span style="text-align:right;font-variant-numeric:tabular-nums">{{ allocTotal }}</span><span style="text-align:right">{{ allocTotalShare }}</span></div>
+        </div>
+        <sc-if value="{{ stIsWeek }}" hint-placeholder-val="{{ true }}">
+          <div style="background:#E8F5F3;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;gap:10px"><i class="icon-quote" style="font-size:20px;color:#075D61"></i><div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:13px;font-weight:600;color:#075D61">The time that mattered most this week</span><span style="font-size:15px;line-height:1.5;font-style:italic">{{ stReflM }}</span></div></div>
+            <div style="display:flex;flex-direction:column;gap:4px;padding-left:30px"><span style="font-size:13px;font-weight:600;color:#075D61">What I plan to give next week</span><span style="font-size:15px;line-height:1.5">{{ stReflN }}</span></div>
+            <button data-noprint="" onClick="{{ stEditNotes }}" style="align-self:flex-start;margin-left:30px;border:none;background:transparent;color:#075D61;font-size:14px;font-weight:600;cursor:pointer;min-height:40px;padding:0;display:flex;align-items:center;gap:6px"><i class="icon-pencil"></i>Edit my notes</button>
+          </div>
+        </sc-if>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isHistory }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <sc-if value="{{ histEmpty }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px dashed #CBD5DA;border-radius:16px;padding:24px;text-align:center;color:#6A7A84;font-size:15px">Your deposits will appear here.</div>
+      </sc-if>
+      <sc-for list="{{ histGroups }}" as="g" hint-placeholder-count="2">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;justify-content:space-between;font-size:13px;font-weight:600;color:#6A7A84"><span>{{ g.label }}</span><span>{{ g.total }} min</span></div>
+          <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:0 14px">
+            <sc-for list="{{ g.items }}" as="d" hint-placeholder-count="2">
+              <button onClick="{{ d.open }}" style="width:100%;display:flex;align-items:center;gap:12px;padding:12px 0;border:none;border-bottom:1px solid #EEF2F3;background:transparent;cursor:pointer;color:#173344;text-align:left">
+                <span style="flex:none;width:36px;height:36px;border-radius:50%;background:{{ d.tint }};color:{{ d.color }};display:flex;align-items:center;justify-content:center;font-size:18px"><i class="{{ d.icon }}"></i></span>
+                <span style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:500">{{ d.name }}</span><span style="font-size:13px;color:#6A7A84;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ d.sub }}</span></span>
+                <span style="font-size:15px;font-variant-numeric:tabular-nums">{{ d.min }} min</span>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isDetail }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="10 Deposit Details" style="display:flex;flex-direction:column;gap:16px">
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:18px;padding:20px;display:flex;align-items:center;gap:16px">
+        <span style="flex:none;width:56px;height:56px;border-radius:50%;background:{{ dt.tint }};color:{{ dt.color }};display:flex;align-items:center;justify-content:center;font-size:26px"><i class="{{ dt.icon }}"></i></span>
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;color:#6A7A84">{{ dt.name }}</span><span style="font-size:32px;font-weight:700;font-variant-numeric:tabular-nums">{{ dt.min }} min</span></div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:4px 16px">
+        <sc-for list="{{ dt.rows }}" as="r" hint-placeholder-count="4">
+          <div style="display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-bottom:1px solid #EEF2F3;font-size:15px"><span style="color:#6A7A84">{{ r.label }}</span><span style="font-weight:600;text-align:right">{{ r.value }}</span></div>
+        </sc-for>
+      </div>
+      <sc-if value="{{ dt.hasNote }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#E8F5F3;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;gap:6px"><span style="font-size:13px;font-weight:600;color:#075D61;display:flex;gap:6px;align-items:center"><i class="icon-lock"></i>Private note</span><span style="font-size:15px;line-height:1.5">{{ dt.note }}</span></div>
+      </sc-if>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <button onClick="{{ dt.edit }}" style="border:none;border-radius:14px;min-height:52px;background:#123C56;color:#FFFFFF;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><i class="icon-pencil"></i>Edit</button>
+        <button onClick="{{ dt.void }}" style="border:1px solid #C9574A;border-radius:14px;min-height:52px;background:#FFFFFF;color:#A33A2E;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><i class="icon-trash-2"></i>Void</button>
+      </div>
+      <sc-if value="{{ dt.hasRevs }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:15px;font-weight:700">Change history</div>
+          <sc-for list="{{ dt.revs }}" as="v" hint-placeholder-count="1">
+            <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:12px;padding:10px 14px;font-size:13px;color:#173344;display:flex;flex-direction:column;gap:2px"><span style="color:#6A7A84">{{ v.when }}</span><span>{{ v.text }}</span></div>
+          </sc-for>
+          <div style="font-size:12px;color:#6A7A84">Visible only to you. Never shared with your Table leader or church.</div>
+        </div>
+      </sc-if>
+      <button onClick="{{ toHistory }}" style="border:none;background:transparent;color:#075D61;font-size:15px;font-weight:600;cursor:pointer;min-height:44px">Back to deposit history</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isJourney }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="06 Starter to Standard" style="display:flex;flex-direction:column;gap:16px">
+      <div style="background:#123C56;color:#FFFFFF;border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:12px">
+        <span style="font-size:13px;color:#BFD3DE;letter-spacing:.04em;text-transform:uppercase">{{ jPhase }}</span>
+        <span style="font-size:26px;font-weight:700">{{ jTitle }}</span>
+        <span style="font-size:15px;color:#DCE7ED">{{ jSub }}</span>
+        <div style="height:8px;background:#2B5672;border-radius:4px;overflow:hidden"><div style="height:100%;background:#5CC2B2;width:{{ jPct }}"></div></div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px">
+        <sc-for list="{{ weeksGrid }}" as="w" hint-placeholder-count="12">
+          <div style="border-radius:12px;padding:10px 8px;background:{{ w.bg }};color:{{ w.fg }};border:1px solid {{ w.border }};display:flex;flex-direction:column;gap:2px">
+            <span style="font-size:12px;font-weight:700">Week {{ w.n }}</span>
+            <span style="font-size:12px;font-variant-numeric:tabular-nums">{{ w.min }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="font-size:13px;color:#6A7A84">Chapter titles for each book week will appear here once they're supplied.</div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;overflow:hidden">
+        <div style="display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.2fr) minmax(0,1.2fr);font-size:12px;font-weight:700;color:#123C56">
+          <span style="padding:10px 12px;background:#FFFFFF"></span><span style="padding:10px 12px;background:#E3EEF6">Starter phase<br><span style="font-weight:400">(weeks 1–12)</span></span><span style="padding:10px 12px;background:#E8F5F3">Standard account<br><span style="font-weight:400">(week 13 on)</span></span>
+        </div>
+        <sc-for list="{{ compareRows }}" as="r" hint-placeholder-count="5">
+          <div style="display:grid;grid-template-columns:minmax(0,.9fr) minmax(0,1.2fr) minmax(0,1.2fr);border-top:1px solid #EEF2F3;font-size:13px;line-height:1.4">
+            <span style="padding:10px 12px;font-weight:600">{{ r.label }}</span><span style="padding:10px 12px">{{ r.a }}</span><span style="padding:10px 12px">{{ r.b }}</span>
+          </div>
+        </sc-for>
+      </div>
+      <div style="background:#E8F5F3;border-radius:14px;padding:14px;display:flex;gap:10px;font-size:14px;line-height:1.45;color:#173344"><i class="icon-info" style="color:#075D61;font-size:18px"></i><span>Like a retirement account, the value is in the years of steady deposits, not in the first quarter. Nothing resets after week 12.</span></div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isMilestones }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="11 Progress and Milestones" style="display:flex;flex-direction:column;gap:16px">
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:4px 16px">
+        <sc-for list="{{ msRows }}" as="r" hint-placeholder-count="5">
+          <div style="display:flex;justify-content:space-between;gap:12px;padding:13px 0;border-bottom:1px solid #EEF2F3;font-size:15px"><span style="color:#6A7A84">{{ r.label }}</span><span style="font-weight:600;text-align:right">{{ r.value }}</span></div>
+        </sc-for>
+      </div>
+      <div style="font-size:17px;font-weight:700">Levels</div>
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px">
+        <sc-for list="{{ levels }}" as="l" hint-placeholder-count="4">
+          <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px"><span style="font-size:15px;font-weight:600">{{ l.name }}</span><span style="font-size:13px;color:#6A7A84">{{ l.status }}</span></div>
+        </sc-for>
+      </div>
+      <div style="font-size:14px;color:#6A7A84;line-height:1.5">Level targets haven't been set by the program yet, so no levels are awarded. Your progress is yours alone. There are no leaderboards and no comparisons.</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isBalance }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="07 My Balance" style="display:flex;flex-direction:column;gap:14px">
+      <div style="background:#123C56;color:#FFFFFF;border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:12px"><i class="icon-infinity" style="font-size:28px"></i><div style="display:flex;flex-direction:column"><span style="font-size:14px;color:#BFD3DE">Lifetime deposits</span><span style="font-size:28px;font-weight:700;font-variant-numeric:tabular-nums">{{ lifetimeFmt }} min</span></div></div>
+        <span style="font-size:14px;color:#DCE7ED">Never goes down. Your permanent record.</span>
+      </div>
+      <div style="background:#075D61;color:#FFFFFF;border-radius:18px;padding:20px;display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;align-items:center;gap:12px"><i class="icon-coins" style="font-size:28px"></i><div style="display:flex;flex-direction:column"><span style="font-size:14px;color:#C6E6E1">Available to give</span><span style="font-size:28px;font-weight:700;font-variant-numeric:tabular-nums">{{ availableFmt }} min</span></div></div>
+        <span style="font-size:14px;color:#DDF0ED">{{ availNote }}</span>
+      </div>
+      <sc-if value="{{ redeemLocked }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFF4DC;color:#6B4E12;border-radius:14px;padding:14px;display:flex;gap:10px;font-size:14px;line-height:1.45"><i class="icon-lock" style="font-size:18px"></i><span>{{ lockText }}</span></div>
+      </sc-if>
+      <div style="display:flex;flex-direction:column;gap:2px;padding-top:4px"><div style="font-size:17px;font-weight:700">Ways to spend</div><div style="font-size:13px;color:#6A7A84">Each church sets its own list and prices.</div></div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:0 14px">
+        <sc-for list="{{ spendTop }}" as="it" hint-placeholder-count="3">
+          <button onClick="{{ it.open }}" style="width:100%;display:flex;align-items:center;gap:12px;padding:12px 0;border:none;border-bottom:1px solid #EEF2F3;background:transparent;cursor:pointer;color:#173344;text-align:left">
+            <span style="flex:none;width:40px;height:40px;border-radius:12px;background:#E8F5F3;color:#075D61;display:flex;align-items:center;justify-content:center;font-size:20px"><i class="{{ it.icon }}"></i></span>
+            <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">{{ it.title }}</span><span style="font-size:13px;color:#6A7A84">{{ it.costLabel }}</span></span>
+            <span style="font-size:12px;font-weight:600;border-radius:999px;padding:4px 10px;background:{{ it.badgeBg }};color:{{ it.badgeFg }}">{{ it.badge }}</span>
+          </button>
+        </sc-for>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+        <button onClick="{{ toRedeem }}" style="border:1px solid #123C56;border-radius:14px;min-height:50px;background:transparent;color:#123C56;font-size:15px;font-weight:600;cursor:pointer">All options</button>
+        <button onClick="{{ toRedemptions }}" style="border:1px solid #123C56;border-radius:14px;min-height:50px;background:transparent;color:#123C56;font-size:15px;font-weight:600;cursor:pointer">My redemptions</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isRedeem }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div style="font-size:14px;color:#6A7A84;line-height:1.45">Costs shown are proposed examples, not final prices. Serving opportunities open first; the rest arrive in a later release.</div>
+      <sc-for list="{{ catalog }}" as="it" hint-placeholder-count="6">
+        <button onClick="{{ it.open }}" style="display:flex;align-items:flex-start;gap:14px;padding:16px;border-radius:16px;border:1px solid #E1E7EA;background:#FFFFFF;cursor:pointer;color:#173344;text-align:left">
+          <span style="flex:none;width:52px;height:52px;border-radius:50%;background:#F1E6D2;color:#7A5520;display:flex;align-items:center;justify-content:center;font-size:24px"><i class="{{ it.icon }}"></i></span>
+          <span style="flex:1;display:flex;flex-direction:column;gap:4px">
+            <span style="font-size:16px;font-weight:700">{{ it.title }}</span>
+            <span style="font-size:14px;font-weight:600">{{ it.costLabel }}</span>
+            <span style="font-size:13px;color:#6A7A84;line-height:1.4">{{ it.desc }}</span>
+            <span style="align-self:flex-start;margin-top:4px;font-size:12px;font-weight:600;border-radius:999px;padding:4px 10px;background:{{ it.badgeBg }};color:{{ it.badgeFg }}">{{ it.badge }}</span>
+          </span>
+          <i class="icon-chevron-right" style="color:#6A7A84;margin-top:16px"></i>
+        </button>
+      </sc-for>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isRedeemDetail }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div style="height:150px;border-radius:18px;background:#F1E6D2;color:#7A5520;display:flex;align-items:center;justify-content:center;font-size:56px"><i class="{{ rd.icon }}"></i></div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <div style="font-size:22px;font-weight:700">{{ rd.title }}</div>
+        <div style="font-size:19px;font-weight:600;color:#075D61">{{ rd.costLabel }}</div>
+        <div style="font-size:15px;color:#173344;line-height:1.5">{{ rd.desc }}</div>
+      </div>
+      <sc-if value="{{ rd.isServe }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:15px;font-weight:700">Mission board <span style="font-weight:400;color:#6A7A84">· sample openings</span></div>
+          <sc-for list="{{ rd.slots }}" as="sl" hint-placeholder-count="3">
+            <button onClick="{{ sl.pick }}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;border:2px solid {{ sl.border }};background:#FFFFFF;cursor:pointer;color:#173344;text-align:left">
+              <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">{{ sl.title }}</span><span style="font-size:13px;color:#6A7A84">{{ sl.when }}</span></span>
+              <span style="font-size:14px;font-weight:600;font-variant-numeric:tabular-nums">{{ sl.costLabel }}</span>
+            </button>
+          </sc-for>
+        </div>
+      </sc-if>
+      <div style="background:#E8F5F3;border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:4px"><span style="font-size:14px;font-weight:700;color:#075D61">How it helps you keep giving time</span><span style="font-size:14px;line-height:1.45">{{ rd.help }}</span></div>
+      <div style="font-size:14px;color:#6A7A84">Available to give: {{ availableFmt }} min · Lifetime deposits stay the same.</div>
+      <button onClick="{{ rd.redeem }}" style="border:none;border-radius:14px;min-height:56px;background:{{ rd.btnBg }};color:#FFFFFF;font-size:17px;font-weight:600;cursor:pointer">{{ rd.btnLabel }}</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isRedemptions }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-if value="{{ noRedemptions }}" hint-placeholder-val="{{ true }}">
+        <div style="background:#FFFFFF;border:1px dashed #CBD5DA;border-radius:16px;padding:24px;text-align:center;color:#6A7A84;font-size:15px">No redemptions yet.</div>
+      </sc-if>
+      <sc-for list="{{ myRedemptions }}" as="r" hint-placeholder-count="0">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:14px 16px;display:flex;justify-content:space-between;gap:12px">
+          <div style="display:flex;flex-direction:column;gap:3px"><span style="font-size:15px;font-weight:600">{{ r.title }}</span><span style="font-size:13px;color:#6A7A84">{{ r.sub }}</span></div>
+          <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><span style="font-size:15px;font-variant-numeric:tabular-nums">−{{ r.cost }} min</span><span style="font-size:12px;font-weight:600;color:#075D61">{{ r.status }}</span></div>
+        </div>
+      </sc-for>
+      <div style="font-size:13px;color:#6A7A84;line-height:1.45">Redemptions draw only from Available to give. Your lifetime deposits ({{ lifetimeFmt }} min) never change when you spend.</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isNotes }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="05 My Notes" style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button onClick="{{ nPrev }}" aria-label="Previous week" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #E1E7EA;background:#FFFFFF;color:#123C56;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="icon-chevron-left"></i></button>
+        <div style="flex:1;text-align:center;display:flex;flex-direction:column"><span style="font-size:16px;font-weight:700">{{ nTitle }}</span><span style="font-size:13px;color:#6A7A84">{{ nRange }}</span></div>
+        <button onClick="{{ nNext }}" aria-label="Next week" style="flex:none;width:44px;height:44px;border-radius:50%;border:1px solid #E1E7EA;background:#FFFFFF;color:#123C56;font-size:18px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="icon-chevron-right"></i></button>
+      </div>
+      <label style="display:flex;flex-direction:column;gap:8px;font-size:15px;font-weight:700">The time that mattered most this week
+        <textarea value="{{ nM }}" onChange="{{ onNM }}" rows="5" style="border:1px solid #CBD5DA;border-radius:12px;padding:12px 14px;font-size:16px;font-weight:400;line-height:1.45;background:#FFFFFF;color:#173344;resize:none;outline:none"></textarea>
+        <span style="font-size:12px;font-weight:400;color:#6A7A84;text-align:right">{{ nMCount }}/300</span>
+      </label>
+      <label style="display:flex;flex-direction:column;gap:8px;font-size:15px;font-weight:700">What I plan to give next week
+        <textarea value="{{ nN }}" onChange="{{ onNN }}" rows="4" style="border:1px solid #CBD5DA;border-radius:12px;padding:12px 14px;font-size:16px;font-weight:400;line-height:1.45;background:#FFFFFF;color:#173344;resize:none;outline:none"></textarea>
+        <span style="font-size:12px;font-weight:400;color:#6A7A84;text-align:right">{{ nNCount }}/300</span>
+      </label>
+      <button onClick="{{ saveNotes }}" style="border:none;border-radius:14px;min-height:54px;background:#123C56;color:#FFFFFF;font-size:17px;font-weight:600;cursor:pointer">Save</button>
+      <div style="font-size:13px;color:#6A7A84;display:flex;gap:6px;align-items:center"><i class="icon-lock"></i>Private. Never visible to your Table leader or church.</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isMore }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="09 More" style="display:flex;flex-direction:column;gap:16px">
+      <button onClick="{{ openAccount }}" style="display:flex;align-items:center;gap:14px;padding:16px;border-radius:18px;border:1px solid #E1E7EA;background:#FFFFFF;cursor:pointer;color:#173344;text-align:left">
+        <span style="flex:none;width:56px;height:56px;border-radius:50%;background:#123C56;color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700">{{ initials }}</span>
+        <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:17px;font-weight:700">{{ fullName }}</span><span style="font-size:13px;color:#6A7A84">{{ phaseLine }}</span></span>
+        <i class="icon-chevron-right" style="color:#6A7A84"></i>
+      </button>
+      <sc-for list="{{ menuGroups }}" as="g" hint-placeholder-count="3">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div style="font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6A7A84;padding-left:4px">{{ g.title }}</div>
+          <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;overflow:hidden">
+            <sc-for list="{{ g.items }}" as="m" hint-placeholder-count="3">
+              <button onClick="{{ m.open }}" style="width:100%;display:flex;align-items:center;gap:14px;padding:0 16px;min-height:54px;border:none;border-bottom:1px solid #EEF2F3;background:transparent;font-size:16px;color:#173344;cursor:pointer;text-align:left" style-hover="background:#F6F9FA">
+                <i class="{{ m.icon }}" style="font-size:19px;color:#123C56"></i><span style="flex:1">{{ m.label }}</span><i class="icon-chevron-right" style="color:#6A7A84"></i>
+              </button>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+      <button onClick="{{ signOut }}" style="border:1px solid #CBD5DA;border-radius:14px;min-height:52px;background:#FFFFFF;color:#173344;font-size:16px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><i class="icon-log-out"></i>Sign out</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isAccount }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px">
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">First name<input value="{{ ac.first }}" onChange="{{ acOn.first }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
+        <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Last name<input value="{{ ac.last }}" onChange="{{ acOn.last }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
+      </div>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Email address<input type="email" value="{{ ac.email }}" onChange="{{ acOn.email }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Church <span style="font-weight:400;color:#6A7A84">(optional)</span><input value="{{ ac.church }}" onChange="{{ acOn.church }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Table <span style="font-weight:400;color:#6A7A84">(optional)</span><input value="{{ ac.table }}" onChange="{{ acOn.table }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
+      <div style="font-size:13px;color:#6A7A84">Account started {{ startLabel }}. Church and Table links don't give anyone access to your records.</div>
+      <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}">
+        <div role="alert" style="background:#FBEAE7;color:#8A2E22;border-radius:12px;padding:12px 14px;font-size:14px">{{ err }}</div>
+      </sc-if>
+      <button onClick="{{ saveAccount }}" style="border:none;border-radius:14px;min-height:54px;background:#123C56;color:#FFFFFF;font-size:17px;font-weight:600;cursor:pointer">Save changes</button>
+      <div style="font-size:17px;font-weight:700;padding-top:8px">Your data</div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="font-size:14px;line-height:1.5">Export downloads every deposit, note, reflection and redemption you've recorded. {{ deleteText }}</div>
+        <button onClick="{{ exportData }}" style="border:1px solid #123C56;border-radius:12px;min-height:48px;background:transparent;color:#123C56;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><i class="icon-download"></i>Export my data</button>
+        <button onClick="{{ deleteAccount }}" style="border:1px solid #C9574A;border-radius:12px;min-height:48px;background:#FFFFFF;color:#A33A2E;font-size:15px;font-weight:600;cursor:pointer">{{ deleteLabel }}</button>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isPlan }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="background:#E8F5F3;border-radius:14px;padding:14px 16px;font-size:14px;line-height:1.5">{{ planIntro }}</div>
+      <label style="display:flex;flex-direction:column;gap:8px;font-size:15px;font-weight:700">My ongoing giving plan
+        <textarea value="{{ planDraft }}" onChange="{{ onPlan }}" rows="6" placeholder="Morning prayer daily, one Gospel chapter, and Saturday serving." style="border:1px solid #CBD5DA;border-radius:12px;padding:12px 14px;font-size:16px;font-weight:400;line-height:1.45;background:#FFFFFF;color:#173344;resize:none;outline:none"></textarea>
+      </label>
+      <button onClick="{{ savePlan }}" style="border:none;border-radius:14px;min-height:54px;background:#123C56;color:#FFFFFF;font-size:17px;font-weight:600;cursor:pointer">Save plan</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isNotifications }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:600">Daily reminder</span><span style="font-size:13px;color:#6A7A84">A gentle nudge: What will you give today?</span></div>
+          <button onClick="{{ toggleReminder }}" role="switch" aria-checked="{{ reminderOn }}" aria-label="Daily reminder" style="flex:none;width:54px;height:32px;border-radius:999px;border:none;background:{{ remBg }};cursor:pointer;padding:3px;display:flex;justify-content:{{ remJustify }}"><span style="width:26px;height:26px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.25)"></span></button>
+        </div>
+        <sc-if value="{{ reminderOn }}" hint-placeholder-val="{{ false }}">
+          <label style="display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:15px">Reminder time<input type="time" value="{{ remTime }}" onChange="{{ onRemTime }}" style="border:1px solid #CBD5DA;border-radius:10px;padding:10px 12px;font-size:16px;background:#FFFFFF;color:#173344"></label>
+          <div style="font-size:13px;color:#6A7A84">Time zone: {{ remTz }}</div>
+        </sc-if>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;align-items:center;gap:12px">
+        <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:16px;font-weight:600">Email reminder instead</span><span style="font-size:13px;color:#6A7A84">For devices without push notifications</span></div>
+        <button onClick="{{ toggleEmailRem }}" role="switch" aria-checked="{{ emailRemOn }}" aria-label="Email reminder" style="flex:none;width:54px;height:32px;border-radius:999px;border:none;background:{{ emailRemBg }};cursor:pointer;padding:3px;display:flex;justify-content:{{ emailRemJustify }}"><span style="width:26px;height:26px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.25)"></span></button>
+      </div>
+      <div style="background:#F4F7F7;border-radius:14px;padding:14px;font-size:13px;color:#4F5F68;line-height:1.5;display:flex;flex-direction:column;gap:6px"><span style="font-weight:700;color:#173344">On this device</span><span>{{ remNote }}</span><span>{{ emailNote }}</span></div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isPrivacy }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="08 Privacy" style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:22px;font-weight:700;line-height:1.25">Your data. Your choice. Our shared mission.</div><div style="font-size:15px;color:#6A7A84;line-height:1.5">Each Partner owns their statement. The church encourages; it doesn't monitor.</div></div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;gap:12px"><i class="icon-file-text" style="font-size:22px;color:#075D61"></i><div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:700">My private statement</span><span style="font-size:14px;line-height:1.45;color:#173344">Only you see your full statement, deposits, balances and redemption history.</span></div></div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;gap:12px"><i class="icon-lock" style="font-size:22px;color:#075D61"></i><div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:700">Notes are always private</span><span style="font-size:14px;line-height:1.45;color:#173344">Deposit notes and weekly reflections are never shared with anyone, including your spouse, Table leader or church.</span></div></div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <i class="icon-share-2" style="font-size:22px;color:#075D61"></i>
+          <div style="flex:1;display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:700">Weekly balance sharing</span><span style="font-size:14px;line-height:1.45;color:#173344">Optional. Share only your weekly balance with one Table partner. Turn it off any time.</span></div>
+          <button onClick="{{ toggleShare }}" role="switch" aria-checked="{{ shareOn }}" aria-label="Share weekly balance" style="flex:none;width:54px;height:32px;border-radius:999px;border:none;background:{{ shareBg }};cursor:pointer;padding:3px;display:flex;justify-content:{{ shareJustify }}"><span style="width:26px;height:26px;border-radius:50%;background:#FFFFFF;box-shadow:0 1px 3px rgba(0,0,0,.25)"></span></button>
+        </div>
+        <sc-if value="{{ shareOff }}" hint-placeholder-val="{{ true }}">
+          <input value="{{ shareTo }}" onChange="{{ onShareTo }}" placeholder="Table partner's name or email" aria-label="Table partner" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:12px 14px;font-size:16px;background:#FFFFFF;color:#173344;outline:none">
+        </sc-if>
+        <div style="font-size:13px;color:{{ shareStatusColor }}">{{ shareStatus }}</div>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;gap:12px"><i class="icon-users" style="font-size:22px;color:#075D61"></i><div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:16px;font-weight:700">Table leader visibility</span><span style="font-size:14px;line-height:1.45">Sees attendance and whether you logged any deposit this week.</span><span style="font-size:14px;line-height:1.45;color:#6A7A84">Never sees your minutes, notes, allocation, balances or redemptions.</span></div></div>
+      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;gap:12px"><i class="icon-church" style="font-size:22px;color:#075D61"></i><div style="display:flex;flex-direction:column;gap:6px"><span style="font-size:16px;font-weight:700">Church aggregate view</span><span style="font-size:14px;line-height:1.45">Totals only, such as "Our Tables gave 2,000 hours this quarter." Groups too small to stay anonymous aren't reported.</span></div></div>
+      <div style="font-size:13px;color:#6A7A84;line-height:1.5">These protections are part of the plan and can't be switched off. Spouses never see each other's records unless both choose to share.</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isAbout }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="12 About" style="display:flex;flex-direction:column;gap:12px">
+      <sc-for list="{{ aboutSections }}" as="a" hint-placeholder-count="7">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px"><span style="font-size:16px;font-weight:700">{{ a.title }}</span><span style="font-size:14px;line-height:1.5;text-wrap:pretty">{{ a.body }}</span></div>
+      </sc-for>
+      <div style="background:#123C56;color:#FFFFFF;border-radius:16px;padding:16px;display:flex;gap:12px;align-items:center"><i class="icon-book-open" style="font-size:26px"></i><div style="display:flex;flex-direction:column;gap:2px"><span style="font-family:'Source Serif 4',serif;font-size:18px;font-style:italic">What Will You Give Today?</span><span style="font-size:14px;color:#DCE7ED">by C. P. Parker</span></div></div>
+      <div style="display:flex;gap:18px;flex-wrap:wrap;font-size:14px;padding:4px"><a href="#privacy">Privacy Policy</a><a href="#terms">Terms</a><a href="#help" onClick="{{ toHelp }}">Help &amp; Support</a></div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isHelp }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <sc-for list="{{ faqs }}" as="q" hint-placeholder-count="4">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px"><span style="font-size:15px;font-weight:700">{{ q.q }}</span><span style="font-size:14px;line-height:1.5;color:#173344">{{ q.a }}</span></div>
+      </sc-for>
+      <div style="font-size:14px;color:#6A7A84;line-height:1.5">Still need help? Talk with your church's 144(P) Plan coordinator.</div>
+    </div>
+  </sc-if>
+  <sc-if value="{{ isInstall }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="13 Install" style="display:flex;flex-direction:column;gap:14px">
+      <div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:22px;font-weight:700">Install The 144(P) Plan</div><div style="font-size:15px;color:#6A7A84;line-height:1.5">Add the app to your home screen to open it full-screen, like any other app.</div></div>
+      <sc-if value="{{ isStandalone }}" hint-placeholder-val="{{ false }}"><div style="background:#E8F5F3;color:#075D61;border-radius:14px;padding:14px;font-size:15px;display:flex;gap:10px;align-items:center"><i class="icon-circle-check" style="font-size:20px"></i>You're using the installed app.</div></sc-if>
+      <sc-if value="{{ canPrompt }}" hint-placeholder-val="{{ false }}"><button onClick="{{ doInstall }}" style="border:none;border-radius:14px;min-height:54px;background:#123C56;color:#FFFFFF;font-size:17px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px"><i class="icon-download"></i>Install app</button></sc-if>
+      <div style="background:#FFFFFF;border:1px solid {{ iosBorder }};border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px"><i class="icon-smartphone" style="font-size:20px;color:#075D61"></i><span style="font-size:16px;font-weight:700">iPhone and iPad (Safari)</span></div>
+        <sc-for list="{{ iosSteps }}" as="st" hint-placeholder-count="4"><div style="display:flex;gap:10px;font-size:15px;line-height:1.45"><span style="flex:none;width:24px;height:24px;border-radius:50%;background:#E8F5F3;color:#075D61;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ st.n }}</span><span>{{ st.text }}</span></div></sc-for>
+      </div>
+      <div style="background:#FFFFFF;border:1px solid {{ androidBorder }};border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;gap:10px"><i class="icon-tablet-smartphone" style="font-size:20px;color:#075D61"></i><span style="font-size:16px;font-weight:700">Android (Chrome)</span></div>
+        <sc-for list="{{ androidSteps }}" as="st" hint-placeholder-count="3"><div style="display:flex;gap:10px;font-size:15px;line-height:1.45"><span style="flex:none;width:24px;height:24px;border-radius:50%;background:#E8F5F3;color:#075D61;font-size:13px;font-weight:700;display:flex;align-items:center;justify-content:center">{{ st.n }}</span><span>{{ st.text }}</span></div></sc-for>
+      </div>
+      <div style="font-size:13px;color:#6A7A84;line-height:1.5">Installing needs a secure (HTTPS) web address. Your data stays on your account; the app only caches its own files, never your statements or notes.</div>
+    </div>
+  </sc-if>
+  </main>
+
+  <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
+    <nav data-noprint="" aria-label="Main" style="position:sticky;bottom:0;z-index:5;background:#FFFFFF;border-top:1px solid #E1E7EA;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);padding-bottom:env(safe-area-inset-bottom)">
+      <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="5">
+        <button onClick="{{ n.pick }}" aria-current="{{ n.current }}" style="border:none;background:transparent;min-height:60px;min-width:44px;padding:0 2px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:{{ n.fg }}">
+          <i class="{{ n.icon }}" style="font-size:22px"></i><span style="font-size:12px;font-weight:{{ n.weight }}">{{ n.label }}</span>
+        </button>
+      </sc-for>
+    </nav>
+  </sc-if>
+</div>
+</sc-if>
+
+<sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+  <div role="status" style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));z-index:20;max-width:440px;width:calc(100% - 32px);background:#173344;color:#FFFFFF;border-radius:12px;padding:13px 16px;font-size:14px;display:flex;gap:10px;align-items:center;box-shadow:0 8px 24px rgba(0,0,0,.2)"><i class="icon-circle-check" style="color:#7FD6C8;font-size:18px"></i>{{ toast }}</div>
+</sc-if>
+
+<sc-if value="{{ hasConfirm }}" hint-placeholder-val="{{ false }}">
+  <div style="position:fixed;inset:0;z-index:30;background:rgba(18,60,86,.45);display:flex;align-items:flex-end;justify-content:center;padding:16px">
+    <div role="dialog" aria-modal="true" style="width:100%;max-width:448px;background:#FFFFFF;border-radius:20px;padding:22px;display:flex;flex-direction:column;gap:12px;margin-bottom:env(safe-area-inset-bottom)">
+      <div style="font-size:19px;font-weight:700">{{ cf.title }}</div>
+      <div style="font-size:15px;line-height:1.5;color:#173344">{{ cf.body }}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;padding-top:6px">
+        <button onClick="{{ cfCancel }}" style="border:1px solid #CBD5DA;border-radius:12px;min-height:50px;background:#FFFFFF;color:#173344;font-size:16px;font-weight:600;cursor:pointer">Cancel</button>
+        <button onClick="{{ cfOk }}" style="border:none;border-radius:12px;min-height:50px;background:{{ cf.bg }};color:#FFFFFF;font-size:16px;font-weight:600;cursor:pointer">{{ cf.ok }}</button>
+      </div>
+    </div>
+  </div>
+</sc-if>
+
+</div>
+</div>
+</div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;servingEnabled&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Redemption&quot;},&quot;catalogEnabled&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Redemption&quot;}}">
+const KEY = '144p-app-v2';
+const CATS = [
+  { k: 'praying', name: 'Praying', icon: 'icon-hand-heart', color: '#B4601A', tint: '#FBEBDC' },
+  { k: 'reading', name: 'Reading', icon: 'icon-book-open', color: '#2A62A6', tint: '#E2ECF8' },
+  { k: 'listening', name: 'Listening', icon: 'icon-ear', color: '#6E4699', tint: '#EEE6F6' },
+  { k: 'present', name: 'Being Present', icon: 'icon-users', color: '#2B7A4B', tint: '#E0F1E6' }];
+const CAT = Object.fromEntries(CATS.map(c => [c.k, c]));
+const CHAPTERS = Array(12).fill(null); // configurable — titles not yet supplied
+const LEVELS = ['Starter', 'Builder', 'Faithful', 'Achiever'].map(name => ({ name, target: null })); // targets not yet defined
+const CATALOG = [
+  { id: 'serve', title: 'Claim a serving opportunity', cost: 60, costLabel: '60 min per hour served', icon: 'icon-hand-helping', desc: "A slot on the church's mission board, such as food pantry, senior visits or a repair day.", help: 'Turns time given to God into time given to others.', v1: true },
+  { id: 'books', title: 'Books and studies', cost: 1008, costLabel: '1,008 min', icon: 'icon-book-open', desc: 'The next study or devotional for your standard account.', help: 'Keeps a guide in your hands long after week 12.' },
+  { id: 'event', title: 'Event access', cost: 2000, costLabel: '2,000 min', icon: 'icon-ticket', desc: "A seat at a retreat, conference or men's or women's day.", help: 'Time set apart alongside others who are giving theirs.' },
+  { id: 'tools', title: 'Tools for time with God', cost: 500, costLabel: '500 min', icon: 'icon-notebook-pen', desc: 'A journal, a study Bible, an audio Bible subscription.', help: 'Builds daily habits, deeper Bible study and a stronger walk with God.' },
+  { id: 'seat', title: 'Sponsor a seat', cost: 1008, costLabel: '1,008 min', icon: 'icon-armchair', desc: "A newcomer's book for the next Table.", help: 'Opens the plan to someone new.' },
+  { id: 'meal', title: 'Host the Table meal', cost: 500, costLabel: '500 min', icon: 'icon-utensils', desc: "Choose and host one week's meal for your Table.", help: 'Time given as hospitality to your Table.' }];
+const SLOTS = [
+  { id: 's1', title: 'Food pantry', when: 'Saturday · 9–11 AM', hours: 2 },
+  { id: 's2', title: 'Senior visits', when: 'Tuesday · 2–3 PM', hours: 1 },
+  { id: 's3', title: 'Church repair day', when: 'Saturday · 8 AM–12 PM', hours: 4 }];
+
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const toUTC = s => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d); };
+const fromUTC = t => { const d = new Date(t); return `${d.getUTCFullYear()}-${pad(d.getUTCMonth() + 1)}-${pad(d.getUTCDate())}`; };
+const addDays = (s, n) => fromUTC(toUTC(s) + n * 864e5);
+const diffDays = (a, b) => Math.round((toUTC(b) - toUTC(a)) / 864e5);
+const fmt = n => Math.round(n).toLocaleString('en-US');
+const fDate = (s, o) => new Date(toUTC(s)).toLocaleDateString('en-US', { timeZone: 'UTC', ...(o || { month: 'short', day: 'numeric' }) });
+const FULL = { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' };
+const fTime = t => { if (!t) return ''; const [h, m] = t.split(':').map(Number); return `${(h % 12) || 12}:${pad(m)} ${h < 12 ? 'AM' : 'PM'}`; };
+const fStamp = ts => new Date(ts).toLocaleString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+const uid = () => (window.crypto && crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2, 9) + Date.now().toString(36));
+const nowHM = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const clock = ms => { const t = Math.floor(ms / 1000), h = Math.floor(t / 3600), m = Math.floor(t / 60) % 60, s = t % 60; return (h ? h + ':' + pad(m) : pad(m)) + ':' + pad(s); };
+async function sha(s) { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(s)); return [...new Uint8Array(b)].map(x => x.toString(16).padStart(2, '0')).join(''); }
+const shares = vals => { const tot = vals.reduce((a, b) => a + b, 0); if (!tot) return vals.map(() => 0); const raw = vals.map(v => v / tot * 100), fl = raw.map(Math.floor); let left = 100 - fl.reduce((a, b) => a + b, 0); raw.map((r, i) => [r - fl[i], i]).sort((a, b) => b[0] - a[0]).forEach(([, i]) => { if (left > 0) { fl[i]++; left--; } }); return fl; };
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function mkDep(pid, date, category, minutes, time, note) {
+  return { id: uid(), partnerId: pid, category, minutes, date, time: time || '', note: note || '', source: 'manual', createdAt: toUTC(date) + 12 * 36e5, updatedAt: null, voidedAt: null, clientKey: null };
+}
+function splitDay(pid, date, tot, i) {
+  const order = [['praying', '06:40'], ['reading', '07:20'], ['present', '18:30'], ['listening', '12:10']];
+  const n = tot >= 120 ? 3 : 2, sh = n === 3 ? [0.4, 0.33] : [0.6];
+  let left = tot; const out = [];
+  for (let j = 0; j < n; j++) { const [c, t] = order[(i + j) % 4]; const m = j === n - 1 ? left : Math.round(tot * sh[j]); left -= m; out.push(mkDep(pid, date, c, m, t, '')); }
+  return out;
+}
+function seedDemos(db) {
+  const today = ymd(new Date());
+  const jane = { id: 'demo-jane', first: 'Jane', last: 'Smith', email: 'jane@sample.144p', pw: null, church: 'Grace Community (sample)', table: 'Tuesday Table (sample)', start: addDays(today, -18), created: Date.now(), demo: true, plan: '' };
+  const sam = { id: 'demo-sam', first: 'Sam', last: 'Lee', email: 'sam@sample.144p', pw: null, church: 'Grace Community (sample)', table: 'Thursday Table (sample)', start: addDays(today, -96), created: Date.now(), demo: true, plan: 'Morning prayer daily, one Gospel chapter, and Saturday serving.' };
+  db.partners.push(jane, sam);
+  [100, 120, 144, 60, 150, 90, 80, 110, 144, 130, 95, 160, 70, 87, 150, 144, 160, 146].forEach((t, i) => db.deposits.push(...splitDay(jane.id, addDays(jane.start, i), t, i)));
+  db.deposits.push(mkDep(jane.id, today, 'praying', 60, '08:12', 'Prayer walk before work.'), mkDep(jane.id, today, 'reading', 30, '09:20', 'Read Psalm 90 with my son.'), mkDep(jane.id, today, 'present', 20, '18:05', 'Dinner with no phones.'));
+  for (let i = 0; i < 96; i++) { const t = [144, 120, 150, 95, 144, 160, 110][i % 7] + ((i * 13) % 21) - 10; db.deposits.push(...splitDay(sam.id, addDays(sam.start, i), t, i)); }
+  db.deposits.push(mkDep(sam.id, today, 'praying', 45, '06:30', ''));
+  db.reflections[`${jane.id}|${addDays(jane.start, 14)}`] = { meaningful: "Reading Psalm 90 with my son. It reminded me that God is faithful across generations.", next: 'More time in prayer and being present with my family.', updatedAt: Date.now() };
+  [jane, sam].forEach(p => { db.prefs[p.id] = { reminder: false, time: '07:00', tz: Intl.DateTimeFormat().resolvedOptions().timeZone }; });
+}
+function emptyDB() { return { partners: [], deposits: [], reflections: {}, redemptions: [], sharing: [], prefs: {}, audit: [], timers: {}, session: null }; }
+function loadDB() {
+  let db = null; try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  if (!db || !db.partners) db = emptyDB();
+  if (!db.partners.some(p => p.demo)) { seedDemos(db); persist(db); }
+  return db;
+}
+const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const appWidth = () => window.innerWidth > 600 ? 390 : window.innerWidth;
+const isAndroid = () => /Android/i.test(navigator.userAgent);
+const isStandalone = () => (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) || window.navigator.standalone === true;
+const AKEY = '144p-admin-v1';
+function adminStore() { try { return JSON.parse(localStorage.getItem(AKEY)); } catch (e) { return null; } }
+function joinChurch() { const slug = new URLSearchParams(location.search).get('join'); if (!slug) return null; const a = adminStore(); const c = a && a.churches.find(x => x.slug === slug); return c ? { id: c.id, name: c.name, policy: c.enrollmentPolicy, slug } : null; }
+async function joinChurchCloud() { const slug = new URLSearchParams(location.search).get('join'); if (!slug || !window.Cloud) return null; try { const r = await Cloud.rpc('church_by_slug', { p_slug: slug }); return r && r[0] ? { id: r[0].id, name: r[0].name, policy: r[0].enrollment_policy, slug, cloud: true } : null; } catch (e) { return null; } }
+function linkMembership(u, ch) {
+  const a = adminStore(); if (!a) return null; const today = ymd(new Date());
+  a.memberships.filter(m => m.partnerRef === u.id && m.status !== 'removed' && m.churchId !== ch.id).forEach(m => { m.status = 'removed'; m.tableId = null; });
+  let m = a.memberships.find(x => x.partnerRef === u.id && x.churchId === ch.id && x.status !== 'removed');
+  if (!m) { m = { id: 'mem_' + uid(), churchId: ch.id, partnerRef: u.id, name: u.first + ' ' + u.last, email: u.email, tableId: null, status: ch.policy === 'open' ? 'verified' : 'pending', role: 'partner', joinedAt: today, lastActive: today }; a.memberships.push(m); }
+  a.audit.push({ id: uid(), actor: u.first + ' ' + u.last, org: ch.id, action: 'membership.requested', resourceType: 'membership', resourceId: m.id, at: Date.now() });
+  localStorage.setItem(AKEY, JSON.stringify(a)); return m.status;
+}
+function touchActivity(u) { if (u.cloud && window.Cloud) Cloud.queue('touch', {}); const a = adminStore(); if (!a) return; const t = ymd(new Date()); let ch = false; a.memberships.forEach(m => { if (m.partnerRef === u.id && m.status !== 'removed' && m.lastActive !== t) { m.lastActive = t; ch = true; } }); if (ch) localStorage.setItem(AKEY, JSON.stringify(a)); }
+function mergeCloud(db, data) {
+  const id = data.partner.id, old = db.partners.find(p => p.id === id) || {};
+  db.partners = db.partners.filter(p => p.id !== id); db.partners.push({ ...old, ...data.partner, church: data.partner.church || old.church || '', table: data.partner.table || old.table || '' });
+  db.deposits = db.deposits.filter(d => d.partnerId !== id).concat(data.deposits);
+  const oldRed = db.redemptions.filter(r => r.partnerId === id);
+  db.redemptions = db.redemptions.filter(r => r.partnerId !== id).concat(data.redemptions.map(r => { const o = oldRed.find(x => x.clientKey && x.clientKey === r.clientKey); const it = CATALOG.find(c => c.title === r.title); return { ...r, itemId: o ? o.itemId : it ? it.id : null, slotId: o ? o.slotId : null }; }));
+  db.sharing = db.sharing.filter(x => x.owner !== id).concat(data.sharing);
+  Object.keys(db.reflections).forEach(k => { if (k.startsWith(id + '|')) delete db.reflections[k]; }); Object.assign(db.reflections, data.reflections);
+  if (data.prefs) db.prefs[id] = { ...(db.prefs[id] || {}), ...data.prefs }; else if (!db.prefs[id]) db.prefs[id] = { reminder: false, time: '07:00', tz: Intl.DateTimeFormat().resolvedOptions().timeZone };
+  if ('timer' in data) { if (data.timer) db.timers[id] = data.timer; else delete db.timers[id]; }
+  db.session = id; return db;
+}
+const authMsg = e => { const m = (e && e.message) || ''; if (/already registered|already exists/i.test(m)) return 'An account with this email already exists. Try signing in.'; if (/invalid login/i.test(m)) return "That email and password don't match an account."; if (/not confirmed/i.test(m)) return 'Confirm your email first. Check your inbox for the link.'; if (/fetch|network/i.test(m) || !navigator.onLine) return 'You need a connection to do this. Try again when you are back online.'; return m || 'Something went wrong. Try again.'; };
+function persist(db) { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} }
+
+class Component extends DCLogic {
+  state = (() => {
+    const db = loadDB(); const ok = db.partners.some(p => p.id === db.session);
+    const jc = joinChurch(); return { vw: appWidth(), kb: false, installEvt: null, join: jc, joinDismissed: false, db, screen: ok ? 'home' : 'welcome', stack: [], dep: null, period: 'week', stWeek: null, stMonth: null, stView: 'summary', notesWeek: null, notes: null, detailId: null, itemId: null, slotId: null, redeemKey: null, form: {}, err: '', toast: '', confirm: null, busy: false, shareTo: '', acct: null, planDraft: '' };
+  })();
+
+  componentDidMount() {
+    { const u0 = this.me(); if (u0) touchActivity(u0); }
+    this.cloudRefresh();
+    if (!this.state.join) joinChurchCloud().then(j => { if (j) this.setState({ join: j }); });
+    this.onOnline = () => this.cloudRefresh(); window.addEventListener('online', this.onOnline);
+    this.iv = setInterval(() => { const u = this.me(); if (!u) return; const t = this.state.db.timers[u.id]; if (t && t.running) this.forceUpdate(); this.checkReminder(u); if (u.cloud && document.visibilityState === 'visible' && Date.now() - (this.lastPull || 0) > 60000) { this.lastPull = Date.now(); this.cloudRefresh(); } }, 1000);
+    try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
+    this.onStore = e => { if (e.key === KEY) this.setState({ db: loadDB() }); };
+    window.addEventListener('storage', this.onStore);
+    this.onResize = () => { const vv = window.visualViewport; this.setState({ vw: appWidth(), kb: !!vv && vv.height < window.innerHeight * 0.72 }); };
+    window.addEventListener('resize', this.onResize); window.addEventListener('orientationchange', this.onResize);
+    if (window.visualViewport) window.visualViewport.addEventListener('resize', this.onResize);
+    // timers are timestamp-based; refresh the display (and re-read storage) when the app returns from background
+    this.onVis = () => { if (document.visibilityState === 'visible') { this.setState({ db: loadDB() }); this.lastPull = Date.now(); this.cloudRefresh(); } };
+    document.addEventListener('visibilitychange', this.onVis); window.addEventListener('pageshow', this.onVis);
+    this.onBip = e => { e.preventDefault(); this.setState({ installEvt: e }); };
+    window.addEventListener('beforeinstallprompt', this.onBip);
+    this.onInstalled = () => { this.setState({ installEvt: null }); this.flash('App installed.'); };
+    window.addEventListener('appinstalled', this.onInstalled);
+  }
+  componentDidUpdate() {
+    const u = this.me(), t = u && this.state.db.timers[u.id], running = !!(t && t.running);
+    const want = running && this.state.screen === 'deposit' && document.visibilityState === 'visible';
+    if (want && !this.wake && navigator.wakeLock && !this.wakeReq) { this.wakeReq = true; navigator.wakeLock.request('screen').then(l => { this.wake = l; this.wakeReq = false; l.addEventListener('release', () => { this.wake = null; }); }).catch(() => { this.wakeReq = false; }); }
+    if (!want && this.wake) { this.wake.release().catch(() => {}); this.wake = null; }
+    if (!this.baseTitle) this.baseTitle = document.title || 'The 144(P) Plan';
+    const title = t ? `${clock(this.timerElapsed(t))} ${running ? '' : '(paused) '}· ${CAT[t.category].name} · 144(P)` : this.baseTitle;
+    if (document.title !== title) document.title = title;
+  }
+  componentWillUnmount() { if (this.wake) this.wake.release().catch(() => {}); window.removeEventListener('online', this.onOnline); clearInterval(this.iv); clearTimeout(this.tt); window.removeEventListener('storage', this.onStore); window.removeEventListener('resize', this.onResize); window.removeEventListener('orientationchange', this.onResize); if (window.visualViewport) window.visualViewport.removeEventListener('resize', this.onResize); document.removeEventListener('visibilitychange', this.onVis); window.removeEventListener('pageshow', this.onVis); window.removeEventListener('beforeinstallprompt', this.onBip); window.removeEventListener('appinstalled', this.onInstalled); }
+
+  async cloudRefresh() {
+    const u = this.me(); if (!u || !u.cloud || !window.Cloud || !navigator.onLine) return;
+    try {
+      if (!(await Cloud.session())) return;
+      await Cloud.flush(); const data = await Cloud.pullPartner(); if (!data) return;
+      const db = mergeCloud(JSON.parse(JSON.stringify(this.state.db)), data); persist(db); this.setState({ db });
+    } catch (e) {}
+  }
+  syncDiff(a, b) {
+    const sid = b.session, u = b.partners.find(p => p.id === sid); if (!u || !u.cloud || !window.Cloud) return;
+    const J = JSON.stringify, oldDep = Object.fromEntries(a.deposits.filter(d => d.partnerId === sid).map(d => [d.id, J(d)]));
+    b.deposits.filter(d => d.partnerId === sid && oldDep[d.id] !== J(d)).forEach(d => Cloud.queue('deposit', d));
+    Object.keys(b.reflections).filter(k => k.startsWith(sid + '|') && J(a.reflections[k]) !== J(b.reflections[k])).forEach(k => { const r = b.reflections[k]; Cloud.queue('reflection', { week: k.split('|')[1], m: r.meaningful, n: r.next }); });
+    const ou = a.partners.find(p => p.id === sid) || {}; if ((ou.plan || '') !== (u.plan || '')) Cloud.queue('plan', { plan: u.plan });
+    if (J(a.prefs[sid]) !== J(b.prefs[sid]) && b.prefs[sid]) Cloud.queue('prefs', b.prefs[sid]);
+    const oldSh = Object.fromEntries(a.sharing.filter(x => x.owner === sid).map(x => [x.id, J(x)]));
+    b.sharing.filter(x => x.owner === sid && oldSh[x.id] !== J(x)).forEach(x => Cloud.queue('sharing', x));
+    if (J(a.timers[sid] || null) !== J(b.timers[sid] || null)) Cloud.queue('timer', b.timers[sid] || null);
+    const oldR = new Set(a.redemptions.map(r => r.id));
+    b.redemptions.filter(r => r.partnerId === sid && !oldR.has(r.id)).forEach(r => Cloud.queue('redeem', r));
+  }
+  me() { const db = this.state.db; return db.partners.find(p => p.id === db.session) || null; }
+  commit(fn) { const prev = this.state.db, db = JSON.parse(JSON.stringify(prev)); fn(db); persist(db); this.setState({ db }); try { this.syncDiff(prev, db); } catch (e) {} return db; }
+  audit(db, type, rt, rid, meta) { db.audit.push({ id: uid(), actor: db.session, type, recordType: rt, recordId: rid, at: Date.now(), meta: meta || null }); }
+  flash(m) { this.setState({ toast: m }); clearTimeout(this.tt); this.tt = setTimeout(() => this.setState({ toast: '' }), 2800); }
+  fail(m) { this.setState({ err: m }); }
+  toTop() { window.scrollTo(0, 0); const sc = document.querySelector('[data-app-scroller]'); if (sc) sc.scrollTop = 0; }
+  go(screen, extra) { this.setState(s => ({ stack: [...s.stack, s.screen], screen, err: '', ...(extra || {}) })); this.toTop(); }
+  tab(screen, extra) { this.setState({ stack: [], screen, err: '', dep: null, ...(extra || {}) }); this.toTop(); }
+  back() { this.setState(s => { const st = [...s.stack]; let prev = st.pop() || 'home'; if (prev === 'deposit') prev = st.pop() || 'home'; return { stack: st, screen: prev, err: '', dep: null }; }); this.toTop(); }
+  ask(title, body, ok, action, danger) { this.setState({ confirm: { title, body, ok, action, danger } }); }
+
+  checkReminder(u) {
+    const p = this.state.db.prefs[u.id]; if (!p || !p.reminder) return;
+    const today = ymd(new Date());
+    if (nowHM() === p.time && this.lastRem !== today && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      this.lastRem = today; try { new Notification('The 144(P) Plan', { body: 'What will you give today?', icon: 'icon-192.png' }); } catch (e) {}
+    }
+  }
+
+  // ---------- auth ----------
+  async register() {
+    const f = this.state.form, db = this.state.db;
+    const first = (f.first || '').trim(), last = (f.last || '').trim(), email = (f.email || '').trim().toLowerCase();
+    if (!first || !last) return this.fail('Enter your first and last name.');
+    if (!EMAIL_RE.test(email)) return this.fail('Enter a valid email address.');
+    if ((f.password || '').length < 8) return this.fail('Use a password with at least 8 characters.');
+    if (!f.consent) return this.fail('Please agree to the Terms and Privacy Policy to continue.');
+    if (db.partners.some(p => p.email === email && !p.cloud)) return this.fail('An account with this email already exists. Try signing in.');
+    if (window.Cloud) return this.registerCloud(first, last, email, f);
+    const pw = await sha(f.password + '|' + email);
+    const today = ymd(new Date());
+    this.commit(d => {
+      const jc = this.state.join; const p = { id: uid(), first, last, email, pw, churchId: jc ? jc.id : null, church: jc ? jc.name : (f.church || '').trim(), table: (f.table || '').trim(), start: today, created: Date.now(), demo: false, plan: '' };
+      d.partners.push(p); d.session = p.id;
+      d.prefs[p.id] = { reminder: false, time: '07:00', tz: Intl.DateTimeFormat().resolvedOptions().timeZone };
+      this.audit(d, 'account.created', 'partner', p.id);
+    });
+    const nu = JSON.parse(localStorage.getItem(KEY)).partners.find(x => x.email === email); let jst = null; if (this.state.join && nu) jst = linkMembership(nu, this.state.join);
+    this.tab('home', { form: {}, joinDismissed: true }); this.flash('Welcome, ' + first + '. Week 1 begins today.' + (jst === 'pending' ? ' Your church will confirm your membership.' : ''));
+  }
+  async registerCloud(first, last, email, f) {
+    if (this.state.busy) return; this.setState({ busy: true, err: '' });
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      const r = await Cloud.signUp(email, f.password, { first, last, tz });
+      if (!r.session) { this.setState({ busy: false, screen: 'signin', form: { email } }); return this.flash('Check your email to confirm your account, then sign in.'); }
+      Cloud.resetPid(); let data = await Cloud.pullPartner();
+      let jst = null; const jc = this.state.join;
+      if (jc && jc.slug) { try { jst = await Cloud.rpc('join_church', { p_slug: jc.slug }); data = await Cloud.pullPartner(); } catch (e) {} }
+      this.commit(d => { mergeCloud(d, data); const p = d.partners.find(x => x.id === data.partner.id); if (!p.church) p.church = (f.church || '').trim(); if (!p.table) p.table = (f.table || '').trim(); this.audit(d, 'account.created', 'partner', p.id); });
+      this.setState({ busy: false }); this.tab('home', { form: {}, joinDismissed: true });
+      this.flash('Welcome, ' + first + '. Week 1 begins today.' + (jst === 'pending' ? ' Your church will confirm your membership.' : ''));
+    } catch (e) { this.setState({ busy: false }); this.fail(authMsg(e)); }
+  }
+  async signin() {
+    if (window.Cloud) {
+      const f = this.state.form, email = (f.email || '').trim().toLowerCase(); if (this.state.busy) return;
+      if (!EMAIL_RE.test(email) || !f.password) return this.fail('Enter your email and password.');
+      this.setState({ busy: true, err: '' });
+      try {
+        await Cloud.signIn(email, f.password); Cloud.resetPid(); const data = await Cloud.pullPartner();
+        this.commit(d => { mergeCloud(d, data); this.audit(d, 'session.signin', 'partner', data.partner.id); });
+        this.setState({ busy: false }); touchActivity(data.partner); Cloud.flush(); return this.tab('home', { form: {} });
+      } catch (e) { this.setState({ busy: false }); if (navigator.onLine || !this.state.db.partners.some(p => p.email === email && p.pw)) return this.fail(authMsg(e)); }
+    }
+    const f = this.state.form, email = (f.email || '').trim().toLowerCase();
+    const p = this.state.db.partners.find(x => x.email === email && !x.demo);
+    const ok = p && p.pw === await sha((f.password || '') + '|' + email);
+    if (!ok) return this.fail("That email and password don't match an account.");
+    this.commit(d => { d.session = p.id; this.audit(d, 'session.signin', 'partner', p.id); });
+    this.tab('home', { form: {} });
+  }
+  demoSignin(id) { this.commit(d => { d.session = id; }); this.tab('home', { form: {} }); }
+  signOut() { const was = this.me(); if (was && was.cloud && window.Cloud) { Cloud.signOut(); this.commit(d => { d.partners = d.partners.filter(p => p.id !== was.id); d.deposits = d.deposits.filter(x => x.partnerId !== was.id); d.redemptions = d.redemptions.filter(x => x.partnerId !== was.id); d.sharing = d.sharing.filter(x => x.owner !== was.id); Object.keys(d.reflections).forEach(k => { if (k.startsWith(was.id + '|')) delete d.reflections[k]; }); delete d.prefs[was.id]; delete d.timers[was.id]; }); } this.commit(d => { d.session = null; }); this.setState({ screen: 'welcome', stack: [], form: {}, dep: null, notes: null, notesWeek: null, acct: null, planDraft: '', shareTo: '', detailId: null, itemId: null, slotId: null, confirm: null, err: '', toast: '' }); try { sessionStorage.clear(); } catch (e) {} }
+
+  // ---------- deposits ----------
+  openDeposit(editId) {
+    const u = this.me(), db = this.state.db, t = db.timers[u.id];
+    if (editId) {
+      const d = db.deposits.find(x => x.id === editId && x.partnerId === u.id); if (!d) return;
+      return this.go('deposit', { dep: { step: 1, category: d.category, minutes: d.minutes, date: d.date, time: d.time || '', note: d.note || '', editId, source: d.source, mode: 'manual', clientKey: null } });
+    }
+    this.go('deposit', { dep: { step: t ? 2 : 1, category: t ? t.category : null, minutes: 15, date: ymd(new Date()), time: nowHM(), note: '', editId: null, source: 'manual', mode: t ? 'timer' : 'manual', clientKey: uid() } });
+  }
+  setDep(p) { this.setState(s => ({ dep: { ...s.dep, ...p }, err: '' })); }
+  timerElapsed(t) { return t ? t.accum + (t.running ? Date.now() - t.startedAt : 0) : 0; }
+  depNext() {
+    const s = this.state, d = s.dep, u = this.me(), today = ymd(new Date());
+    if (d.step === 1) { if (!d.category) return this.fail('Choose how the time was given.'); return this.setDep({ step: 2 }); }
+    if (d.step === 2) {
+      if (s.db.timers[u.id]) return this.fail('Stop the timer to use its time.');
+      const m = parseInt(d.minutes, 10);
+      if (!(m > 0)) return this.fail('Enter minutes greater than zero.');
+      if (m > 1440) return this.fail('A single deposit can be up to 1,440 minutes.');
+      return this.setDep({ step: 3, minutes: m });
+    }
+    if (d.step === 3) {
+      if (!d.date) return this.fail('Choose a date.');
+      if (d.date > today) return this.fail("Deposits can't be dated in the future.");
+      if (d.date < u.start) return this.fail(`Your account began ${fDate(u.start, FULL)}. Choose that date or later.`);
+      return this.setDep({ step: 4 });
+    }
+    this.saveDeposit();
+  }
+  saveDeposit() {
+    const s = this.state, d = s.dep, u = this.me(); if (s.busy) return;
+    this.setState({ busy: true });
+    const m = parseInt(d.minutes, 10), note = (d.note || '').trim().slice(0, 300);
+    if (d.editId) {
+      this.commit(db => {
+        const x = db.deposits.find(y => y.id === d.editId && y.partnerId === u.id); if (!x) return;
+        const before = { category: x.category, minutes: x.minutes, date: x.date, time: x.time };
+        const noteChanged = x.note !== note;
+        Object.assign(x, { category: d.category, minutes: m, date: d.date, time: d.time, note, updatedAt: Date.now() });
+        this.audit(db, 'deposit.revised', 'deposit', x.id, { before, after: { category: x.category, minutes: m, date: x.date, time: x.time }, noteChanged });
+      });
+      this.setState({ busy: false }); this.back(); this.flash('Deposit updated. Statements recalculated.');
+      return;
+    }
+    if (s.db.deposits.some(x => x.clientKey === d.clientKey)) { this.setState({ busy: false }); return; }
+    this.commit(db => {
+      const x = { ...mkDep(u.id, d.date, d.category, m, d.time, note), source: d.source, createdAt: Date.now(), clientKey: d.clientKey };
+      db.deposits.push(x); this.audit(db, 'deposit.created', 'deposit', x.id);
+    });
+    this.setState({ busy: false }); this.tab('home'); this.flash(`${m} min of ${CAT[d.category].name} deposited.`);
+  }
+  voidDeposit(id) {
+    this.ask('Void this deposit?', 'It will be removed from your balances and statements. A record of the change stays in your private history.', 'Void deposit', () => {
+      const u = this.me();
+      this.commit(db => { const x = db.deposits.find(y => y.id === id && y.partnerId === u.id); if (!x || x.voidedAt) return; x.voidedAt = Date.now(); this.audit(db, 'deposit.voided', 'deposit', id); });
+      this.back(); this.flash('Deposit voided. Statements recalculated.');
+    }, true);
+  }
+
+  // ---------- notes / redemption / misc ----------
+  loadNotes(w) { const u = this.me(); const key = `${u.id}|${addDays(u.start, (w - 1) * 7)}`; const r = this.state.db.reflections[key] || {}; return { notesWeek: w, notes: { m: r.meaningful || '', n: r.next || '' } }; }
+  doRedeem(item, cost, detail, slotId) {
+    const u = this.me(), key = this.state.redeemKey;
+    this.ask(`Redeem ${fmt(cost)} minutes?`, `${detail}. Available to give goes down by ${fmt(cost)} minutes. Your lifetime deposits don't change.`, 'Redeem', () => {
+      if (this.state.busy) return; this.setState({ busy: true });
+      let made = false;
+      this.commit(db => {
+        if (db.redemptions.some(r => r.clientKey === key)) return;
+        const life = db.deposits.filter(x => x.partnerId === u.id && !x.voidedAt).reduce((a, x) => a + x.minutes, 0);
+        const spent = db.redemptions.filter(r => r.partnerId === u.id && r.status !== 'Cancelled').reduce((a, r) => a + r.cost, 0);
+        if (life - spent < cost) return;
+        const r = { id: uid(), partnerId: u.id, itemId: item.id, title: item.title, detail, slotId: slotId || null, cost, status: 'Confirmed', createdAt: Date.now(), clientKey: key };
+        db.redemptions.push(r); this.audit(db, 'redemption.created', 'redemption', r.id); made = true;
+      });
+      this.setState(s => ({ busy: false, screen: 'redemptions', stack: [...s.stack, s.screen], redeemKey: uid() }));
+      this.flash(made ? `Redeemed. ${fmt(cost)} min drawn from Available to give.` : 'Not enough available minutes.');
+    });
+  }
+  exportData() {
+    const u = this.me(), db = this.state.db;
+    const data = { exportedAt: new Date().toISOString(), partner: { ...u, pw: undefined }, deposits: db.deposits.filter(d => d.partnerId === u.id), reflections: Object.fromEntries(Object.entries(db.reflections).filter(([k]) => k.startsWith(u.id + '|'))), redemptions: db.redemptions.filter(r => r.partnerId === u.id), sharing: db.sharing.filter(s => s.owner === u.id), history: db.audit.filter(a => a.actor === u.id) };
+    const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' })); a.download = `144p-${u.first.toLowerCase()}-export.json`; a.click();
+  }
+  deleteAccount() {
+    const u = this.me();
+    const wipe = db => { const id = u.id; db.partners = db.partners.filter(p => p.id !== id); db.deposits = db.deposits.filter(d => d.partnerId !== id); db.redemptions = db.redemptions.filter(r => r.partnerId !== id); db.sharing = db.sharing.filter(s => s.owner !== id); db.audit = db.audit.filter(a => a.actor !== id); Object.keys(db.reflections).forEach(k => { if (k.startsWith(id + '|')) delete db.reflections[k]; }); delete db.prefs[id]; delete db.timers[id]; };
+    if (u.demo) return this.ask('Reset sample data?', 'Both sample accounts return to their original demonstration data.', 'Reset', () => {
+      this.commit(db => { ['demo-jane', 'demo-sam'].forEach(id => { const p = db.partners.find(x => x.id === id); if (p) { const keep = u; } }); const ids = ['demo-jane', 'demo-sam']; db.partners = db.partners.filter(p => !ids.includes(p.id)); db.deposits = db.deposits.filter(d => !ids.includes(d.partnerId)); db.redemptions = db.redemptions.filter(r => !ids.includes(r.partnerId)); db.sharing = db.sharing.filter(s => !ids.includes(s.owner)); Object.keys(db.reflections).forEach(k => { if (ids.some(i => k.startsWith(i + '|'))) delete db.reflections[k]; }); ids.forEach(i => delete db.timers[i]); seedDemos(db); db.session = u.id; });
+      this.tab('home'); this.flash('Sample data reset.');
+    }, true);
+    this.ask('Delete your account?', u.cloud ? 'This permanently removes your profile, deposits, notes, reflections and redemption history from The 144(P) Plan. Export first if you want a copy.' : 'This permanently removes your profile, deposits, notes, reflections and redemption history from this device. Export first if you want a copy.', 'Delete account', () => {
+      if (u.cloud && window.Cloud) { Cloud.rpc('delete_my_account').then(() => { Cloud.signOut(); this.commit(db => { wipe(db); db.session = null; }); this.setState({ screen: 'welcome', stack: [] }); }).catch(e => this.flash(authMsg(e))); return; }
+      this.commit(db => { wipe(db); db.session = null; }); this.setState({ screen: 'welcome', stack: [] });
+    }, true);
+  }
+
+  renderVals() {
+    const s = this.state, db = s.db, u = this.me(), today = ymd(new Date()), p = this.props;
+    const scr = s.screen;
+    const formOn = k => e => { const v = e.target.value; this.setState(st => ({ form: { ...st.form, [k]: v }, err: '' })); };
+    const base = {
+      isWelcome: !u && scr === 'welcome', isAuthForm: !u && (scr === 'register' || scr === 'signin'), isApp: !!u,
+      isRegister: scr === 'register', isSignin: scr === 'signin',
+      authTitle: scr === 'register' ? 'Create Account' : 'Sign In',
+      authCta: s.busy ? 'Please wait…' : scr === 'register' ? 'Create account' : 'Sign in',
+      authSwapLabel: scr === 'register' ? 'I already have an account' : 'New here? Create an account',
+      authSwap: () => this.setState({ screen: scr === 'register' ? 'signin' : 'register', err: '' }),
+      authSubmit: () => (scr === 'register' ? this.register() : this.signin()),
+      toRegister: () => this.setState({ screen: 'register', err: '', form: {} }),
+      hasJoin: !!s.join, joinName: s.join ? s.join.name : '',
+      toSignin: () => this.setState({ screen: 'signin', err: '', form: {} }),
+      toWelcome: () => this.setState({ screen: 'welcome', err: '' }),
+      f: { first: '', last: '', email: '', password: '', church: '', table: '', consent: false, ...s.form },
+      on: { first: formOn('first'), last: formOn('last'), email: formOn('email'), password: formOn('password'), church: formOn('church'), table: formOn('table'), consent: () => this.setState(st => ({ form: { ...st.form, consent: !st.form.consent }, err: '' })) },
+      consentBg: s.form.consent ? '#075D61' : '#FFFFFF',
+      demoAccounts: [
+        { name: 'Jane Smith', sub: 'Starter phase · Week 3 of 12', pick: () => this.demoSignin('demo-jane') },
+        { name: 'Sam Lee', sub: 'Standard account · Commissioned', pick: () => this.demoSignin('demo-sam') }],
+      hasErr: !!s.err, err: s.err, hasToast: !!s.toast, toast: s.toast,
+      hasConfirm: !!s.confirm,
+      cf: s.confirm ? { title: s.confirm.title, body: s.confirm.body, ok: s.confirm.ok, bg: s.confirm.danger ? '#A33A2E' : '#123C56' } : { title: '', body: '', ok: '', bg: '#123C56' },
+      cfCancel: () => this.setState({ confirm: null }),
+      cfOk: () => { const a = s.confirm && s.confirm.action; this.setState({ confirm: null }); if (a) a(); },
+    };
+    if (!u) return base;
+
+    // ---- core calculations (all derived from stored records) ----
+    const deps = db.deposits.filter(d => d.partnerId === u.id && !d.voidedAt);
+    const byDay = {}; deps.forEach(d => { byDay[d.date] = (byDay[d.date] || 0) + d.minutes; });
+    const sumR = (a, b) => deps.reduce((t, d) => (d.date >= a && d.date <= b ? t + d.minutes : t), 0);
+    const sumBefore = a => deps.reduce((t, d) => (d.date < a ? t + d.minutes : t), 0);
+    const curWeek = Math.floor(diffDays(u.start, today) / 7) + 1;
+    const wk = dt => Math.floor(diffDays(u.start, dt) / 7) + 1;
+    const wStart = w => addDays(u.start, (w - 1) * 7);
+    const days144 = (a, b) => { let c = 0, n = 0; const e = b < today ? b : today; for (let d = a; d <= e; d = addDays(d, 1)) { n++; if ((byDay[d] || 0) >= 144) c++; } return [c, n]; };
+    const stats = (a, b, goalEnd) => { if (a < u.start) a = u.start; const op = sumBefore(a), dp = sumR(a, b), [c, n] = days144(a, b), goal = 144 * Math.max(0, diffDays(a, goalEnd) + 1); return { op, dp, cl: op + dp, goal, pct: goal ? Math.round(dp / goal * 100) : 0, c, n }; };
+    const lifetime = deps.reduce((t, d) => t + d.minutes, 0);
+    const myRed = db.redemptions.filter(r => r.partnerId === u.id);
+    const spent = myRed.filter(r => r.status !== 'Cancelled').reduce((t, r) => t + r.cost, 0);
+    const available = lifetime - spent;
+    const commissioned = curWeek >= 13, commDate = addDays(u.start, 84);
+    const level = null; // levels shown only once targets are configured
+    const phaseShort = commissioned ? 'Standard account' : 'Starter phase';
+    const chapter = w => CHAPTERS[w - 1] || `Chapter ${w}`;
+    const phaseLine = commissioned ? `Standard account · Week ${curWeek} · Commissioned` : `Starter phase · Week ${curWeek} of 12 · ${chapter(curWeek)}`;
+    const timer = db.timers[u.id] || null, elapsed = this.timerElapsed(timer);
+    const catView = (k) => CAT[k];
+    const servingOn = p.servingEnabled ?? true, catalogOn = p.catalogEnabled ?? false;
+
+    // ---- home ----
+    const cw = stats(wStart(curWeek), addDays(wStart(curWeek), 6), addDays(wStart(curWeek), 6));
+    const hour = new Date().getHours();
+    const todayDeps = deps.filter(d => d.date === today).sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+    const reflKey = `${u.id}|${wStart(curWeek)}`, refl = db.reflections[reflKey] || db.reflections[`${u.id}|${wStart(curWeek - 1)}`];
+
+    // ---- header / nav ----
+    const titles = { statement: s.period === 'week' ? 'Weekly Statement' : s.period === 'month' ? 'Monthly Statement' : 'Year-to-Date Statement', deposit: s.dep && s.dep.editId ? 'Edit Deposit' : 'Make a Deposit', history: 'Deposit History', detail: 'Deposit Details', journey: 'From Starter to Standard', milestones: 'Progress & Milestones', balance: 'My Balance', redeem: 'Redemption Options', redeemDetail: 'Redemption Detail', redemptions: 'My Redemptions', notes: 'My Notes', more: 'More', account: 'My Account', plan: 'My Giving Plan', notifications: 'Notifications', privacy: 'Privacy & Church View', about: 'About The 144(P) Plan', help: 'Help & Support', install: 'Install the App' };
+    const navMap = { home: 'home', statement: 'statement', notes: 'statement', deposit: 'deposit', balance: 'balance', redeem: 'balance', redeemDetail: 'balance', redemptions: 'balance' };
+    const activeNav = navMap[scr] || 'more';
+    const navItems = [['home', 'Home', 'icon-house'], ['deposit', 'Deposit', 'icon-circle-plus'], ['statement', 'Statement', 'icon-file-text'], ['balance', 'Redeem', 'icon-gift'], ['more', 'More', 'icon-ellipsis']].map(([k, label, icon]) => ({
+      label, icon, fg: activeNav === k ? '#123C56' : '#6A7A84', weight: activeNav === k ? 700 : 500, current: activeNav === k ? 'page' : 'false',
+      pick: () => (k === 'deposit' ? (this.setState({ stack: [] }), this.openDeposit()) : this.tab(k, k === 'statement' ? { stWeek: null, stMonth: null } : {})) }));
+
+    // ---- deposit flow ----
+    const d = s.dep || { step: 1, category: null, minutes: 15, date: today, time: '', note: '', mode: 'manual', source: 'manual' };
+    const tState = !timer ? 'none' : timer.running ? 'running' : 'paused';
+    const depCat = d.category ? CAT[d.category] : null;
+
+    // ---- statement ----
+    const period = s.period, sw = Math.min(s.stWeek || curWeek, curWeek);
+    const curMonth = today.slice(0, 7), sm = s.stMonth || curMonth, startMonth = u.start.slice(0, 7);
+    let s1, s2, stTitle, stRange, col1, col2, ra, rb;
+    if (period === 'week') {
+      ra = wStart(sw); rb = addDays(ra, 6); s1 = stats(ra, rb, rb); s2 = stats(u.start, rb, rb);
+      stTitle = `Week ${sw}${sw <= 12 ? ' of 12' : ''}`; col1 = 'This week'; col2 = 'Plan to date';
+    } else if (period === 'month') {
+      const [y, m] = sm.split('-').map(Number); ra = `${sm}-01`; rb = fromUTC(Date.UTC(y, m, 0));
+      s1 = stats(ra, rb, rb); s2 = stats(`${y}-01-01`, rb, rb);
+      stTitle = new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString('en-US', { timeZone: 'UTC', month: 'long', year: 'numeric' }); col1 = 'This month'; col2 = 'Year to date';
+    } else {
+      const y = today.slice(0, 4); ra = `${y}-01-01` < u.start ? u.start : `${y}-01-01`; rb = today;
+      s1 = stats(ra, rb, rb); s2 = stats(u.start, rb, rb); stTitle = `${y} year to date`; col1 = 'Year to date'; col2 = 'Lifetime';
+    }
+    stRange = `${fDate(ra < u.start ? u.start : ra)} – ${fDate(rb, { month: 'short', day: 'numeric', year: 'numeric' })}`;
+    const allocMins = CATS.map(c => deps.filter(x => x.date >= ra && x.date <= rb && x.category === c.k).reduce((t, x) => t + x.minutes, 0));
+    const allocShares = shares(allocMins);
+    const alloc = CATS.map((c, i) => ({ ...c, min: fmt(allocMins[i]), raw: allocMins[i], share: allocShares[i] + '%' })).sort((a, b) => b.raw - a.raw);
+    const stRefl = db.reflections[`${u.id}|${wStart(sw)}`] || {};
+    const shiftMonth = (ym, n) => { const [y, m] = ym.split('-').map(Number); const dd = new Date(Date.UTC(y, m - 1 + n, 1)); return `${dd.getUTCFullYear()}-${pad(dd.getUTCMonth() + 1)}`; };
+
+    // ---- detail ----
+    const det = db.deposits.find(x => x.id === s.detailId && x.partnerId === u.id);
+    const catName = k => (CAT[k] ? CAT[k].name : k);
+    const dt = det ? {
+      ...CAT[det.category], min: fmt(det.minutes), note: det.note, hasNote: !!det.note,
+      rows: [
+        { label: 'Date', value: fDate(det.date, FULL) }, { label: 'Time', value: det.time ? fTime(det.time) : 'Not recorded' },
+        { label: 'Program week', value: `Week ${wk(det.date)} · Day ${(diffDays(u.start, det.date) % 7) + 1}` },
+        { label: 'Entered by', value: det.source === 'timer' ? 'Live timer' : 'Manual entry' }, { label: 'Recorded', value: fStamp(det.createdAt) }],
+      revs: db.audit.filter(a => a.recordId === det.id && a.actor === u.id && a.type === 'deposit.revised').reverse().map(a => {
+        const b = a.meta.before, f = a.meta.after, ch = [];
+        if (b.minutes !== f.minutes) ch.push(`${b.minutes} → ${f.minutes} min`);
+        if (b.category !== f.category) ch.push(`${catName(b.category)} → ${catName(f.category)}`);
+        if (b.date !== f.date) ch.push(`${fDate(b.date)} → ${fDate(f.date)}`);
+        if (b.time !== f.time) ch.push('time changed');
+        if (a.meta.noteChanged) ch.push('note edited');
+        return { when: fStamp(a.at), text: ch.join(' · ') || 'No changes' };
+      }),
+      edit: () => this.openDeposit(det.id), void: () => this.voidDeposit(det.id),
+    } : { icon: '', tint: '#EEE', color: '#000', name: '', min: '', rows: [], revs: [], hasNote: false, note: '', edit: () => {}, void: () => {} };
+    dt.hasRevs = dt.revs.length > 0;
+
+    // ---- history ----
+    const groups = {}; deps.forEach(x => { (groups[x.date] = groups[x.date] || []).push(x); });
+    const histGroups = Object.keys(groups).sort().reverse().slice(0, 60).map(dd => ({
+      label: dd === today ? 'Today' : fDate(dd, FULL), total: fmt(groups[dd].reduce((t, x) => t + x.minutes, 0)),
+      items: groups[dd].sort((a, b) => (b.time || '').localeCompare(a.time || '')).map(x => ({ ...CAT[x.category], min: x.minutes, sub: [x.time ? fTime(x.time) : '', `Week ${wk(x.date)}`, x.note].filter(Boolean).join(' · '), open: () => this.go('detail', { detailId: x.id }) })) }));
+
+    // ---- catalog ----
+    const itemState = it => { const en = it.v1 ? servingOn : catalogOn; if (!en) return ['Later release', '#EEF1F2', '#4F5F68']; if (!commissioned) return ['Locked until week 13', '#FFF4DC', '#6B4E12']; return ['Available', '#E8F5F3', '#075D61']; };
+    const catItems = CATALOG.map(it => { const [badge, badgeBg, badgeFg] = itemState(it); return { ...it, badge, badgeBg, badgeFg, open: () => this.go('redeemDetail', { itemId: it.id, slotId: null, redeemKey: uid() }) }; });
+    const item = CATALOG.find(x => x.id === s.itemId) || CATALOG[0];
+    const itemEnabled = item.v1 ? servingOn : catalogOn;
+    const claimed = new Set(myRed.filter(r => r.slotId && r.status !== 'Cancelled').map(r => r.slotId));
+    const slot = SLOTS.find(x => x.id === s.slotId);
+    const rdCost = item.id === 'serve' ? (slot ? slot.hours * 60 : 0) : item.cost;
+    let rdLabel, rdOk = false;
+    if (!itemEnabled) rdLabel = 'Planned for a later release';
+    else if (!commissioned) rdLabel = 'Opens at commissioning (week 13)';
+    else if (item.id === 'serve' && !slot) rdLabel = 'Choose an opening';
+    else if (available < rdCost) rdLabel = 'Not enough available minutes';
+    else { rdLabel = `Redeem ${fmt(rdCost)} min`; rdOk = true; }
+    const rd = {
+      ...item, isServe: item.id === 'serve', btnLabel: rdLabel, btnBg: rdOk ? '#123C56' : '#9AA8B0',
+      slots: SLOTS.map(x => { const taken = claimed.has(x.id); return { ...x, when: taken ? x.when + ' · Claimed' : x.when, costLabel: fmt(x.hours * 60) + ' min', border: s.slotId === x.id ? '#075D61' : '#E1E7EA', pick: () => (taken ? null : this.setState({ slotId: x.id })) }; }),
+      redeem: () => { if (rdOk) this.doRedeem(item, rdCost, item.id === 'serve' ? `${slot.title}, ${slot.when}` : item.title, slot && slot.id); },
+    };
+
+    // ---- notes ----
+    const nw = s.notesWeek || curWeek, nd = s.notes || { m: '', n: '' };
+    const openNotes = w => this.go('notes', this.loadNotes(w));
+
+    // ---- sharing / prefs ----
+    const share = db.sharing.find(x => x.owner === u.id && x.enabled && !x.revokedAt);
+    const prefs = db.prefs[u.id] || { reminder: false, time: '07:00', tz: Intl.DateTimeFormat().resolvedOptions().timeZone };
+    const setPrefs = patch => this.commit(x => { x.prefs[u.id] = { ...prefs, ...patch }; });
+
+    const ac = s.acct || { first: u.first, last: u.last, email: u.email, church: u.church, table: u.table };
+    const acOn = Object.fromEntries(['first', 'last', 'email', 'church', 'table'].map(k => [k, e => { const v = e.target.value; this.setState(st => ({ acct: { ...(st.acct || ac), [k]: v }, err: '' })); }]));
+
+    return {
+      ...base,
+      isHome: scr === 'home', isDeposit: scr === 'deposit', isStatement: scr === 'statement', isHistory: scr === 'history', isDetail: scr === 'detail',
+      isJourney: scr === 'journey', isMilestones: scr === 'milestones', isBalance: scr === 'balance', isRedeem: scr === 'redeem', isRedeemDetail: scr === 'redeemDetail',
+      isRedemptions: scr === 'redemptions', isNotes: scr === 'notes', isMore: scr === 'more', isAccount: scr === 'account', isPlan: scr === 'plan',
+      isNotifications: scr === 'notifications', isPrivacy: scr === 'privacy', isAbout: scr === 'about', isHelp: scr === 'help',
+      hdrHome: scr === 'home', hdrInner: scr !== 'home', hdrTitle: titles[scr] || '',
+      hdrBack: () => { if (scr === 'deposit' && d.step > 1) return this.setDep({ step: d.step - 1 }); this.back(); },
+      toMore: () => this.tab('more'), isDemo: !!u.demo, showNav: scr !== 'deposit' && !s.kb, navItems,
+      fullName: `${u.first} ${u.last}`, initials: (u.first[0] + u.last[0]).toUpperCase(), phaseLine, phaseShort, levelSuffix: level ? ` · Level: ${level}` : '',
+
+      joinOffer: !!s.join && !s.joinDismissed && u.churchId !== s.join.id && !u.demo, joinName: s.join ? s.join.name : '',
+      joinDemoNote: !!s.join && u.demo,
+      joinAccept: () => { const st = linkMembership(u, s.join); this.commit(x => { const pp = x.partners.find(y => y.id === u.id); pp.churchId = s.join.id; pp.church = s.join.name; this.audit(x, 'church.association_changed', 'partner', u.id); }); this.setState({ joinDismissed: true }); this.flash(st === 'pending' ? 'Request sent. ' + s.join.name + ' will confirm your membership.' : 'You joined ' + s.join.name + '. Your personal record stays yours.'); },
+      joinDismiss: () => this.setState({ joinDismissed: true }),
+      greeting: `${hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'}, ${u.first}`,
+      timerActive: !!timer, timerState: tState === 'running' ? 'running' : 'paused', timerCat: timer ? CAT[timer.category].name : '', timerClock: clock(elapsed),
+      resumeTimer: () => this.openDeposit(),
+      ringOffset: (364.42 * (1 - Math.min(1, cw.dp / 1008))).toFixed(2), weekMin: fmt(cw.dp), weekDays144: `${cw.c} of ${cw.n}`, weekPct: cw.pct + '%', goalMet: cw.dp >= 1008,
+      homeOpen: fmt(cw.op), homeDep: fmt(cw.dp), homeClose: fmt(cw.cl),
+      toStatement: () => this.tab('statement', { period: 'week', stWeek: null, stView: 'summary' }), newDeposit: () => this.openDeposit(),
+      toHistory: () => this.go('history'), toBalance: () => this.go('balance'), toJourney: () => this.go('journey'), toNotes: () => openNotes(curWeek),
+      todayTotal: fmt(todayDeps.reduce((a, x) => a + x.minutes, 0)), todayEmpty: todayDeps.length === 0, todayHas: todayDeps.length > 0,
+      todayList: todayDeps.map(x => ({ ...CAT[x.category], min: x.minutes, time: fTime(x.time), open: () => this.go('detail', { detailId: x.id }) })),
+      availableFmt: fmt(available), lifetimeFmt: fmt(lifetime),
+      journeyTileLabel: commissioned ? 'Standard account' : 'Starter phase', journeyTileValue: commissioned ? `Week ${curWeek}` : `Week ${curWeek} of 12`,
+      hasReflection: !!(refl && refl.meaningful), reflectionText: refl && refl.meaningful ? `“${refl.meaningful}”` : '',
+
+      depSteps: ['Type', 'Time', 'When', 'Note'].map((label, i) => { const n = i + 1, done = n < d.step, cur = n === d.step; return { n, label, bg: cur ? '#123C56' : done ? '#E8F5F3' : '#FFFFFF', fg: cur ? '#FFFFFF' : done ? '#075D61' : '#6A7A84', border: cur ? '#123C56' : done ? '#075D61' : '#CBD5DA' }; }),
+      dStep1: d.step === 1, dStep2: d.step === 2, dStep3: d.step === 3, dStep4: d.step === 4,
+      catCards: CATS.map(c => ({ ...c, sel: d.category === c.k, border: d.category === c.k ? '#075D61' : '#E1E7EA', checkBg: d.category === c.k ? '#075D61' : '#E1E7EA', pick: () => { this.setDep({ category: c.k }); if (timer) this.commit(x => { x.timers[u.id].category = c.k; }); } })),
+      depModes: [['manual', 'Enter minutes'], ['timer', 'Use timer']].map(([k, name]) => ({ name, bg: d.mode === k ? '#FFFFFF' : 'transparent', fg: d.mode === k ? '#123C56' : '#4F5F68', pick: () => this.setDep({ mode: k }) })),
+      isManual: d.mode === 'manual', isTimerMode: d.mode === 'timer',
+      depMinutes: d.minutes, onMinutes: e => this.setDep({ minutes: e.target.value, source: 'manual' }),
+      minDec: () => this.setDep({ minutes: Math.max(1, (parseInt(d.minutes, 10) || 0) - 5), source: 'manual' }),
+      minInc: () => this.setDep({ minutes: (parseInt(d.minutes, 10) || 0) + 5, source: 'manual' }),
+      quickMins: [10, 15, 30, 60].map(n => ({ label: n + ' min', pick: () => this.setDep({ minutes: n, source: 'manual' }) })),
+      fromTimer: d.source === 'timer',
+      timerOffset: (552.92 * (1 - Math.min(1, elapsed / (144 * 60000)))).toFixed(2), timerSub: tState === 'none' ? 'Ready' : tState === 'running' ? (depCat ? depCat.name : 'Running') : 'Paused',
+      tNone: tState === 'none', tRunning: tState === 'running', tPaused: tState === 'paused', tActive: tState !== 'none',
+      timerStart: () => { if (!d.category) return this.fail('Choose how the time was given first.'); this.commit(x => { x.timers[u.id] = { category: d.category, startedAt: Date.now(), accum: 0, running: true }; }); },
+      timerPause: () => this.commit(x => { const t = x.timers[u.id]; if (t && t.running) { t.accum += Date.now() - t.startedAt; t.running = false; } }),
+      timerResume: () => this.commit(x => { const t = x.timers[u.id]; if (t && !t.running) { t.startedAt = Date.now(); t.running = true; } }),
+      timerStop: () => { const ms = this.timerElapsed(db.timers[u.id]); const m = Math.max(1, Math.round(ms / 60000)); this.commit(x => { delete x.timers[u.id]; }); this.setDep({ minutes: m, source: 'timer', mode: 'manual', time: d.time }); this.flash(`Timer stopped · ${m} min`); },
+      timerDiscard: () => this.ask('Discard this timer?', 'The timed minutes will not be deposited.', 'Discard', () => this.commit(x => { delete x.timers[u.id]; }), true),
+      whenChips: [['Today', today], ['Yesterday', addDays(today, -1)]].map(([name, v]) => { const on = d.date === v; return { name, border: on ? '#123C56' : '#CBD5DA', bg: on ? '#123C56' : '#FFFFFF', fg: on ? '#FFFFFF' : '#173344', pick: () => this.setDep({ date: v }) }; }),
+      depDate: d.date, depTime: d.time, startDate: u.start, todayStr: today,
+      onDate: e => this.setDep({ date: e.target.value }), onTime: e => this.setDep({ time: e.target.value }),
+      filedUnder: d.date && d.date >= u.start && d.date <= today ? `Files under Week ${wk(d.date)} · Day ${(diffDays(u.start, d.date) % 7) + 1} · ${fDate(d.date, FULL)}` : 'Choose a date within your account.',
+      depNote: d.note, depNoteCount: (d.note || '').length, onNote: e => this.setDep({ note: e.target.value.slice(0, 300) }),
+      reviewRows: [{ label: 'How given', value: depCat ? depCat.name : '—' }, { label: 'Minutes', value: `${d.minutes} min` }, { label: 'Date', value: d.date ? fDate(d.date, FULL) : '—' }, { label: 'Time', value: d.time ? fTime(d.time) : 'Not recorded' }],
+      depNext: () => this.depNext(), depNextBg: s.busy ? '#9AA8B0' : '#123C56',
+      depNextLabel: d.step < 4 ? 'Next' : d.editId ? 'Save changes' : 'Save deposit',
+
+      periods: [['week', 'Weekly'], ['month', 'Monthly'], ['ytd', 'Year to date']].map(([k, name]) => ({ name, bg: period === k ? '#FFFFFF' : 'transparent', fg: period === k ? '#123C56' : '#4F5F68', pick: () => this.setState({ period: k }) })),
+      stTitle, stRange, stCol1: col1, stCol2: col2,
+      stPrev: () => { if (period === 'week') this.setState({ stWeek: Math.max(1, sw - 1) }); else if (period === 'month' && sm > startMonth) this.setState({ stMonth: shiftMonth(sm, -1) }); },
+      stNext: () => { if (period === 'week') this.setState({ stWeek: Math.min(curWeek, sw + 1) }); else if (period === 'month' && sm < curMonth) this.setState({ stMonth: shiftMonth(sm, 1) }); },
+      stViews: [['summary', 'Summary'], ['alloc', 'Allocation & notes']].map(([k, name]) => { const on = s.stView === k; return { name, border: on ? '#123C56' : '#CBD5DA', bg: on ? '#123C56' : '#FFFFFF', fg: on ? '#FFFFFF' : '#173344', pick: () => this.setState({ stView: k }) }; }),
+      stStack: s.vw < 400, stTable: s.vw >= 400, stSummary: s.stView === 'summary', stAlloc: s.stView === 'alloc', stIsWeek: period === 'week',
+      stSumRows: [
+        { label: 'Opening balance', a: fmt(s1.op) + ' min', b: '—', w: 400 },
+        { label: period === 'week' ? 'Deposits this week' : 'Deposits', a: fmt(s1.dp) + ' min', b: fmt(s2.dp) + ' min', w: 400 },
+        { label: 'Closing balance', a: fmt(s1.cl) + ' min', b: fmt(s2.cl) + ' min', w: 700 }],
+      get stAllRows() { return [...this.stSumRows, ...this.stGoalRows]; },
+      stGoalRows: [
+        { label: period === 'week' ? 'Weekly goal (144 × 7)' : 'Goal (144 × days)', a: fmt(s1.goal) + ' min', b: fmt(s2.goal) + ' min' },
+        { label: 'Goal reached', a: s1.pct + '%', b: s2.pct + '%' },
+        { label: 'Days at 144', a: `${s1.c} of ${s1.n}`, b: `${s2.c} of ${s2.n}` }],
+      printStatement: () => window.print(),
+      stAllocLabel: period === 'week' ? 'this week' : period === 'month' ? 'this month' : 'this year',
+      alloc, allocTotal: fmt(allocMins.reduce((a, b) => a + b, 0)), allocTotalShare: allocMins.some(Boolean) ? '100%' : '0%',
+      stReflM: stRefl.meaningful || 'Nothing written yet.', stReflN: stRefl.next || 'Nothing written yet.', stEditNotes: () => openNotes(sw),
+
+      histEmpty: histGroups.length === 0, histGroups, dt,
+
+      jPhase: commissioned ? 'Standard account' : 'Starter phase',
+      jTitle: commissioned ? `Commissioned · Week ${curWeek}` : `Week ${curWeek} of 12 · ${chapter(curWeek)}`,
+      jSub: commissioned ? `Commissioned ${fDate(commDate, FULL)}. Every deposit from the starter phase carried over.` : `Daily goal 144 min · Weekly goal 1,008 min · ${12 - curWeek} weeks until commissioning`,
+      jPct: Math.min(100, Math.round(Math.min(curWeek - 1, 12) / 12 * 100)) + '%',
+      weeksGrid: Array.from({ length: 12 }, (_, i) => { const n = i + 1, a = wStart(n), m = n <= curWeek ? sumR(a, addDays(a, 6)) : null, cur = n === curWeek, done = n < curWeek; return { n, min: m === null ? 'Upcoming' : fmt(m) + ' min', bg: cur ? '#123C56' : done ? '#E8F5F3' : '#FFFFFF', fg: cur ? '#FFFFFF' : done ? '#075D61' : '#6A7A84', border: cur ? '#123C56' : done ? '#BFE2DC' : '#E1E7EA' }; }),
+      compareRows: [
+        { label: 'Guide', a: 'The book, one chapter a week', b: 'Your own giving plan' }, { label: 'Daily goal', a: '144 minutes', b: '144 minutes' },
+        { label: 'Statements', a: 'Weekly, by book week', b: 'Weekly, monthly, plus year to date' }, { label: 'Table', a: 'Meets weekly', b: 'Optional: keep meeting, or lead the next Table' },
+        { label: 'Milestones', a: 'Levels and commissioning', b: 'Account anniversaries and lifetime balance' }, { label: 'Spending', a: 'Balance shown, locked', b: 'Redemption opens' }],
+
+      msRows: [
+        { label: 'Current phase', value: phaseShort }, { label: 'Starter weeks completed', value: `${Math.min(12, curWeek - 1)} of 12` },
+        { label: 'Commissioning', value: commissioned ? `Commissioned ${fDate(commDate, { month: 'short', day: 'numeric', year: 'numeric' })}` : `Expected ${fDate(commDate, { month: 'short', day: 'numeric', year: 'numeric' })}` },
+        { label: 'Days with a deposit', value: fmt(Object.keys(byDay).length) },
+        { label: 'Weeks with a reflection', value: fmt(Object.keys(db.reflections).filter(k => k.startsWith(u.id + '|') && db.reflections[k].meaningful).length) },
+        { label: 'First account anniversary', value: fDate(addDays(u.start, 365), { month: 'short', day: 'numeric', year: 'numeric' }) }],
+      levels: LEVELS.map(l => ({ name: l.name, status: l.target ? `${fmt(l.target)} min` : 'Target not yet set' })),
+
+      availNote: commissioned ? 'Can be spent on redemption options.' : 'Grows with every deposit. Spending opens at commissioning.',
+      redeemLocked: !commissioned, lockText: `Redemption opens after you complete the 12-week starter phase, on ${fDate(commDate, FULL)}. Your balance keeps growing until then.`,
+      spendTop: catItems.slice(0, 3), catalog: catItems, rd,
+      toRedeem: () => this.go('redeem'), toRedemptions: () => this.go('redemptions'),
+      noRedemptions: myRed.length === 0,
+      myRedemptions: [...myRed].reverse().map(r => ({ title: r.title, sub: `${r.detail !== r.title ? r.detail + ' · ' : ''}${fStamp(r.createdAt)}`, cost: fmt(r.cost), status: r.status })),
+
+      nTitle: `Week ${nw}${nw <= 12 ? ' of 12' : ''}`, nRange: `${fDate(wStart(nw))} – ${fDate(addDays(wStart(nw), 6))}`,
+      nPrev: () => this.setState(this.loadNotes(Math.max(1, nw - 1))), nNext: () => this.setState(this.loadNotes(Math.min(curWeek, nw + 1))),
+      nM: nd.m, nN: nd.n, nMCount: nd.m.length, nNCount: nd.n.length,
+      onNM: e => { const v = e.target.value.slice(0, 300); this.setState(st => ({ notes: { ...(st.notes || nd), m: v } })); },
+      onNN: e => { const v = e.target.value.slice(0, 300); this.setState(st => ({ notes: { ...(st.notes || nd), n: v } })); },
+      saveNotes: () => { this.commit(x => { x.reflections[`${u.id}|${wStart(nw)}`] = { meaningful: nd.m.trim(), next: nd.n.trim(), updatedAt: Date.now() }; }); this.flash('Notes saved. Only you can see them.'); },
+
+      menuGroups: [
+        { title: 'Account', items: [['My Account', 'icon-user-round', () => this.go('account', { acct: null })], ['My Giving Plan', 'icon-sprout', () => this.go('plan', { planDraft: u.plan || '' })], ['Notifications', 'icon-bell', () => this.go('notifications')]] },
+        { title: 'My records', items: [['My Statements', 'icon-file-text', () => this.tab('statement', { stWeek: null })], ['Deposit History', 'icon-history', () => this.go('history')], ['My Notes', 'icon-notebook-pen', () => openNotes(curWeek)], ['My Balance', 'icon-infinity', () => this.go('balance')], ['My Redemptions', 'icon-coins', () => this.go('redemptions')], ['Progress & Milestones', 'icon-flag', () => this.go('milestones')], ['Starter to Standard', 'icon-map', () => this.go('journey')]] },
+        { title: 'About', items: [['Privacy & Church View', 'icon-shield-check', () => this.go('privacy')], ['About The 144(P) Plan', 'icon-info', () => this.go('about')], ['Help & Support', 'icon-circle-help', () => this.go('help')], ['Install the App', 'icon-download', () => this.go('install')]] },
+      ].map(g => ({ title: g.title, items: g.items.map(([label, icon, open]) => ({ label, icon, open })) })),
+      openAccount: () => this.go('account', { acct: null }), signOut: () => this.signOut(),
+
+      ac, acOn, startLabel: fDate(u.start, FULL),
+      saveAccount: () => {
+        const a = { ...ac, first: (ac.first || '').trim(), last: (ac.last || '').trim(), email: (ac.email || '').trim().toLowerCase() };
+        if (!a.first || !a.last) return this.fail('Enter your first and last name.');
+        if (!EMAIL_RE.test(a.email)) return this.fail('Enter a valid email address.');
+        if (db.partners.some(x => x.email === a.email && x.id !== u.id)) return this.fail('That email is already in use.');
+        if (a.email !== u.email && u.pw) return this.fail('Changing your email needs a password re-check, which arrives with the hosted backend.');
+        this.commit(x => { const pp = x.partners.find(y => y.id === u.id); Object.assign(pp, { first: a.first, last: a.last, email: a.email, church: (a.church || '').trim(), table: (a.table || '').trim() }); this.audit(x, 'account.updated', 'partner', u.id); });
+        this.setState({ acct: null }); this.flash('Account updated.');
+      },
+      exportData: () => this.exportData(), deleteAccount: () => this.deleteAccount(),
+      deleteLabel: u.demo ? 'Reset sample data' : 'Delete my account',
+      deleteText: u.demo ? 'This is a sample account; resetting restores its demonstration data.' : 'Deleting permanently removes your records. Church totals that already included your time stay as anonymous totals.',
+
+      planIntro: commissioned ? 'In your standard account, you set the plan. Write down how you intend to keep giving your 144 minutes.' : 'During weeks 1–12 your guide is the book, one chapter a week. You can start sketching the plan you will follow from week 13.',
+      planDraft: s.planDraft, onPlan: e => this.setState({ planDraft: e.target.value.slice(0, 600) }),
+      savePlan: () => { this.commit(x => { x.partners.find(y => y.id === u.id).plan = s.planDraft.trim(); }); this.flash('Giving plan saved.'); },
+
+      reminderOn: !!prefs.reminder, remBg: prefs.reminder ? '#075D61' : '#CBD5DA', remJustify: prefs.reminder ? 'flex-end' : 'flex-start', remTime: prefs.time, remTz: prefs.tz,
+      toggleReminder: async () => {
+        const on = !prefs.reminder;
+        if (on && typeof Notification !== 'undefined' && Notification.permission === 'default') { try { await Notification.requestPermission(); } catch (e) {} }
+        setPrefs({ reminder: on });
+      },
+      onRemTime: e => setPrefs({ time: e.target.value }),
+      emailRemOn: !!prefs.emailReminder, emailRemBg: prefs.emailReminder ? '#075D61' : '#CBD5DA', emailRemJustify: prefs.emailReminder ? 'flex-end' : 'flex-start',
+      toggleEmailRem: () => { setPrefs({ emailReminder: !prefs.emailReminder }); this.flash(prefs.emailReminder ? 'Email reminder off.' : 'Saved. Email reminders begin once the email service is connected.'); },
+      emailNote: 'Email reminders are saved as a preference; delivery starts when the email service is connected.',
+      isInstall: scr === 'install', isStandalone: isStandalone(), canPrompt: !!s.installEvt && !isStandalone(),
+      doInstall: async () => { const e = s.installEvt; if (!e) return; e.prompt(); try { await e.userChoice; } catch (x) {} this.setState({ installEvt: null }); },
+      iosBorder: isIOS() ? '#075D61' : '#E1E7EA', androidBorder: isAndroid() ? '#075D61' : '#E1E7EA',
+      iosSteps: ['Open this page in Safari.', 'Tap the Share button (square with an arrow).', 'Scroll and tap “Add to Home Screen”.', 'Tap Add. Open The 144(P) Plan from your Home Screen.'].map((text, i) => ({ n: i + 1, text })),
+      androidSteps: (s.installEvt ? ['Tap “Install app” above.', 'Confirm Install.', 'Open The 144(P) Plan from your home screen or app drawer.'] : ['Open this page in Chrome.', 'Tap the ⋮ menu, then “Install app” or “Add to Home screen”.', 'Confirm, then open The 144(P) Plan from your home screen.']).map((text, i) => ({ n: i + 1, text })),
+      remNote: isIOS() && !isStandalone() ? 'On iPhone, notifications need iOS 16.4 or later and the app added to your Home Screen. Install it first, then turn on reminders here.' : typeof Notification === 'undefined' ? "This browser doesn't support notifications. Install the app to your home screen for reminders." : Notification.permission === 'denied' ? 'Notifications are blocked in your browser settings. Allow them to receive reminders.' : 'Reminders arrive while the app is open or installed. Scheduled push reminders arrive with the hosted backend.',
+
+      shareOn: !!share, shareOff: !share, shareBg: share ? '#075D61' : '#CBD5DA', shareJustify: share ? 'flex-end' : 'flex-start',
+      shareTo: s.shareTo, onShareTo: e => this.setState({ shareTo: e.target.value, err: '' }),
+      shareStatus: share ? `Sharing your weekly balance with ${share.recipient} since ${fDate(ymd(new Date(share.createdAt)), { month: 'short', day: 'numeric', year: 'numeric' })}.` : 'Not shared. Your weekly balance is private.',
+      shareStatusColor: share ? '#075D61' : '#6A7A84',
+      toggleShare: () => {
+        if (share) return this.commit(x => { const r = x.sharing.find(y => y.id === share.id); r.enabled = false; r.revokedAt = Date.now(); this.audit(x, 'sharing.revoked', 'sharing', r.id); }), this.flash('Sharing turned off.');
+        const to = (s.shareTo || '').trim(); if (!to) return this.flash("Enter your Table partner's name or email first.");
+        this.commit(x => { const r = { id: uid(), owner: u.id, recipient: to, type: 'weekly_balance', enabled: true, createdAt: Date.now(), revokedAt: null }; x.sharing.push(r); this.audit(x, 'sharing.granted', 'sharing', r.id); });
+        this.setState({ shareTo: '' }); this.flash('Weekly balance shared.');
+      },
+
+      aboutSections: [
+        { title: 'What is The 144(P) Plan?', body: 'A faith-based time-accounting program that encourages you to give meaningful time to God and record that commitment, the way you would read an account statement.' },
+        { title: 'The 144-minute daily goal', body: 'Two hours and twenty-four minutes a day, given through praying, reading, listening and being present. That is 1,008 minutes a week.' },
+        { title: 'The 12-week starter phase', body: 'Every account begins with a guided 12 weeks that follow What Will You Give Today? by C. P. Parker, one chapter a week.' },
+        { title: 'How deposits work', body: 'Every meaningful period of time can be recorded, live with a timer or afterward. Each deposit builds your personal account of commitment.' },
+        { title: 'Your time statement', body: 'Review your deposits, how your time was allocated, progress toward the daily and weekly goals, and your long-term totals.' },
+        { title: 'Beyond 12 weeks', body: 'At week 12 you are commissioned and your account becomes a standard account. It continues with no end date and keeps every minute you have given.' },
+        { title: 'Your privacy matters', body: 'Your personal statement is yours. Churches receive aggregate totals, never your private records. Minutes are a record of time given, not a measure of anyone’s worth.' }],
+      toHelp: e => { e.preventDefault(); this.go('help'); },
+      faqs: [
+        { q: 'I forgot to log yesterday. Can I still?', a: 'Yes. In Make a Deposit, choose Yesterday or any earlier date in step 3. It files under the right week and updates every statement after it.' },
+        { q: 'What if I close the app while the timer runs?', a: 'The timer is saved with its start time, so it keeps counting. Reopen the app and you will see it on Home.' },
+        { q: 'I made a mistake on a deposit.', a: 'Open it from Today’s activity or Deposit History, then Edit or Void. Statements recalculate and a private change history is kept.' },
+        { q: 'Does spending reduce my record?', a: 'No. Redemptions draw only from Available to give. Lifetime deposits never go down.' }],
+    };
+  }
+}
+</script>
+</body>
+</html>

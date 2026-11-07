@@ -1,0 +1,26 @@
+{
+  "id": "./144P-Plan-v2.dc.html",
+  "name": "The 144(P) Plan",
+  "short_name": "144(P) Plan",
+  "description": "Give your time to God. Watch it grow.",
+  "start_url": "./144P-Plan-v2.dc.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#F8F5EE",
+  "theme_color": "#123C56",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
