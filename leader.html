@@ -61,7 +61,7 @@ td input[type=text],td input[type=number],td select{min-height:36px;width:100%}
 </style>
 </head>
 <body>
-<header><div class="in"><h1>The 144(P) Plan · Leader Console</h1><span class="who" id="who"></span><button id="out" type="button" hidden>Sign out</button></div></header>
+<header><div class="in"><h1 id="ttl">The 144(P) Plan · Leader Console</h1><span class="who" id="who"></span><button id="out" type="button" hidden>Sign out</button></div></header>
 <nav id="nav" hidden><div class="in" id="tabs"></div></nav>
 <main id="app" aria-live="polite"><p class="sub">Loading…</p></main>
 <script>
@@ -300,6 +300,7 @@ td input[type=text],td input[type=number],td select{min-height:36px;width:100%}
     const roles = await Cloud.rpc('my_admin_roles') || [];
     st.admin = roles.some(r => r.role === 'platform_admin');
     st.churches = await Cloud.rpc('my_leader_churches') || [];
+    if (st.admin) { $('ttl').textContent = 'The 144(P) Plan · Admin Panel'; document.title = 'Admin Panel · The 144(P) Plan'; }
     st.church = st.churches[0] || null;
     if (!st.churches.length && !st.admin) { $app.innerHTML = `<h2>Leader Console</h2><p class="sub">This account isn’t a church admin or group leader yet. Ask your church admin to make you a group leader, then sign in again.</p>`; return; }
     if (!st.churches.length && st.admin) st.tab = 'churches';
