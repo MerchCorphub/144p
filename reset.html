@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reset your password · The 144(P) Plan</title>
+<meta name="theme-color" content="#123C56">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
+<script src="./cloud.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#F8F5EE;color:#173344;font-family:'Public Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#075D61;font-weight:600}
+button,input{font:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible{outline:3px solid #0E8A7E;outline-offset:2px}
+header{background:#123C56;color:#fff;padding:calc(14px + env(safe-area-inset-top)) 18px 14px;text-align:center;font-weight:700;font-size:17px}
+main{max-width:440px;margin:0 auto;padding:24px 18px 48px}
+h1{font-family:'Source Serif 4',Georgia,serif;font-size:26px;font-weight:600;color:#123C56;margin:4px 0 6px}
+p{color:#4F5F68;line-height:1.5;margin:0 0 6px}
+.card{background:#fff;border:1px solid #E1E7EA;border-radius:14px;padding:18px;margin-top:16px}
+label{display:block;font-weight:600;font-size:14px;margin:14px 0 6px;color:#173344}
+input{width:100%;min-height:48px;border:1px solid #9AA8B0;border-radius:10px;padding:10px 12px;font-size:16px;background:#fff;color:#173344}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:50px;border:0;border-radius:12px;background:#123C56;color:#fff;font-weight:600;font-size:16px;cursor:pointer;margin-top:18px;text-decoration:none}
+.btn[disabled]{background:#9AA8B0;cursor:default}
+.err{background:#FBEAE7;color:#7A2A20;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:14px}
+.ok{background:#E8F5F3;color:#075D61;border-radius:10px;padding:12px 14px;margin-top:12px;font-size:15px;line-height:1.5}
+.links{display:flex;flex-direction:column;gap:10px;margin-top:20px;text-align:center}
+.hint{font-size:13px;color:#4F5F68;margin-top:6px}
+</style>
+</head>
+<body>
+<header>The 144(P) Plan</header>
+<main id="app" aria-live="polite"><p>Loading…</p></main>
+<script>
+(function () {
+  const $app = document.getElementById('app');
+  const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const here = location.href.split('#')[0].split('?')[0];
+  const back = `<div class="links"><a href="144P-Plan-v2.dc.html">Back to the app</a><a href="read.html">Read the Book</a><a href="leader.html">Leader Console</a></div>`;
+  const qs = new URLSearchParams(location.search), hs = new URLSearchParams(location.hash.slice(1));
+  const linkErr = hs.get('error_description') || qs.get('error_description');
+  const isRecovery = hs.get('type') === 'recovery' || qs.get('type') === 'recovery';
+  let c = null, shown = false;
+
+  function friendly(e) {
+    const m = (e && (e.message || e.error_description)) || '';
+    if (/fetch/i.test(m)) return 'Can’t reach the server. Check your connection and try again.';
+    if (/rate|too many|seconds/i.test(m)) return 'Too many tries. Wait a minute, then try again.';
+    if (/same|different from the old/i.test(m)) return 'Choose a password different from your old one.';
+    return m || 'Something went wrong. Please try again.';
+  }
+
+  function askEmail(err, sent) {
+    $app.innerHTML = `<h1>Forgot your password?</h1>
+      <p>Enter the email on your 144(P) Plan account. We’ll email you a link to set a new password.</p>
+      ${linkErr && !sent ? `<div class="err" role="alert">That reset link didn’t work${/expired/i.test(linkErr) ? ' because it expired' : ''}. Send yourself a new one below.</div>` : ''}
+      <form class="card" id="f">
+        <label for="em">Email</label><input id="em" type="email" autocomplete="email" required value="${esc(qs.get('email') || '')}">
+        ${err ? `<div class="err" role="alert">${esc(err)}</div>` : ''}
+        ${sent ? `<div class="ok" role="status">If an account exists for <strong>${esc(sent)}</strong>, a reset link is on its way. Open it on this device. It can take a few minutes, so check your spam folder too.</div>` : ''}
+        <button class="btn" type="submit" id="go">${sent ? 'Send it again' : 'Email me a reset link'}</button>
+      </form>${back}`;
+    document.getElementById('f').onsubmit = async e => {
+      e.preventDefault();
+      const email = document.getElementById('em').value.trim().toLowerCase(), b = document.getElementById('go');
+      b.disabled = true; b.textContent = 'Sending…';
+      try { const r = await c.auth.resetPasswordForEmail(email, { redirectTo: here }); if (r.error) throw r.error; askEmail('', email); }
+      catch (x) { askEmail(friendly(x)); }
+    };
+  }
+
+  function setNew(err) {
+    shown = true;
+    $app.innerHTML = `<h1>Set a new password</h1>
+      <p>Choose a new password for your 144(P) Plan account.</p>
+      <form class="card" id="f">
+        <label for="p1">New password</label><input id="p1" type="password" autocomplete="new-password" minlength="8" required>
+        <p class="hint">At least 8 characters.</p>
+        <label for="p2">Type it again</label><input id="p2" type="password" autocomplete="new-password" minlength="8" required>
+        ${err ? `<div class="err" role="alert">${esc(err)}</div>` : ''}
+        <button class="btn" type="submit" id="go">Save new password</button>
+      </form>`;
+    document.getElementById('f').onsubmit = async e => {
+      e.preventDefault();
+      const p1 = document.getElementById('p1').value, p2 = document.getElementById('p2').value, b = document.getElementById('go');
+      if (p1.length < 8) return setNew('Use at least 8 characters.');
+      if (p1 !== p2) return setNew('The two passwords don’t match.');
+      b.disabled = true; b.textContent = 'Saving…';
+      try {
+        const r = await c.auth.updateUser({ password: p1 }); if (r.error) throw r.error;
+        history.replaceState(null, '', here);
+        $app.innerHTML = `<h1>Password saved</h1><div class="ok" role="status">Your new password is set and you’re signed in.</div>${back}`;
+      } catch (x) { setNew(friendly(x)); }
+    };
+  }
+
+  (async () => {
+    try {
+      c = await Cloud.sb();
+      c.auth.onAuthStateChange(ev => { if (ev === 'PASSWORD_RECOVERY' && !shown) setNew(); });
+      if (isRecovery && !linkErr) {
+        const s = (await c.auth.getSession()).data.session;
+        if (s) return setNew();
+        setTimeout(() => { if (!shown) askEmail(); }, 2500);
+        $app.innerHTML = '<p>Checking your link…</p>';
+        return;
+      }
+      askEmail();
+    } catch (x) { askEmail(friendly(x)); }
+  })();
+})();
+</script>
+</body>
+</html>
