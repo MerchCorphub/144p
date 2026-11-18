@@ -103,7 +103,7 @@ input[type=text],input[type=email],input[type=password]{width:100%;min-height:48
 
   function render() {
     document.getElementById('signOut').hidden = !st.me;
-    const v = view(); $app.innerHTML = v.html; $hdr.textContent = v.title || 'The Book';
+    const v = view(), n = notes(); $app.innerHTML = (n && !v.html.includes(n) ? '<div style="margin-top:14px">' + n + '</div>' : '') + v.html; $hdr.textContent = v.title || 'The Book';
     if (v.after) v.after();
     window.scrollTo(0, 0);
   }
@@ -146,9 +146,10 @@ input[type=text],input[type=email],input[type=password]{width:100%;min-height:48
       <p class="sub">Join through your church, or get your own seat.</p>
       ${joinForm('Join with your church code')}
       <div class="card"><strong>On your own</strong>
-        <p class="sub">No church taking part? Reserve a seat for yourself${st.indPrice != null ? ` for $${Number(st.indPrice).toFixed(2)}` : ''}.</p>
-        <button class="btn alt" id="seat" type="button">Reserve my seat</button></div>`,
-      after: () => { bindJoin(); document.getElementById('seat').onclick = async () => { st.err = ''; try { await Cloud.rpc('request_individual_seat'); await load(); } catch (x) { st.err = errMsg(x); render(); } }; } };
+        <p class="sub">No church taking part? Get the book in the app for yourself${st.indPrice != null ? ` for $${Number(st.indPrice).toFixed(2)}` : ''}. One payment, good for one year. Tax included.</p>
+        <button class="btn" id="seat" type="button">Buy my seat${st.indPrice != null ? ` · $${Number(st.indPrice).toFixed(2)}` : ''}</button>
+        <p class="sub" style="font-size:13px;margin-top:8px">You’ll pay on Stripe’s secure checkout page (card, Apple Pay or Google Pay). All sales are final.</p></div>`,
+      after: () => { bindJoin(); const b = document.getElementById('seat'); b.onclick = async () => { st.err = ''; b.disabled = true; b.textContent = 'Opening secure checkout…'; try { await Cloud.checkout('individual'); } catch (x) { st.err = errMsg(x); render(); } }; } };
   }
   function joinCode() {
     try {
@@ -308,6 +309,8 @@ input[type=text],input[type=email],input[type=password]{width:100%;min-height:48
     const s = await Cloud.session();
     if (!s) { st.me = null; return render(); }
     st.me = await Cloud.ensurePartner();
+    try { const r = await Cloud.settlePayments(); if (r === 'paid') st.msg = 'Payment received. Thank you! Your seat is active for one year.'; if (r === 'canceled') st.msg = 'Checkout canceled. You weren’t charged.'; }
+    catch (x) { st.err = 'We couldn’t confirm your payment yet: ' + errMsg(x) + ' If you were charged, reload this page in a minute.'; }
     const [status, toc] = await Promise.all([Cloud.rpc('my_book_status'), Cloud.rpc('book_toc')]);
     st.status = (status && status[0]) || {}; st.toc = toc || [];
     if (!(st.status.unlocked_week >= 0)) {
