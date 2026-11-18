@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Time4God Challenge · The 144(P) Plan</title>
+<meta name="theme-color" content="#123C56">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
+<script src="./cloud.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#F8F5EE;color:#173344;font-family:'Public Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#075D61}
+button,input,select,textarea{font:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #0E8A7E;outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto;padding:0 18px 48px}
+header{position:sticky;top:0;z-index:5;background:#123C56;color:#fff;padding:calc(12px + env(safe-area-inset-top)) 18px 12px}
+header .in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px}
+header a,header button.link{color:#fff;text-decoration:none;font-weight:600;font-size:15px;background:none;border:0;padding:8px 0;cursor:pointer;min-width:60px}
+header button.link{text-align:right}
+header h1{flex:1;margin:0;font-size:17px;font-weight:700;text-align:center}
+.card{background:#fff;border:1px solid #E1E7EA;border-radius:14px;padding:18px;margin-top:16px}
+h2.t{font-family:'Source Serif 4',Georgia,serif;font-size:24px;font-weight:600;margin:22px 0 4px;color:#123C56}
+p.sub{margin:4px 0 0;color:#4F5F68;font-size:15px;line-height:1.5}
+label{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}
+input[type=text],input[type=email],input[type=password],input[type=date],textarea{width:100%;min-height:48px;border:1px solid #9AA8B0;border-radius:10px;padding:10px 12px;font-size:16px;background:#fff;color:#173344}
+textarea{min-height:86px;resize:vertical}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border:0;border-radius:12px;background:#123C56;color:#fff;font-weight:600;font-size:16px;cursor:pointer;margin-top:12px;text-decoration:none;padding:0 14px}
+.btn.teal{background:#075D61}
+.btn.alt{background:#fff;color:#123C56;border:1px solid #123C56}
+.btn.danger{background:#fff;color:#A33A2E;border:1px solid #A33A2E}
+.btn[disabled]{background:#9AA8B0;cursor:default}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two .btn{margin-top:0}
+.err{background:#FBEAE7;color:#7A2A20;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:14px}
+.ok{background:#E8F5F3;color:#075D61;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:14px}
+.pill{display:inline-block;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;background:#E8F5F3;color:#075D61}
+.pill.wait{background:#FFF4DC;color:#6B4E12}.pill.off{background:#EEF1F2;color:#4F5F68}.pill.live{background:#075D61;color:#fff}
+.group{margin-top:24px}
+.group h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#4F5F68;margin:0 0 8px}
+.item{display:block;width:100%;text-align:left;background:#fff;border:1px solid #E1E7EA;border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;color:#173344}
+.item:hover{border-color:#075D61}
+.item .top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.item .ti{font-weight:700;font-size:15px}
+.item .meta{font-size:13px;color:#4F5F68;margin-top:4px}
+.empty{color:#4F5F68;font-size:14px;padding:4px 2px}
+.choice{display:flex;gap:12px;align-items:flex-start;border:1px solid #E1E7EA;border-radius:12px;padding:12px 14px;margin-top:8px;cursor:pointer;font-weight:500}
+.choice:has(input:checked){border-color:#075D61;background:#F2FAF8}
+.choice input{margin-top:4px;width:18px;height:18px;accent-color:#075D61;flex:none}
+.choice strong{display:block}
+.choice span{font-size:14px;color:#4F5F68}
+.score{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;text-align:center}
+.score .side{border-radius:12px;padding:14px 8px;background:#F3F5F6}
+.score .side.lead{background:#E8F5F3;outline:2px solid #075D61}
+.score .nm{font-weight:700;font-size:15px;line-height:1.3}
+.score .big{font-family:'Source Serif 4',Georgia,serif;font-size:30px;font-weight:600;color:#123C56;margin:6px 0 2px}
+.score .sm{font-size:12px;color:#4F5F68;line-height:1.4}
+.score .vs{font-weight:700;color:#4F5F68}
+.msgbox{background:#F3F5F6;border-radius:10px;padding:12px;font-size:15px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+table.days{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+table.days th,table.days td{padding:8px 6px;border-bottom:1px solid #E1E7EA;text-align:right}
+table.days th:first-child,table.days td:first-child{text-align:left}
+ol.board{list-style:none;padding:0;margin:6px 0 0}
+ol.board li{display:flex;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid #E1E7EA}
+ol.board .rk{width:26px;font-weight:700;color:#4F5F68}
+ol.board .nm{flex:1}
+ol.board li.me{background:#F2FAF8;font-weight:700}
+.tag{font-size:13px;font-weight:700;color:#075D61;letter-spacing:.04em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <a href="144P-Plan-v2.dc.html" id="back">‹ App</a>
+  <h1 id="hdr">Time4God Challenge</h1>
+  <button class="link" id="signOut" hidden type="button">Sign out</button>
+</div></header>
+<main class="wrap" id="app" aria-live="polite"><p class="sub" style="margin-top:24px">Loading…</p></main>
+<script>
+(function () {
+  const $app = document.getElementById('app'), $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
+  const KEY = '144p-challenge-code';
+  const st = { me: null, opts: null, list: [], view: 'home', id: null, board: null, invite: null, draft: null, msg: '', err: '' };
+
+  // ---------- formatting ----------
+  const d0 = d => new Date(String(d).slice(0, 10) + 'T12:00:00');
+  const fDate = d => d0(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  const fDateY = d => d0(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const today = () => { const x = new Date(); return new Date(x.getTime() - x.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+  const daysBetween = (a, b) => Math.round((d0(b) - d0(a)) / 86400000);
+  const hm = m => { m = Math.round(m || 0); const h = Math.floor(m / 60), r = m % 60; return h ? `${h}h ${r}m` : `${r}m`; };
+  const avg = s => s && s.members ? s.total / s.members : 0;
+  const KIND = { person: 'Person vs person', group: 'Group vs group', church: 'Church vs church', church_open: 'Church members challenge' };
+  const range = c => `${fDate(c.start_date)} – ${fDateY(c.end_date)}`;
+  const isSeason = c => st.opts && c.start_date === st.opts.default_start && c.end_date === st.opts.default_end;
+  const notes = () => (st.err ? `<div class="err" role="alert">${esc(st.err)}</div>` : '') + (st.msg ? `<div class="ok">${esc(st.msg)}</div>` : '');
+  const savedCode = () => { try { const q = new URLSearchParams(location.search).get('c'); if (q) localStorage.setItem(KEY, q.trim().toUpperCase()); return localStorage.getItem(KEY) || ''; } catch (e) { return new URLSearchParams(location.search).get('c') || ''; } };
+  const clearCode = () => { try { localStorage.removeItem(KEY); } catch (e) {} if (location.search) history.replaceState(null, '', location.pathname); };
+  const linkFor = code => location.href.split('?')[0].split('#')[0] + '?c=' + encodeURIComponent(code);
+
+  function shareText(c, code) {
+    const when = isSeason(c) ? `for 12 weeks (${range(c)})` : `from ${fDate(c.start_date)} to ${fDateY(c.end_date)}`;
+    const note = c.message ? `"${c.message}"\n\n` : '';
+    const who = c.kind === 'person' ? `${st.me.first_name} challenged you` : c.kind === 'group' ? `${c.a_name} challenges your group` : `${c.a_name} challenges your church`;
+    const how = c.kind === 'church' ? 'Your church admin can accept here' : c.kind === 'group' ? 'Your group leader can accept here' : 'Accept here';
+    return `${note}${who} to the Time4God Challenge! Who will give the most time to God ${when}? ${how}: ${linkFor(code)}\n\n#Time4GodChallenge`;
+  }
+
+  // ---------- data ----------
+  async function loadList() { st.list = (await Cloud.rpc('my_challenges')) || []; }
+  async function load() {
+    st.err = '';
+    const s = await Cloud.session();
+    const code = savedCode();
+    if (!s) {
+      st.me = null;
+      st.invite = code ? await Cloud.rpc('challenge_preview', { p_code: code }).catch(() => null) : null;
+      return render();
+    }
+    st.me = await Cloud.ensurePartner();
+    st.opts = await Cloud.rpc('challenge_options');
+    await loadList();
+    if (code) {
+      st.invite = await Cloud.rpc('challenge_preview', { p_code: code });
+      if (st.invite) { st.invite.code = code; st.view = 'invite'; }
+      else { clearCode(); st.err = 'That challenge link wasn’t found. Ask the sender for a new one.'; }
+    }
+    render();
+  }
+  async function run(fn, ok) { st.err = st.msg = ''; try { await fn(); if (ok) st.msg = ok; } catch (e) { st.err = errMsg(e); } render(); }
+  async function openDetail(id) {
+    st.view = 'detail'; st.id = id; st.board = null; st.err = st.msg = '';
+    render();
+    try { st.board = await Cloud.rpc('challenge_board', { p_id: id }); } catch (e) { st.err = errMsg(e); }
+    render();
+  }
+
+  // ---------- views ----------
+  function render() {
+    $('signOut').hidden = !st.me;
+    const v = (st.me ? VIEWS[st.view] || VIEWS.home : VIEWS.signedOut)();
+    $app.innerHTML = v.html; (v.after || (() => {}))();
+    window.scrollTo(0, 0);
+  }
+  const VIEWS = {};
+
+  const inviteCard = p => `<div class="card">
+      <span class="tag">${esc(KIND[p.kind] || 'Challenge')}</span>
+      <h2 class="t" style="margin-top:6px">${esc(p.from_name || p.sender)} ${p.kind === 'person' ? 'challenged you' : p.kind === 'group' ? 'challenges your group' : p.kind === 'church' ? 'challenges your church' : ''}</h2>
+      <p class="sub">Time4God Challenge · ${esc(range(p))}</p>
+      ${p.message ? `<div class="msgbox" style="margin-top:12px">“${esc(p.message)}”</div>` : ''}
+      <p class="sub" style="margin-top:12px">Whoever gives the most time to God wins. Your minutes come from the time you log in the app.${p.kind !== 'person' ? ' Groups and churches are compared by average minutes per member, so size doesn’t decide it.' : ''}</p></div>`;
+
+  VIEWS.signedOut = () => {
+    const p = st.invite;
+    return { html: `${p ? inviteCard(p) : `<h2 class="t">Time4God Challenge</h2><p class="sub">Challenge a friend, a group or a church to give more time to God.</p>`}
+      <h2 class="t" style="font-size:20px">Sign in${p ? ' to accept' : ''}</h2>
+      <p class="sub">Use your 144(P) Plan email and password.</p>
+      <form class="card" id="f">
+        <label for="em">Email</label><input id="em" type="email" autocomplete="email" required>
+        <label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required>
+        ${notes()}<button class="btn" type="submit">Sign in</button>
+      </form>
+      <p class="sub" style="margin-top:14px"><a href="reset.html" id="fp">Forgot your password?</a></p>
+      <p class="sub" style="margin-top:8px">New here? <a href="144P-Plan-v2.dc.html">Create your account in the app</a>, then open this link again.${p ? ' Your challenge is saved on this phone.' : ''}</p>`,
+      after: () => {
+        const fp = $('fp'), em = $('em');
+        fp.onclick = () => { if (em.value.trim()) fp.href = 'reset.html?email=' + encodeURIComponent(em.value.trim()); };
+        $('f').onsubmit = async e => { e.preventDefault(); st.err = ''; try { await Cloud.signIn(em.value.trim().toLowerCase(), $('pw').value); await load(); } catch (x) { st.err = errMsg(x); render(); } };
+      } };
+  };
+
+  VIEWS.invite = () => {
+    const p = st.invite;
+    return { html: `${inviteCard(p)}${notes()}
+      ${p.can_accept ? `<div class="two" style="margin-top:14px"><button class="btn alt" id="no" type="button">Decline</button><button class="btn teal" id="yes" type="button">Accept the challenge</button></div>`
+        : `<div class="card"><p class="sub" style="margin:0">${esc(p.reason || 'You can’t answer this challenge.')}</p></div>`}
+      <button class="btn alt" id="home" type="button">See my challenges</button>`,
+      after: () => {
+        $('home').onclick = () => { clearCode(); st.invite = null; st.view = 'home'; render(); };
+        if ($('yes')) $('yes').onclick = () => run(async () => {
+          const id = await Cloud.rpc('respond_to_challenge', { p_code: p.code, p_accept: true });
+          clearCode(); st.invite = null; await loadList(); await openDetail(id);
+        }, 'Challenge accepted. Let’s give God our time!');
+        if ($('no')) $('no').onclick = () => { if (!confirm('Decline this challenge?')) return; run(async () => {
+          await Cloud.rpc('respond_to_challenge', { p_code: p.code, p_accept: false });
+          clearCode(); st.invite = null; st.view = 'home'; await loadList();
+        }, 'Challenge declined.'); };
+      } };
+  };
+
+  function item(c) {
+    const pill = c.phase === 'live' ? '<span class="pill live">Live</span>' : c.phase === 'upcoming' ? '<span class="pill">Starts ' + esc(fDate(c.start_date)) + '</span>'
+      : c.phase === 'pending' ? '<span class="pill wait">Waiting for answer</span>' : c.phase === 'declined' ? '<span class="pill off">Declined</span>' : '<span class="pill off">Finished</span>';
+    let line;
+    if (c.kind === 'church_open') line = `${esc(c.a_name)} · ${c.a.members} joined`;
+    else if (c.status === 'active') { const a = c.kind === 'person' ? c.a.total : avg(c.a), b = c.kind === 'person' ? c.b.total : avg(c.b); line = `${esc(c.a_name)} ${hm(a)} · ${esc(c.b_name)} ${hm(b)}${c.kind === 'person' ? '' : ' (avg per member)'}`; }
+    else line = c.is_sender ? 'Sent by you' : `From ${esc(c.a_name)}`;
+    const title = c.kind === 'church_open' ? esc(c.title || 'Time4God Challenge') : c.status === 'active' ? `${esc(c.a_name)} vs ${esc(c.b_name)}` : `${esc(c.a_name)} vs ?`;
+    return `<button class="item" type="button" data-id="${esc(c.id)}"><div class="top"><span class="ti">${title}</span>${pill}</div>
+      <div class="meta">${esc(KIND[c.kind])} · ${esc(range(c))}</div><div class="meta">${line}</div></button>`;
+  }
+
+  VIEWS.home = () => {
+    const L = st.list;
+    const join = L.filter(c => c.kind === 'church_open' && c.my_side == null && ['live', 'upcoming'].includes(c.phase));
+    const active = L.filter(c => c.status === 'active' && ['live', 'upcoming'].includes(c.phase) && !(c.kind === 'church_open' && c.my_side == null));
+    const waiting = L.filter(c => c.status === 'pending');
+    const done = L.filter(c => c.phase === 'finished' || c.status === 'declined');
+    const sec = (t, arr, empty) => `<div class="group"><h3>${t}</h3>${arr.length ? arr.map(item).join('') : `<p class="empty">${empty}</p>`}</div>`;
+    return { html: `<h2 class="t">Time4God Challenge</h2><p class="sub">Who will give the most time to God? Challenge a friend${st.opts.group_name ? ', another group' : ''}${st.opts.church_name ? ' or another church' : ''}.</p>${notes()}
+      <button class="btn teal" id="new" type="button">Challenge someone</button>
+      ${join.length ? sec('Join a challenge', join, '') : ''}
+      ${sec('Active', active, 'No active challenges yet.')}
+      ${sec('Waiting for an answer', waiting, 'Nothing waiting.')}
+      ${sec('Finished', done, 'No finished challenges yet.')}`,
+      after: () => {
+        $('new').onclick = () => { st.view = 'new'; st.err = st.msg = ''; render(); };
+        $app.querySelectorAll('[data-id]').forEach(b => b.onclick = () => { const c = st.list.find(x => x.id === b.dataset.id); if (c.status === 'pending' && c.invite_code) { st.draft = { c, code: c.invite_code }; st.view = 'share'; st.err = st.msg = ''; render(); } else openDetail(c.id); });
+      } };
+  };
+
+  VIEWS.new = () => {
+    const o = st.opts, opt = (v, t, d, on) => `<label class="choice"><input type="radio" name="kind" value="${v}" ${on ? 'checked' : ''}><div><strong>${t}</strong><span>${d}</span></div></label>`;
+    return { html: `<h2 class="t">Challenge someone</h2><p class="sub">You’ll send the invitation by text or email from your phone.</p>${notes()}
+      <form id="nf">
+        <fieldset style="border:0;padding:0;margin:0"><legend class="sr">Kind of challenge</legend>
+        <label style="margin-top:18px">Who are you challenging?</label>
+        ${opt('person', 'A person', 'A friend or family member, one on one.', true)}
+        ${o.group_name ? opt('group', 'Another group', `Your group, ${esc(o.group_name)}, against another group. Scored by average minutes per member.`) : ''}
+        ${o.church_name ? opt('church', 'Another church', `${esc(o.church_name)} against another church. Their church admin accepts. Scored by average minutes per member.`) : ''}
+        ${o.church_name ? opt('church_open', 'Our own members', `A challenge only members of ${esc(o.church_name)} can join, with a leaderboard.`) : ''}
+        </fieldset>
+        <div id="titleBox" hidden><label for="ti">Challenge name</label><input id="ti" type="text" maxlength="80" placeholder="Time4God Challenge"></div>
+        <label style="margin-top:18px">How long?</label>
+        <label class="choice"><input type="radio" name="len" value="season" checked><div><strong>The full 12 weeks</strong><span>${esc(fDate(o.default_start))} – ${esc(fDateY(o.default_end))}${o.season_name ? ' · ' + esc(o.season_name) : ''}</span></div></label>
+        <label class="choice"><input type="radio" name="len" value="custom"><div><strong>Shorter</strong><span>Pick your own dates, up to 12 weeks.</span></div></label>
+        <div id="dates" class="two" hidden style="margin-top:8px"><div><label for="sd">Start</label><input id="sd" type="date" min="${today()}" value="${today()}"></div><div><label for="ed">End</label><input id="ed" type="date" min="${today()}"></div></div>
+        <label for="ms">Personal message <span style="font-weight:400;color:#4F5F68">(optional)</span></label>
+        <textarea id="ms" maxlength="280" placeholder="I’m giving God my mornings. Can you keep up?"></textarea>
+        <div class="two" style="margin-top:16px"><button class="btn alt" type="button" id="cancel">Cancel</button><button class="btn teal" type="submit">Create challenge</button></div>
+      </form>`,
+      after: () => {
+        const kind = () => $app.querySelector('input[name=kind]:checked').value, len = () => $app.querySelector('input[name=len]:checked').value;
+        const sync = () => { $('titleBox').hidden = kind() !== 'church_open'; $('dates').hidden = len() !== 'custom'; };
+        $app.querySelectorAll('input[type=radio]').forEach(r => r.onchange = sync);
+        $('sd').onchange = () => { $('ed').min = $('sd').value; };
+        $('cancel').onclick = () => { st.view = 'home'; st.err = ''; render(); };
+        $('nf').onsubmit = e => { e.preventDefault(); const k = kind(); run(async () => {
+          let s = null, en = null;
+          if (len() === 'custom') {
+            s = $('sd').value; en = $('ed').value;
+            if (!s || !en) throw new Error('Pick a start and an end date.');
+            if (daysBetween(s, en) < 0) throw new Error('The end date must be after the start date.');
+            if (daysBetween(s, en) > 84) throw new Error('A challenge can last up to 12 weeks.');
+          }
+          const code = await Cloud.rpc('create_challenge', { p_kind: k, p_start: s, p_end: en, p_message: $('ms').value.trim() || null, p_title: k === 'church_open' ? ($('ti').value.trim() || null) : null });
+          await loadList();
+          const c = st.list.find(x => x.invite_code === code) || st.list.filter(x => x.kind === 'church_open' && x.is_sender && x.status === 'active').sort((a, b) => String(b.created_at).localeCompare(String(a.created_at)))[0];
+          if (k === 'church_open') { st.view = 'detail'; await openDetail(c.id); st.msg = 'Your members can now join it from their Challenges page.'; return; }
+          st.draft = { c, code }; st.view = 'share';
+        }); };
+      } };
+  };
+
+  VIEWS.share = () => {
+    const { c, code } = st.draft, text = shareText(c, code), url = linkFor(code);
+    const subject = 'You’ve been challenged: Time4God Challenge';
+    return { html: `<h2 class="t">Send your challenge</h2><p class="sub">Choose how to send it. Your phone opens with the message ready. Just pick the person and send.</p>${notes()}
+      <div class="card"><div class="msgbox">${esc(text)}</div></div>
+      <div class="two" style="margin-top:14px">
+        <a class="btn teal" href="sms:?&body=${encodeURIComponent(text)}">Text message</a>
+        <a class="btn teal" href="mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(text)}">Email</a>
+      </div>
+      <div class="two" style="margin-top:10px">
+        <button class="btn alt" type="button" id="copy">Copy link</button>
+        ${navigator.share ? '<button class="btn alt" type="button" id="more">More options…</button>' : '<button class="btn alt" type="button" id="copyAll">Copy message</button>'}
+      </div>
+      <p class="sub" style="margin-top:14px">${c.kind === 'person' ? 'The first person to accept the link becomes your opponent.' : c.kind === 'group' ? 'Send it to the other group’s leader. They accept for their group.' : 'Send it to the other church’s admin or pastor. Their church admin accepts.'} The challenge shows under “Waiting for an answer” until then.</p>
+      <button class="btn alt" type="button" id="done">Done</button>
+      <button class="btn danger" type="button" id="cx">Cancel this challenge</button>`,
+      after: () => {
+        $('copy').onclick = () => run(async () => { await navigator.clipboard.writeText(url); }, 'Link copied.');
+        if ($('copyAll')) $('copyAll').onclick = () => run(async () => { await navigator.clipboard.writeText(text); }, 'Message copied.');
+        if ($('more')) $('more').onclick = async () => { try { await navigator.share({ title: subject, text }); } catch (e) {} };
+        $('done').onclick = () => { st.view = 'home'; st.err = st.msg = ''; render(); };
+        $('cx').onclick = () => { if (!confirm('Cancel this challenge? The link will stop working.')) return; run(async () => { await Cloud.rpc('cancel_challenge', { p_id: c.id }); await loadList(); st.view = 'home'; }, 'Challenge canceled.'); };
+      } };
+  };
+
+  VIEWS.detail = () => {
+    const c = st.list.find(x => x.id === st.id);
+    if (!c) return { html: `${notes()}<button class="btn alt" id="bk" type="button">Back</button>`, after: () => { $('bk').onclick = () => { st.view = 'home'; render(); }; } };
+    const left = daysBetween(today(), c.end_date), started = daysBetween(c.start_date, today()) >= 0;
+    const status = c.phase === 'live' ? `${left === 0 ? 'Last day' : left + (left === 1 ? ' day' : ' days') + ' left'}` : c.phase === 'upcoming' ? `Starts ${fDateY(c.start_date)}` : c.phase === 'finished' ? 'Final result' : c.phase === 'declined' ? 'Declined' : 'Waiting for an answer';
+    let body = '';
+    if (c.kind === 'church_open') {
+      const board = Array.isArray(st.board) ? st.board : null;
+      body = `<div class="card"><span class="tag">${esc(c.a_name)} · members only</span><h2 class="t" style="margin-top:6px">${esc(c.title || 'Time4God Challenge')}</h2>
+        <p class="sub">${esc(range(c))} · ${esc(status)} · ${c.a.members} joined · ${hm(avg(c.a))} average</p>
+        ${c.message ? `<div class="msgbox" style="margin-top:12px">“${esc(c.message)}”</div>` : ''}
+        ${c.my_side == null && ['live', 'upcoming'].includes(c.phase) ? '<button class="btn teal" id="join" type="button">Join this challenge</button>' : ''}
+        </div>
+        <div class="card"><strong>Leaderboard</strong>${!board ? '<p class="sub">Loading…</p>' : board.length ? `<ol class="board">${board.map((r, i) => `<li class="${r.me ? 'me' : ''}"><span class="rk">${i + 1}</span><span class="nm">${esc(r.name)}${r.me ? ' (you)' : ''}</span><span>${hm(r.total)}</span></li>`).join('')}</ol>` : '<p class="sub">No one has joined yet.</p>'}</div>
+        ${c.my_side === 1 && c.phase !== 'finished' ? '<button class="btn alt" id="leave" type="button">Leave this challenge</button>' : ''}
+        ${c.can_manage && c.phase !== 'finished' ? '<button class="btn danger" id="end" type="button">Cancel this challenge</button>' : ''}`;
+    } else {
+      const per = c.kind !== 'person', A = c.a || { total: 0, members: 0 }, B = c.b || { total: 0, members: 0 };
+      const va = per ? avg(A) : A.total, vb = per ? avg(B) : B.total, lead = !started || va === vb ? 0 : va > vb ? 1 : 2;
+      const side = (n, nm, s, v) => `<div class="side ${lead === n ? 'lead' : ''}"><div class="nm">${esc(nm)}${c.my_side === n ? '<br><span class="sm">(you)</span>' : ''}</div><div class="big">${hm(v)}</div>
+        <div class="sm">${per ? `avg per member<br>${hm(s.total)} total · ${s.members} member${s.members === 1 ? '' : 's'}` : 'minutes given'}</div></div>`;
+      const days = Array.isArray(st.board) && st.board.length && c.kind === 'person' ? `<div class="card"><strong>Day by day</strong><p class="sub">Shown while the challenge is running.</p>
+        <table class="days"><thead><tr><th>Day</th><th>${esc(c.a_name)}</th><th>${esc(c.b_name)}</th></tr></thead><tbody>${st.board.map(r => `<tr><td>${esc(fDate(r.day))}</td><td>${hm(r.a)}</td><td>${hm(r.b)}</td></tr>`).join('')}</tbody></table></div>` : '';
+      const result = c.phase === 'finished' ? `<p class="ok" style="text-align:center;font-weight:700">${lead === 0 ? 'It’s a tie!' : `${esc(lead === 1 ? c.a_name : c.b_name)} won!`}</p>` : '';
+      body = `<div class="card"><span class="tag">${esc(KIND[c.kind])}</span><p class="sub" style="margin:4px 0 14px">${esc(range(c))} · ${esc(status)}</p>
+        ${result}<div class="score">${side(1, c.a_name, A, va)}<div class="vs">vs</div>${side(2, c.b_name, B, vb)}</div>
+        ${c.message ? `<div class="msgbox" style="margin-top:14px">“${esc(c.message)}”</div>` : ''}
+        ${per ? '<p class="sub" style="margin-top:12px">Compared by average minutes per member, so the size of the group or church doesn’t decide it.</p>' : ''}</div>${days}`;
+    }
+    return { html: `${notes()}${body}<button class="btn alt" id="bk" type="button">Back to my challenges</button>`,
+      after: () => {
+        $('bk').onclick = () => { st.view = 'home'; st.err = st.msg = ''; render(); };
+        if ($('join')) $('join').onclick = () => run(async () => { await Cloud.rpc('join_challenge', { p_id: c.id }); await loadList(); await openDetail(c.id); }, 'You’re in! Your time counts from the start date.');
+        if ($('leave')) $('leave').onclick = () => { if (!confirm('Leave this challenge?')) return; run(async () => { await Cloud.rpc('leave_challenge', { p_id: c.id }); await loadList(); await openDetail(c.id); }, 'You left the challenge.'); };
+        if ($('end')) $('end').onclick = () => { if (!confirm('Cancel this challenge for everyone?')) return; run(async () => { await Cloud.rpc('cancel_challenge', { p_id: c.id }); await loadList(); st.view = 'home'; }, 'Challenge canceled.'); };
+      } };
+  };
+
+  $('signOut').onclick = async () => { await Cloud.signOut(); st.me = null; st.view = 'home'; st.list = []; render(); };
+  load().catch(e => { st.err = errMsg(e); st.me = st.me || null; render(); });
+})();
+</script>
+</body>
+</html>
