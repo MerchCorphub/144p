@@ -21,7 +21,12 @@ header{position:sticky;top:0;z-index:5;background:#123C56;color:#fff;padding:cal
 header .in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px}
 header a,header button.link{color:#fff;text-decoration:none;font-weight:600;font-size:15px;background:none;border:0;padding:8px 0;cursor:pointer;min-width:60px}
 header button.link{text-align:right}
-header h1{flex:1;margin:0;font-size:17px;font-weight:700;text-align:center}
+header h1{flex:1;margin:0;font-size:17px;font-weight:700;text-align:center;line-height:1.2}
+header h1 small{display:block;font-size:12px;font-weight:500;opacity:.85;letter-spacing:.04em}
+.hero{text-align:center;padding:26px 6px 4px}
+.hero h2{font-family:'Source Serif 4',Georgia,serif;font-size:32px;font-weight:600;color:#123C56;margin:0}
+.hero .s2{font-size:14px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#075D61;margin:6px 0 10px}
+.hero p{color:#4F5F68;font-size:16px;line-height:1.55;margin:0}
 .card{background:#fff;border:1px solid #E1E7EA;border-radius:14px;padding:18px;margin-top:16px}
 h2.t{font-family:'Source Serif 4',Georgia,serif;font-size:24px;font-weight:600;margin:22px 0 4px;color:#123C56}
 p.sub{margin:4px 0 0;color:#4F5F68;font-size:15px;line-height:1.5}
@@ -75,7 +80,7 @@ ol.board li.me{background:#F2FAF8;font-weight:700}
 <body>
 <header><div class="in">
   <a href="144P-Plan-v2.dc.html" id="back">‹ App</a>
-  <h1 id="hdr">Time4God Challenge</h1>
+  <h1 id="hdr">Time4God Challenge<small>The 144(P) Plan</small></h1>
   <button class="link" id="signOut" hidden type="button">Sign out</button>
 </div></header>
 <main class="wrap" id="app" aria-live="polite"><p class="sub" style="margin-top:24px">Loading…</p></main>
@@ -158,7 +163,7 @@ ol.board li.me{background:#F2FAF8;font-weight:700}
 
   VIEWS.signedOut = () => {
     const p = st.invite;
-    return { html: `${p ? inviteCard(p) : `<h2 class="t">Time4God Challenge</h2><p class="sub">Challenge a friend, a group or a church to give more time to God.</p>`}
+    return { html: `${p ? inviteCard(p) : `<div class="hero"><h2>Time4God Challenge</h2><div class="s2">The 144(P) Plan</div><p>Give God your time for 12 weeks, and challenge a friend, your group or another church to give more. #Time4GodChallenge</p></div>`}
       <h2 class="t" style="font-size:20px">Sign in${p ? ' to accept' : ''}</h2>
       <p class="sub">Use your 144(P) Plan email and password.</p>
       <form class="card" id="f">
@@ -167,7 +172,7 @@ ol.board li.me{background:#F2FAF8;font-weight:700}
         ${notes()}<button class="btn" type="submit">Sign in</button>
       </form>
       <p class="sub" style="margin-top:14px"><a href="reset.html" id="fp">Forgot your password?</a></p>
-      <p class="sub" style="margin-top:8px">New here? <a href="144P-Plan-v2.dc.html">Create your account in the app</a>, then open this link again.${p ? ' Your challenge is saved on this phone.' : ''}</p>`,
+      <p class="sub" style="margin-top:8px">New here? <a href="144P-Plan-v2.dc.html">Create your account in the 144(P) Plan app</a>, then ${p ? 'open this link again. Your challenge is saved on this phone.' : 'come back here to start a challenge.'}</p>`,
       after: () => {
         const fp = $('fp'), em = $('em');
         fp.onclick = () => { if (em.value.trim()) fp.href = 'reset.html?email=' + encodeURIComponent(em.value.trim()); };
@@ -213,7 +218,7 @@ ol.board li.me{background:#F2FAF8;font-weight:700}
     const waiting = L.filter(c => c.status === 'pending');
     const done = L.filter(c => c.phase === 'finished' || c.status === 'declined');
     const sec = (t, arr, empty) => `<div class="group"><h3>${t}</h3>${arr.length ? arr.map(item).join('') : `<p class="empty">${empty}</p>`}</div>`;
-    return { html: `<h2 class="t">Time4God Challenge</h2><p class="sub">Who will give the most time to God? Challenge a friend${st.opts.group_name ? ', another group' : ''}${st.opts.church_name ? ' or another church' : ''}.</p>${notes()}
+    return { html: `<div class="hero" style="padding-top:18px"><h2>Time4God Challenge</h2><div class="s2">The 144(P) Plan</div></div><p class="sub">Who will give the most time to God? Challenge a friend${st.opts.group_name ? ', another group' : ''}${st.opts.church_name ? ' or another church' : ''}.</p>${notes()}
       <button class="btn teal" id="new" type="button">Challenge someone</button>
       ${join.length ? sec('Join a challenge', join, '') : ''}
       ${sec('Active', active, 'No active challenges yet.')}
