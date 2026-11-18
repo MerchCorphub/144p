@@ -1,3 +1,5 @@
+Live at **https://time4god.app** (custom domain; merchcorphub.github.io/144p forwards there).
+
 repo: MerchCorphub/144p
 branch: main
 
