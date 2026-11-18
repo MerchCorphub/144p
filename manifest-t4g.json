@@ -1,0 +1,17 @@
+{
+  "id": "./challenges.html",
+  "name": "Time4God Challenge",
+  "short_name": "Time4God",
+  "description": "Give God your time for 12 weeks and challenge a friend, your group or another church. Part of The 144(P) Plan.",
+  "start_url": "./challenges.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#0B2257",
+  "theme_color": "#0B2257",
+  "icons": [
+    { "src": "t4g/t4g-icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "t4g/t4g-icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "t4g/t4g-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
