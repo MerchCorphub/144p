@@ -67,10 +67,11 @@ td input[type=text],td input[type=number],td select{min-height:36px;width:100%}
 .church .admins li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;flex-wrap:wrap}
 tr.gone td{color:#7A8890}
 td.acts{white-space:nowrap}
+header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;font-size:14px}
 </style>
 </head>
 <body>
-<header><div class="in"><h1 id="ttl">The 144(P) Plan · Leader Console</h1><span class="who" id="who"></span><button id="out" type="button" hidden>Sign out</button></div></header>
+<header><div class="in"><h1 id="ttl">The 144(P) Plan · Leader Console</h1><a class="hlink" href="challenges.html">Challenges</a><span class="who" id="who"></span><button id="out" type="button" hidden>Sign out</button></div></header>
 <nav id="nav" hidden><div class="in" id="tabs"></div></nav>
 <main id="app" aria-live="polite"><p class="sub">Loading…</p></main>
 <script>
@@ -82,7 +83,7 @@ td.acts{white-space:nowrap}
   const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
   const STATUS = { pending_payment: ['Waiting for payment', 'wait'], active: ['Active', 'ok'], canceled: ['Canceled', 'off'] };
   const pill = s => { const [t, c] = STATUS[s] || [s || 'None', 'off']; return `<span class="pill ${c}">${esc(t)}</span>`; };
-  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], churchAdmins: [], seats: [], sections: [], editSlug: null, importSecs: null };
+  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], churchAdmins: [], challengesAll: [], seats: [], sections: [], editSlug: null, importSecs: null };
   let c = null;
 
   const flash = (m, isErr) => { if (isErr) { st.err = m; st.msg = ''; } else { st.msg = m; st.err = ''; } };
@@ -90,7 +91,7 @@ td.acts{white-space:nowrap}
   async function run(fn, okMsg) { try { await fn(); if (okMsg) flash(okMsg); } catch (e) { flash(errMsg(e), true); } render(); }
 
   // ---------- tabs ----------
-  const TABS = () => [['approvals', 'Approvals'], ...(st.admin ? [['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book']] : [])];
+  const TABS = () => [['approvals', 'Approvals'], ...(st.admin ? [['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['challenges', 'Challenges']] : [])];
   function renderNav() {
     $('nav').hidden = false;
     $('tabs').innerHTML = TABS().map(([k, t]) => `<button type="button" data-tab="${k}" ${st.tab === k ? 'aria-current="page"' : ''}>${t}</button>`).join('');
@@ -279,6 +280,19 @@ td.acts{white-space:nowrap}
     }, 'Church admin removed.'); });
   };
 
+  // ---------- challenges ----------
+  const KIND = { person: 'Person vs person', group: 'Group vs group', church: 'Church vs church', church_open: 'Church members' };
+  const hm = m => { m = Math.round(m || 0); const h = Math.floor(m / 60), r = m % 60; return h ? `${h}h ${r}m` : `${r}m`; };
+  const avgOf = s => s && s.members ? s.total / s.members : 0;
+  VIEWS.challenges = () => { const L = st.challengesAll, n = k => L.filter(c => c.phase === k).length;
+    return `<h2>Challenges</h2><p class="sub">Every Time4God Challenge in the app. Groups and churches are compared by average minutes per member. Members send and accept challenges at <a href="challenges.html">challenges.html</a>.</p>
+    <div class="card"><div class="row"><span><strong>${n('live')}</strong> live</span><span><strong>${n('upcoming')}</strong> upcoming</span><span><strong>${n('pending')}</strong> waiting for an answer</span><span><strong>${n('finished')}</strong> finished</span></div></div>
+    <div class="card tbl">${L.length ? `<table><thead><tr><th>Challenge</th><th>Type</th><th>Dates</th><th>Score</th><th>Status</th></tr></thead><tbody>
+      ${L.map(c => `<tr><td><strong>${esc(c.kind === 'church_open' ? (c.title || 'Time4God Challenge') + ' · ' + c.a_name : c.a_name + ' vs ' + (c.b_name || '?'))}</strong></td><td>${esc(KIND[c.kind])}</td><td class="muted">${fDate(c.start_date)} – ${fDate(c.end_date)}</td>
+      <td>${c.kind === 'church_open' ? `${c.a.members} joined · ${hm(avgOf(c.a))} avg` : c.b ? (c.kind === 'person' ? `${hm(c.a.total)} vs ${hm(c.b.total)}` : `${hm(avgOf(c.a))} vs ${hm(avgOf(c.b))} avg`) : '—'}</td>
+      <td>${pill2(c.phase)}</td></tr>`).join('')}</tbody></table>` : '<p class="empty">No challenges yet.</p>'}</div>`; };
+  const pill2 = p => ({ live: '<span class="pill ok">Live</span>', upcoming: '<span class="pill ok">Upcoming</span>', pending: '<span class="pill wait">Waiting</span>', finished: '<span class="pill off">Finished</span>', declined: '<span class="pill off">Declined</span>', canceled: '<span class="pill off">Canceled</span>' })[p] || esc(p);
+
   // ---------- season ----------
   VIEWS.season = () => { const s = st.season || {}; return `<h2>Season</h2><p class="sub">Week 1 of the book opens on the start date, and one new week opens every 7 days after.</p>
     <form class="card" id="sf"><div class="row">
@@ -349,6 +363,7 @@ td.acts{white-space:nowrap}
         st.season = Cloud.ok(await c.from('seasons').select('*').eq('active', true).maybeSingle());
         st.allChurches = Cloud.ok(await c.from('churches').select('id,name,code,city,state,enrollment_policy').order('name'));
       }
+      if (st.tab === 'challenges') st.challengesAll = await Cloud.rpc('admin_challenges') || [];
       if (st.tab === 'churches') st.churchAdmins = await Cloud.rpc('admin_church_admins') || [];
       if (st.tab === 'licenses') {
         st.licenses = st.season ? Cloud.ok(await c.from('church_licenses').select('*').eq('season_id', st.season.id)) : [];
