@@ -1,8 +1,8 @@
 // 144(P) Plan — Supabase connection shared by the Partner and Admin apps.
 // Local storage stays as the offline cache; writes queue in an outbox and flush when online.
 (function () {
-  const URL_ = 'https://nkmdddossplaaswsqnxb.supabase.co';
-  const KEY_ = 'sb_publishable__wXTrGOqE-ynRJrdIQKT3Q_qW14o2eR';
+  const URL_ = 'https://hevkjegnogadwybbmwjx.supabase.co';
+  const KEY_ = 'sb_publishable_KOpMKMceQ81VPOz2v1hJxQ_v65udUE-';
   const OUTBOX = '144p-outbox-v1';
   let client = null, loading = null;
 

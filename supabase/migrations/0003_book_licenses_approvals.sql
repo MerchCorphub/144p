@@ -1,5 +1,5 @@
 -- 144(P) Plan — book reader, seat licenses, admin-set prices, group-leader approvals
--- Applied to project nkmdddossplaaswsqnxb on 2026-11-18
+-- Applied to project hevkjegnogadwybbmwjx (144p) on 2026-11-18
 
 -- ---------- seasons (one active at a time) ----------
 create table public.seasons (

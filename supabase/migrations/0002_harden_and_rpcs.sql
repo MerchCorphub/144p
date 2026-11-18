@@ -1,4 +1,4 @@
--- 144(P) Plan — applied to project nkmdddossplaaswsqnxb on 2026-11-07
+-- 144(P) Plan — applied to project hevkjegnogadwybbmwjx (144p) on 2026-11-18
 -- 1) Security hardening after Supabase advisors  2) App RPCs  3) Nightly aggregate job
 
 -- ---------- helpers out of the exposed API ----------

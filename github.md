@@ -4,7 +4,7 @@ branch: main
 ## Last sync
 date: 2026-11-18T01:30:00Z
 ### Updated in this project
-- Live database 144p-plan (nkmdddossplaaswsqnxb): migration 0003 applied (book reader, seasons, admin-set license prices, church licenses, individual seats, group-leader approvals with seat limits)
+- Live database 144p (hevkjegnogadwybbmwjx): migrations 0001, 0002 and 0003 applied on 2026-11-18 (book reader, seasons, admin-set license prices, church licenses, individual seats, group-leader approvals with seat limits)
 - New page: reset.html (forgot password, set a new password)
 - New pages: read.html (member book reader + join by church code), leader.html (approvals, prices, licenses, churches, season, book upload)
 - Partner app More menu links to the new pages
