@@ -119,7 +119,7 @@ input[type=text],input[type=email],input[type=password]{width:100%;min-height:48
         ${notes()}<button class="btn" type="submit">Sign in</button>
       </form>
       <p class="sub" style="margin-top:14px"><a href="reset.html" id="fp">Forgot your password?</a></p>
-      <p class="sub" style="margin-top:8px">New here? <a href="144P-Plan-v2.dc.html">Create your account in the app</a>, then come back.</p>`,
+      <p class="sub" style="margin-top:8px">New here? <a href="144P-Plan-v2.dc.html">Create your account in the app</a>, then come back.</p>${joinCode() ? `<p class="sub">Your church code <strong>${esc(joinCode())}</strong> is saved. Sign in and it will be filled in for you.</p>` : ''}`,
       after: () => { const fp = document.getElementById('fp'), em = document.getElementById('em'); fp.onclick = () => { if (em.value.trim()) fp.href = 'reset.html?email=' + encodeURIComponent(em.value.trim()); }; document.getElementById('f').onsubmit = async e => { e.preventDefault(); st.err = ''; try { await Cloud.signIn(document.getElementById('em').value.trim().toLowerCase(), document.getElementById('pw').value); await load(); } catch (x) { st.err = errMsg(x); render(); } }; } };
 
     const s = st.status || {};
@@ -150,16 +150,24 @@ input[type=text],input[type=email],input[type=password]{width:100%;min-height:48
         <button class="btn alt" id="seat" type="button">Reserve my seat</button></div>`,
       after: () => { bindJoin(); document.getElementById('seat').onclick = async () => { st.err = ''; try { await Cloud.rpc('request_individual_seat'); await load(); } catch (x) { st.err = errMsg(x); render(); } }; } };
   }
+  function joinCode() {
+    try {
+      const q = new URLSearchParams(location.search).get('code');
+      if (q) localStorage.setItem('144p-join-code', q.trim().toUpperCase());
+      return localStorage.getItem('144p-join-code') || '';
+    } catch (e) { return new URLSearchParams(location.search).get('code') || ''; }
+  }
+  joinCode();
   function joinForm(title) {
     return `<form class="card" id="jf"><strong>${esc(title)}</strong>
       <p class="sub">Your church code is in the bulletin, or ask your group leader.</p>
-      <label for="code">Church code</label><input id="code" type="text" autocapitalize="characters" autocomplete="off" required>
+      <label for="code">Church code</label><input id="code" type="text" autocapitalize="characters" autocomplete="off" required value="${esc(joinCode())}">
       ${notes()}<button class="btn" type="submit">Send my request</button></form>`;
   }
   function bindJoin() {
     const f = document.getElementById('jf'); if (!f) return;
     f.onsubmit = async e => { e.preventDefault(); st.err = ''; st.msg = '';
-      try { const r = await Cloud.rpc('join_church_by_code', { p_code: document.getElementById('code').value }); st.msg = r === 'pending' ? 'Request sent. Your group leader will approve you.' : 'You’re in.'; await load(); }
+      try { const r = await Cloud.rpc('join_church_by_code', { p_code: document.getElementById('code').value }); try { localStorage.removeItem('144p-join-code'); } catch (e2) {} st.msg = r === 'pending' ? 'Request sent. Your group leader will approve you.' : 'You’re in.'; await load(); }
       catch (x) { st.err = errMsg(x); render(); } };
   }
 

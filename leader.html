@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
 <script src="./cloud.js"></script>
 <script src="./book-import.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#F3F5F6;color:#173344;font-family:'Public Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
@@ -58,6 +59,12 @@ td input[type=text],td input[type=number],td select{min-height:36px;width:100%}
 .signin input{width:100%}
 .muted{color:#4F5F68;font-size:14px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.church .qr{flex:none;width:150px;height:150px;border:1px solid #E1E7EA;border-radius:8px;padding:4px;background:#fff}
+.church .qr svg{width:100%;height:100%;display:block}
+.church .link{font-size:13px;color:#4F5F68;word-break:break-all;background:#F3F5F6;border-radius:8px;padding:6px 10px}
+.church .admins{border-top:1px solid #E1E7EA;margin-top:14px;padding-top:12px}
+.church .admins ul{list-style:none;padding:0;margin:8px 0}
+.church .admins li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;flex-wrap:wrap}
 </style>
 </head>
 <body>
@@ -73,7 +80,7 @@ td input[type=text],td input[type=number],td select{min-height:36px;width:100%}
   const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
   const STATUS = { pending_payment: ['Waiting for payment', 'wait'], active: ['Active', 'ok'], canceled: ['Canceled', 'off'] };
   const pill = s => { const [t, c] = STATUS[s] || [s || 'None', 'off']; return `<span class="pill ${c}">${esc(t)}</span>`; };
-  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], seats: [], sections: [], editSlug: null, importSecs: null };
+  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], churchAdmins: [], seats: [], sections: [], editSlug: null, importSecs: null };
   let c = null;
 
   const flash = (m, isErr) => { if (isErr) { st.err = m; st.msg = ''; } else { st.msg = m; st.err = ''; } };
@@ -201,22 +208,73 @@ td input[type=text],td input[type=number],td select{min-height:36px;width:100%}
   };
 
   // ---------- churches ----------
-  VIEWS.churches = () => `<h2>Churches</h2><p class="sub">Each church gets a code its members enter in the app. New members wait for approval by the church admin or a group leader.</p>
+  const joinUrl = code => location.href.split('?')[0].split('#')[0].replace(/[^/]*$/, '') + 'read.html?code=' + encodeURIComponent(code);
+  function qrSvg(text, cell) {
+    if (!window.qrcode) return '';
+    const q = window.qrcode(0, 'M'); q.addData(text); q.make();
+    return q.createSvgTag({ cellSize: cell || 4, margin: 2, scalable: true });
+  }
+  function qrPng(text, name) {
+    const q = window.qrcode(0, 'M'); q.addData(text); q.make();
+    const n = q.getModuleCount(), cell = 16, pad = 4 * cell, size = n * cell + pad * 2;
+    const cv = document.createElement('canvas'); cv.width = cv.height = size;
+    const g = cv.getContext('2d'); g.fillStyle = '#fff'; g.fillRect(0, 0, size, size); g.fillStyle = '#000';
+    for (let r = 0; r < n; r++) for (let k = 0; k < n; k++) if (q.isDark(r, k)) g.fillRect(pad + k * cell, pad + r * cell, cell, cell);
+    const a = document.createElement('a'); a.href = cv.toDataURL('image/png'); a.download = name; a.click();
+  }
+  function printSign(ch) {
+    const url = joinUrl(ch.code), w = window.open('', '_blank'); if (!w) throw new Error('Allow pop-ups to print the sign.');
+    w.document.write(`<!DOCTYPE html><html><head><meta charset="utf-8"><title>${esc(ch.name)} · Join the Time4God Challenge</title>
+      <style>body{font-family:Georgia,serif;text-align:center;color:#1E2B33;padding:40px}h1{font-size:30px;margin:0 0 6px}p{font-size:18px;margin:6px 0}.q{width:320px;height:320px;margin:24px auto}.q svg{width:100%;height:100%}.c{font-family:ui-monospace,Menlo,monospace;font-size:34px;letter-spacing:.12em;font-weight:700}.u{font-family:system-ui,sans-serif;font-size:13px;color:#4F5F68;word-break:break-all}</style></head>
+      <body><h1>${esc(ch.name)}</h1><p>Join our church in the 144(P) Plan and the Time4God Challenge.</p><div class="q">${qrSvg(url, 8)}</div>
+      <p>Scan with your phone camera, or enter our church code:</p><p class="c">${esc(ch.code)}</p><p class="u">${esc(url)}</p>
+      <script>setTimeout(function(){window.print()},300)<\/script></body></html>`);
+    w.document.close();
+  }
+  VIEWS.churches = () => `<h2>Churches</h2><p class="sub">Each church gets a code, a join link and a QR code. Members who join wait for approval by the church admin or a group leader. The church admin you assign here signs in to the Leader Console at <strong>leader.html</strong>.</p>
     <form class="card" id="nc"><div class="row">
       <div class="grow"><label for="cn">Church name</label><input id="cn" type="text" required style="width:100%"></div>
       <div><label for="cc">City</label><input id="cc" type="text"></div>
       <div><label for="cs">State</label><input id="cs" type="text" value="GA" style="width:70px"></div>
       <div><label>&nbsp;</label><button class="btn" type="submit">Add church</button></div></div></form>
-    <div class="card tbl">${st.allChurches.length ? `<table><thead><tr><th>Church</th><th>City</th><th>Code</th><th>Joining</th></tr></thead><tbody>
-      ${st.allChurches.map(ch => `<tr><td><strong>${esc(ch.name)}</strong></td><td>${esc([ch.city, ch.state].filter(Boolean).join(', '))}</td><td><span class="code">${esc(ch.code)}</span></td><td>${ch.enrollment_policy === 'open' ? 'Anyone with the code' : 'Leader approval'}</td></tr>`).join('')}
-    </tbody></table>` : `<p class="empty">No churches yet.</p>`}</div>`;
+    ${st.allChurches.length ? st.allChurches.map(ch => { const url = joinUrl(ch.code), admins = st.churchAdmins.filter(a => a.church_id === ch.id); return `<div class="card church">
+      <div class="row" style="align-items:flex-start;gap:18px">
+        <div class="qr" role="img" aria-label="QR code that opens the join page for ${esc(ch.name)}">${qrSvg(url, 4) || '<span class="sub">Loading QR…</span>'}</div>
+        <div class="grow" style="min-width:240px">
+          <h3 style="margin:0 0 4px">${esc(ch.name)}</h3>
+          <p class="sub" style="margin:0 0 10px">${esc([ch.city, ch.state].filter(Boolean).join(', '))}${ch.city || ch.state ? ' · ' : ''}${ch.enrollment_policy === 'open' ? 'Anyone with the code' : 'Leader approval'}</p>
+          <div class="row" style="margin-bottom:8px"><span>Church code</span> <span class="code">${esc(ch.code)}</span></div>
+          <div class="link">${esc(url)}</div>
+          <div class="row" style="margin-top:10px">
+            <button class="btn sm alt" type="button" data-copy="${esc(url)}">Copy join link</button>
+            <button class="btn sm alt" type="button" data-png="${esc(ch.id)}">Download QR</button>
+            <button class="btn sm alt" type="button" data-print="${esc(ch.id)}">Print sign</button>
+          </div>
+        </div>
+      </div>
+      <div class="admins">
+        <strong>Church admin</strong>
+        ${admins.length ? `<ul>${admins.map(a => `<li><span>${esc(a.name || a.email)}${a.name ? ` <span class="sub">${esc(a.email)}</span>` : ''}</span> <button class="btn sm danger" type="button" data-rm="${esc(ch.id)}" data-em="${esc(a.email)}">Remove</button></li>`).join('')}</ul>` : `<p class="sub" style="margin:6px 0">No church admin yet.</p>`}
+        <form class="row" data-add="${esc(ch.id)}"><label class="sr" for="ae-${esc(ch.id)}">Email of the church admin</label><input id="ae-${esc(ch.id)}" type="email" placeholder="Email of their 144(P) account" required style="flex:1;min-width:220px"><button class="btn sm teal" type="submit">Make church admin</button></form>
+      </div></div>`; }).join('') : `<div class="card"><p class="empty">No churches yet.</p></div>`}`;
   BIND.churches = () => {
     $('nc').onsubmit = e => { e.preventDefault(); run(async () => {
       const name = $('cn').value.trim(); if (!name) throw new Error('Enter the church name.');
       const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', code = Array.from(crypto.getRandomValues(new Uint8Array(6)), b => A[b % A.length]).join('');
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + code.slice(0, 3).toLowerCase();
       Cloud.ok(await c.from('churches').insert({ name, city: $('cc').value.trim() || null, state: $('cs').value.trim() || null, code, slug, enrollment_policy: 'approval' })); await loadTab(true);
-    }, 'Church added. Share its code with the church.'); };
+    }, 'Church added. Its code, join link and QR code are below.'); };
+    const find = id => st.allChurches.find(x => x.id === id);
+    $app.querySelectorAll('[data-copy]').forEach(b => b.onclick = () => run(async () => { await navigator.clipboard.writeText(b.dataset.copy); }, 'Join link copied.'));
+    $app.querySelectorAll('[data-png]').forEach(b => b.onclick = () => run(async () => { const ch = find(b.dataset.png); qrPng(joinUrl(ch.code), `${ch.code}-${(ch.name || 'church').replace(/[^A-Za-z0-9]+/g, '-')}-QR.png`); }));
+    $app.querySelectorAll('[data-print]').forEach(b => b.onclick = () => run(async () => printSign(find(b.dataset.print))));
+    $app.querySelectorAll('form[data-add]').forEach(f => f.onsubmit = e => { e.preventDefault(); const em = f.querySelector('input').value.trim(); run(async () => {
+      const r = await Cloud.rpc('admin_set_church_admin', { p_church: f.dataset.add, p_email: em, p_on: true });
+      await loadTab(true); if (r === 'already') throw new Error(em + ' is already the church admin.');
+    }, em + ' is now the church admin. They sign in at leader.html.'); });
+    $app.querySelectorAll('[data-rm]').forEach(b => b.onclick = () => { if (!confirm(`Remove ${b.dataset.em} as church admin?`)) return; run(async () => {
+      await Cloud.rpc('admin_set_church_admin', { p_church: b.dataset.rm, p_email: b.dataset.em, p_on: false }); await loadTab(true);
+    }, 'Church admin removed.'); });
   };
 
   // ---------- season ----------
@@ -284,6 +342,7 @@ td input[type=text],td input[type=number],td select{min-height:36px;width:100%}
         st.season = Cloud.ok(await c.from('seasons').select('*').eq('active', true).maybeSingle());
         st.allChurches = Cloud.ok(await c.from('churches').select('id,name,code,city,state,enrollment_policy').order('name'));
       }
+      if (st.tab === 'churches') st.churchAdmins = await Cloud.rpc('admin_church_admins') || [];
       if (st.tab === 'licenses') {
         st.licenses = st.season ? Cloud.ok(await c.from('church_licenses').select('*').eq('season_id', st.season.id)) : [];
         st.seats = await Cloud.rpc('admin_individual_seats') || [];
