@@ -65,6 +65,8 @@ td input[type=text],td input[type=number],td select{min-height:36px;width:100%}
 .church .admins{border-top:1px solid #E1E7EA;margin-top:14px;padding-top:12px}
 .church .admins ul{list-style:none;padding:0;margin:8px 0}
 .church .admins li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:6px 0;flex-wrap:wrap}
+tr.gone td{color:#7A8890}
+td.acts{white-space:nowrap}
 </style>
 </head>
 <body>
@@ -300,12 +302,14 @@ td input[type=text],td input[type=number],td select{min-height:36px;width:100%}
         <label for="eh" style="margin-top:12px">Text</label><textarea id="eh">${esc(ed.content_html)}</textarea>
         <div class="row" style="margin-top:12px"><button class="btn alt" type="button" id="ecancel">Cancel</button><div class="grow"></div><button class="btn" type="submit">Save section</button></div></form>`;
     const imp = st.importSecs;
-    return `<h2>Book</h2><p class="sub">What Will You Give Today? as members read it in the app. Upload an updated Word file to replace the whole book, or edit one section.</p>
+    return `<h2>Book</h2><p class="sub">What Will You Give Today? as members read it in the app. Upload an updated Word file to replace the whole book, edit one section, or delete a page members shouldn’t see.</p>
     <div class="card"><div class="row"><div class="grow"><label for="docx">Updated book (.docx)</label><input id="docx" type="file" accept=".docx"></div></div>
-    ${imp ? `<div class="ok" style="margin-top:12px">Read ${imp.length} sections from the file: ${imp.filter(x => x.kind === 'week').length} weeks, ${imp.filter(x => x.kind === 'journal').length} journal pages, plus intro and closing pages.</div>
+    ${imp ? `<div class="ok" style="margin-top:12px">Read ${imp.length} sections from the file: ${imp.filter(x => x.kind === 'week').length} weeks, ${imp.filter(x => x.kind === 'journal').length} journal pages, plus intro and closing pages.${st.sections.some(x => x.hidden) ? ` Pages you deleted (${st.sections.filter(x => x.hidden).map(x => esc(x.title)).join(', ')}) stay deleted.` : ''}</div>
       <div class="row"><button class="btn alt" type="button" id="impCancel">Cancel</button><button class="btn teal" type="button" id="impGo">Replace the book with this file</button></div>` : ''}</div>
     <div class="card tbl">${st.sections.length ? `<table><thead><tr><th>#</th><th>Section</th><th>Opens</th><th>Updated</th><th></th></tr></thead><tbody>
-      ${st.sections.map(x => `<tr><td class="muted">${x.sort_order}</td><td>${esc(x.title)}</td><td>${x.unlock_week ? 'Week ' + x.unlock_week : 'Start'}</td><td class="muted">${fDate(x.updated_at)}</td><td><button class="btn alt sm" type="button" data-edit="${esc(x.slug)}">Edit</button></td></tr>`).join('')}
+      ${st.sections.map(x => x.hidden
+        ? `<tr class="gone"><td class="muted">${x.sort_order}</td><td><s>${esc(x.title)}</s> <span class="pill off">Deleted from app</span></td><td class="muted">—</td><td class="muted">${fDate(x.updated_at)}</td><td class="acts"><button class="btn alt sm" type="button" data-restore="${esc(x.slug)}">Restore</button></td></tr>`
+        : `<tr><td class="muted">${x.sort_order}</td><td>${esc(x.title)}</td><td>${x.unlock_week ? 'Week ' + x.unlock_week : 'Start'}</td><td class="muted">${fDate(x.updated_at)}</td><td class="acts"><button class="btn alt sm" type="button" data-edit="${esc(x.slug)}">Edit</button> <button class="btn danger sm" type="button" data-del="${esc(x.slug)}">Delete</button></td></tr>`).join('')}
     </tbody></table>` : `<p class="empty">The book isn’t loaded yet. Upload the Word file above.</p>`}</div>`;
   };
   BIND.book = () => {
@@ -318,6 +322,9 @@ td input[type=text],td input[type=number],td select{min-height:36px;width:100%}
       return;
     }
     $app.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { st.editSlug = b.dataset.edit; st.msg = st.err = ''; render(); });
+    const setHidden = (slug, on) => run(async () => { Cloud.ok(await c.from('book_sections').update({ hidden: on, updated_at: new Date().toISOString() }).eq('slug', slug)); await loadTab(true); }, on ? 'Deleted. Members no longer see that page.' : 'Restored. Members see that page again.');
+    $app.querySelectorAll('[data-del]').forEach(b => b.onclick = () => { const x = st.sections.find(y => y.slug === b.dataset.del); if (!confirm(`Delete "${x.title}" from the app?\n\nMembers won't see it, and it stays deleted when you upload a new Word file. You can restore it later.`)) return; setHidden(x.slug, true); });
+    $app.querySelectorAll('[data-restore]').forEach(b => b.onclick = () => setHidden(b.dataset.restore, false));
     $('docx').onchange = e => { const f = e.target.files[0]; if (!f) return; run(async () => { st.importSecs = await BookImport.fromDocx(f); }); };
     if ($('impCancel')) $('impCancel').onclick = () => { st.importSecs = null; render(); };
     if ($('impGo')) $('impGo').onclick = () => {
@@ -347,7 +354,7 @@ td input[type=text],td input[type=number],td select{min-height:36px;width:100%}
         st.licenses = st.season ? Cloud.ok(await c.from('church_licenses').select('*').eq('season_id', st.season.id)) : [];
         st.seats = await Cloud.rpc('admin_individual_seats') || [];
       }
-      if (st.tab === 'book') st.sections = Cloud.ok(await c.from('book_sections').select('slug,title,kind,unlock_week,sort_order,content_html,updated_at').order('sort_order'));
+      if (st.tab === 'book') st.sections = Cloud.ok(await c.from('book_sections').select('slug,title,kind,unlock_week,sort_order,content_html,updated_at,hidden').order('sort_order'));
     } catch (e) { flash(errMsg(e), true); }
     render();
   }
