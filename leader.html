@@ -89,7 +89,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
   const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
   const STATUS = { pending_payment: ['Waiting for payment', 'wait'], active: ['Active', 'ok'], canceled: ['Canceled', 'off'] };
   const pill = s => { const [t, c] = STATUS[s] || [s || 'None', 'off']; return `<span class="pill ${c}">${esc(t)}</span>`; };
-  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], churchAdmins: [], challengesAll: [], groups: [], roster: [], gAdd: null, gSel: new Set(), gRename: null, seats: [], sections: [], editSlug: null, importSecs: null };
+  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], churchAdmins: [], challengesAll: [], payments: [], buy: false, buyOpts: null, buyPlan: null, groups: [], roster: [], gAdd: null, gSel: new Set(), gRename: null, seats: [], sections: [], editSlug: null, importSecs: null };
   let c = null;
 
   const flash = (m, isErr) => { if (isErr) { st.err = m; st.msg = ''; } else { st.msg = m; st.err = ''; } };
@@ -97,7 +97,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
   async function run(fn, okMsg) { try { await fn(); if (okMsg) flash(okMsg); } catch (e) { flash(errMsg(e), true); } render(); }
 
   // ---------- tabs ----------
-  const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ...(st.admin ? [['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['challenges', 'Challenges']] : [])];
+  const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ...(st.admin ? [['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['challenges', 'Challenges'], ['payments', 'Payments']] : [])];
   function renderNav() {
     $('nav').hidden = false;
     $('tabs').innerHTML = TABS().map(([k, t]) => `<button type="button" data-tab="${k}" ${st.tab === k ? 'aria-current="page"' : ''}>${t}</button>`).join('');
@@ -124,7 +124,8 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
         <div class="grow"></div>
         <div><label>Church code to share</label><span class="code">${esc(st.church.code)}</span></div>
       </div>
-      <div style="margin-top:14px">${cap ? `<strong>${used} of ${cap}</strong> seats used · ${esc(s.plan_name)} license ${pill(s.license_status)}<div class="seatbar" aria-hidden="true"><span style="width:${Math.min(100, Math.round(used / cap * 100))}%"></span></div>` : `<span class="muted">No book license for ${esc(s.season_name || 'this season')} yet. You can still approve members; the book opens once a license is active.</span>`}</div></div>
+      <div style="margin-top:14px">${cap ? `<strong>${used} of ${cap}</strong> seats used · ${esc(s.plan_name || '')} license ${pill(s.license_status)}${s.expires_at ? ` <span class="muted">· good through ${fDate(s.expires_at)}</span>` : ''}<div class="seatbar" aria-hidden="true"><span style="width:${Math.min(100, Math.round(used / cap * 100))}%"></span></div>` : `<span class="muted">No book license for ${esc(s.season_name || 'this season')} yet. You can still approve members; the book opens once a license is active.</span>`}</div>
+      ${canName() ? (st.buy ? buyBox() : `<button class="btn teal" type="button" id="buyOpen" style="margin-top:12px">${s.license_status === 'active' ? 'Add seats' : 'Buy seats for your church'}</button>`) : ''}</div>
 
       <div class="card"><div class="row"><h3 style="margin:0;font-size:18px" class="grow">Waiting for approval (${pend.length})</h3></div>
       ${pend.length ? `<div class="tbl"><table><thead><tr>
@@ -144,7 +145,22 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
         ${ver.map(m => `<tr><td>${esc(m.name)}</td><td>${esc(m.email)}</td><td>${canName() ? `<label style="display:flex;gap:8px;align-items:center;margin:0;color:#173344;font-weight:500"><input type="checkbox" class="check" data-ld="${m.membership_id}" ${m.is_leader ? 'checked' : ''}> Can approve members</label>` : (m.is_leader ? 'Yes' : '—')}</td></tr>`).join('')}
         </tbody></table></div>` : `<p class="empty">No approved members yet.</p>`}</div>`;
   };
+  function buyBox() {
+    const o = st.buyOpts;
+    if (!o) return `<div class="addbox"><p class="muted">Loading seat plans…</p></div>`;
+    const cur = o.current && o.current.status === 'active' ? o.current : null;
+    const rows = o.plans.filter(p => p.due != null);
+    return `<div class="addbox"><div class="row"><strong class="grow">${cur ? `Add seats · you have ${cur.seats} (${esc(cur.plan || '')})` : 'Buy seats for your church'}</strong><button class="btn alt sm" type="button" id="buyClose">Close</button></div>
+      <p class="muted" style="margin:6px 0 10px">${cur ? `Move up to a larger plan and pay only the difference. Your end date stays ${cur.expires_at ? fDate(cur.expires_at) : 'the same'}.` : 'One payment, good for one year from today. Members you approve read free.'} Prices include tax. All sales are final.</p>
+      ${rows.length ? rows.map(p => `<label class="pick"><input type="radio" name="plan" value="${p.id}" ${st.buyPlan === p.id ? 'checked' : ''}> <span class="grow"><strong>${esc(p.name)}</strong> · ${p.seats} seats</span><strong>$${Number(p.due).toFixed(2)}</strong>${cur ? ' <span class="muted">(difference)</span>' : ''}</label>`).join('')
+        : '<p class="empty">You already have the largest plan. Contact the 144(P) Plan team for more seats.</p>'}
+      ${rows.length ? `<button class="btn teal" type="button" id="buyGo" ${st.buyPlan ? '' : 'disabled'} style="margin-top:10px">Continue to secure checkout</button><p class="muted" style="margin-top:6px;font-size:13px">You’ll pay on Stripe’s secure page (card, Apple Pay or Google Pay), then come back here.</p>` : ''}</div>`;
+  }
   BIND.approvals = () => {
+    if ($('buyOpen')) $('buyOpen').onclick = () => run(async () => { st.buy = true; st.buyPlan = null; st.buyOpts = null; render(); st.buyOpts = await Cloud.rpc('purchase_options', { cid: st.church.church_id }); });
+    if ($('buyClose')) $('buyClose').onclick = () => { st.buy = false; render(); };
+    $app.querySelectorAll('input[name=plan]').forEach(r => r.onchange = () => { st.buyPlan = r.value; render(); });
+    if ($('buyGo')) $('buyGo').onclick = () => { const b = $('buyGo'); b.disabled = true; b.textContent = 'Opening secure checkout…'; run(async () => { await Cloud.checkout('church', { church_id: st.church.church_id, plan_id: st.buyPlan }); }); };
     if ($('ch')) $('ch').onchange = e => run(async () => { st.church = st.churches.find(x => x.church_id === e.target.value); await loadChurch(); });
     const pend = st.members.filter(m => m.status === 'pending');
     if ($('all')) $('all').onchange = e => { st.sel = e.target.checked ? new Set(pend.map(m => m.membership_id)) : new Set(); st.msg = st.err = ''; render(); };
@@ -363,6 +379,14 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
       <td>${pill2(c.phase)}</td></tr>`).join('')}</tbody></table>` : '<p class="empty">No challenges yet.</p>'}</div>`; };
   const pill2 = p => ({ live: '<span class="pill ok">Live</span>', upcoming: '<span class="pill ok">Upcoming</span>', pending: '<span class="pill wait">Waiting</span>', finished: '<span class="pill off">Finished</span>', declined: '<span class="pill off">Declined</span>', canceled: '<span class="pill off">Canceled</span>' })[p] || esc(p);
 
+  // ---------- payments ----------
+  VIEWS.payments = () => { const P = st.payments, paid = P.filter(p => p.status === 'paid'), tot = paid.reduce((a, p) => a + Number(p.amount), 0);
+    return `<h2>Payments</h2><p class="sub">Every payment made through Stripe: individual seats, church seat packs and seat upgrades. Prices include tax. All sales are final. Payouts and receipts are in your Stripe dashboard.</p>
+    <div class="card"><div class="row"><span><strong>${money(tot)}</strong> collected</span><span><strong>${paid.length}</strong> payments</span><span><strong>${paid.filter(p => p.kind === 'individual').length}</strong> individual seats</span><span><strong>${paid.filter(p => p.kind !== 'individual').length}</strong> church purchases</span></div></div>
+    <div class="card tbl">${P.length ? `<table><thead><tr><th>Date</th><th>What</th><th>Buyer</th><th>Amount</th><th>Status</th></tr></thead><tbody>
+      ${P.map(p => `<tr><td class="muted">${fDate(p.paid_at || p.created_at)}</td><td>${esc(p.description)}</td><td>${esc(p.buyer || '')}<br><span class="muted">${esc(p.buyer_email || '')}</span></td><td><strong>${money(p.amount)}</strong></td><td>${p.status === 'paid' ? '<span class="pill ok">Paid</span>' : '<span class="pill off">Not completed</span>'}</td></tr>`).join('')}
+      </tbody></table>` : '<p class="empty">No payments yet.</p>'}</div>`; };
+
   // ---------- season ----------
   VIEWS.season = () => { const s = st.season || {}; return `<h2>Season</h2><p class="sub">Week 1 of the book opens on the start date, and one new week opens every 7 days after.</p>
     <form class="card" id="sf"><div class="row">
@@ -434,6 +458,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
         st.season = Cloud.ok(await c.from('seasons').select('*').eq('active', true).maybeSingle());
         st.allChurches = Cloud.ok(await c.from('churches').select('id,name,code,city,state,enrollment_policy').order('name'));
       }
+      if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
       if (st.tab === 'challenges') st.challengesAll = await Cloud.rpc('admin_challenges') || [];
       if (st.tab === 'churches') st.churchAdmins = await Cloud.rpc('admin_church_admins') || [];
       if (st.tab === 'licenses') {
@@ -462,7 +487,12 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
     if (ADMIN_MODE && !st.admin) { $app.innerHTML = `<h2>Admin Panel</h2><p class="sub">This page is for the 144(P) Plan administrator. Church admins and group leaders use the <a href="leader.html">Leader Console</a>.</p>`; return; }
     if (!st.churches.length && !st.admin) { $app.innerHTML = `<h2>Leader Console</h2><p class="sub">This account isn’t a church admin or group leader yet. Ask your church admin to make you a group leader, then sign in again.</p>`; return; }
     if (!st.churches.length && st.admin) st.tab = 'churches';
+    let paid = null, payErr = '';
+    try { paid = await Cloud.settlePayments(); } catch (x) { payErr = 'We couldn’t confirm the payment yet: ' + ((x && x.message) || '') + ' If you were charged, reload this page in a minute.'; }
     await loadTab();
+    if (paid === 'paid') { flash('Payment received. Thank you! Your church’s seats are active.'); render(); }
+    else if (paid === 'canceled') { flash('Checkout canceled. You weren’t charged.'); render(); }
+    else if (payErr) { flash(payErr, true); render(); }
   }
   function signin() {
     $('nav').hidden = true;

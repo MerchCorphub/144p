@@ -21,4 +21,8 @@ date: 2026-11-18T01:30:00Z
 | Leader Console (church admins, group leaders: approvals, groups) | leader.html, book-import.js, cloud.js |
 | Older admin dashboard (partly sample data) | 144P-Admin.dc.html, admin-data.js, cloud.js |
 | PWA | manifest.json, sw.js, icon-192.png, icon-512.png, apple-touch-icon.png |
-| Database | supabase/migrations/0001_init.sql, 0002_harden_and_rpcs.sql, 0003_book_licenses_approvals.sql, 0004_church_admins.sql, 0005_book_hidden_sections.sql, 0006_challenges.sql, 0006b_challenges_null_safety.sql, 0007_groups.sql |
+| Database | supabase/migrations/0001_init.sql, 0002_harden_and_rpcs.sql, 0003_book_licenses_approvals.sql, 0004_church_admins.sql, 0005_book_hidden_sections.sql, 0006_challenges.sql, 0006b_challenges_null_safety.sql, 0007_groups.sql, 0008_payments.sql |
+
+## Payments (Stripe)
+- Server function `supabase/functions/stripe-pay` (deployed on the 144p Supabase project). Needs the secret `STRIPE_SECRET_KEY` (Supabase › Edge Functions › Secrets). Use an `sk_test_` key for testing, then the `sk_live_` key to go live.
+- Buyers pay on Stripe Checkout and come back to the page they left; the page confirms the payment with Stripe and turns the seat or license on. Prices come from Admin Panel › Prices. One-time payments that last one year; church upgrades pay the difference and keep the end date. Prices include tax; all sales final.

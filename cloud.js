@@ -100,5 +100,35 @@
   }
   window.addEventListener('online', () => flush());
 
-  window.Cloud = { url: URL_, sb, session, signUp, signIn, signOut, rpc, ensurePartner, pullPartner, queue, flush, pending: () => readBox().length, isUuid, ms, iso, ok, resetPid: () => { pidCache = null; } };
+  // ---------- payments (Stripe, through the stripe-pay server function) ----------
+  async function pay(body) {
+    const c = await sb(); const { data } = await c.auth.getSession();
+    if (!data || !data.session) throw new Error('Please sign in again.');
+    const res = await fetch(URL_ + '/functions/v1/stripe-pay', { method: 'POST',
+      headers: { 'Content-Type': 'application/json', apikey: KEY_, Authorization: 'Bearer ' + data.session.access_token },
+      body: JSON.stringify(body) });
+    let out = {}; try { out = await res.json(); } catch (e) {}
+    if (!res.ok || out.error) throw new Error(out.error || 'Payment could not be started. Please try again.');
+    return out;
+  }
+  // Start Stripe Checkout and leave the page. type: 'individual' | 'church'
+  async function checkout(type, extra) {
+    const out = await pay(Object.assign({ action: 'checkout', type, return_path: location.pathname }, extra || {}));
+    location.href = out.url;
+  }
+  // On return from Stripe (?paid=cs_…) and for any payment left open, confirm with Stripe. Returns 'paid', 'canceled' or null.
+  async function settlePayments() {
+    const q = new URLSearchParams(location.search), sid = q.get('paid'), canceled = q.get('canceled');
+    if (sid || canceled) { q.delete('paid'); q.delete('canceled'); history.replaceState(null, '', location.pathname + (q.toString() ? '?' + q : '') + location.hash); }
+    let result = canceled ? 'canceled' : null;
+    const ids = new Set(sid ? [sid] : []);
+    try { (await rpc('my_open_payments') || []).forEach(r => r.stripe_session_id && ids.add(r.stripe_session_id)); } catch (e) {}
+    for (const id of ids) {
+      try { const r = await pay({ action: 'confirm', session_id: id }); if (r.status === 'paid' && id === sid) result = 'paid'; }
+      catch (e) { if (id === sid) throw e; }
+    }
+    return result;
+  }
+
+  window.Cloud = { url: URL_, sb, session, signUp, signIn, signOut, rpc, ensurePartner, pullPartner, queue, flush, pending: () => readBox().length, pay, checkout, settlePayments, isUuid, ms, iso, ok, resetPid: () => { pidCache = null; } };
 })();
