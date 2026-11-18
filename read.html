@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>The Book · The 144(P) Plan</title>
+<meta name="theme-color" content="#123C56">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
+<script src="./cloud.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#F8F5EE;color:#173344;font-family:'Public Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#075D61}
+button,input,select{font:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible{outline:3px solid #0E8A7E;outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto;padding:0 18px 48px}
+header{position:sticky;top:0;z-index:5;background:#123C56;color:#fff;padding:calc(12px + env(safe-area-inset-top)) 18px 12px}
+header .in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px}
+header a,header button.link{color:#fff;text-decoration:none;font-weight:600;font-size:15px;background:none;border:0;padding:8px 0;cursor:pointer}
+header h1{flex:1;margin:0;font-size:17px;font-weight:700;text-align:center}
+.card{background:#fff;border:1px solid #E1E7EA;border-radius:14px;padding:18px;margin-top:16px}
+h2.t{font-family:'Source Serif 4',Georgia,serif;font-size:24px;font-weight:600;margin:22px 0 4px;color:#123C56}
+p.sub{margin:4px 0 0;color:#4F5F68;font-size:15px;line-height:1.5}
+label{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}
+input[type=text],input[type=email],input[type=password]{width:100%;min-height:48px;border:1px solid #9AA8B0;border-radius:10px;padding:10px 12px;font-size:16px;background:#fff;color:#173344}
+.btn{display:inline-flex;align-items:center;justify-content:center;width:100%;min-height:50px;border:0;border-radius:12px;background:#123C56;color:#fff;font-weight:600;font-size:16px;cursor:pointer;margin-top:16px;text-decoration:none}
+.btn.alt{background:#fff;color:#123C56;border:1px solid #123C56}
+.btn[disabled]{background:#9AA8B0;cursor:default}
+.err{background:#FBEAE7;color:#7A2A20;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:14px}
+.ok{background:#E8F5F3;color:#075D61;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:14px}
+.pill{display:inline-block;border-radius:999px;padding:4px 10px;font-size:13px;font-weight:600;background:#E8F5F3;color:#075D61}
+.pill.wait{background:#FFF4DC;color:#6B4E12}
+.group{margin-top:22px}
+.group h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#4F5F68;margin:0 0 8px}
+.item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:#fff;border:1px solid #E1E7EA;border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;color:#173344}
+.item:hover{border-color:#075D61}
+.item .ti{flex:1;font-weight:600;font-size:15px}
+.item .meta{font-size:13px;color:#4F5F68;font-weight:500}
+.item.locked{cursor:default;background:#F1F3F4;color:#4F5F68}
+.item.locked:hover{border-color:#E1E7EA}
+.item .num{width:30px;height:30px;border-radius:50%;background:#E8F5F3;color:#075D61;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none}
+.item.locked .num{background:#E1E7EA;color:#4F5F68}
+.reader{position:relative;background:#fff;border:1px solid #E1E7EA;border-radius:14px;padding:22px 20px 28px;margin-top:16px;font-family:'Source Serif 4',Georgia,serif;font-size:19px;line-height:1.65;color:#1E2B33;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overflow:hidden}
+.reader p{margin:0 0 14px}
+.reader p.label{font-family:'Public Sans',system-ui,sans-serif;font-size:12px;letter-spacing:.08em;font-weight:700;color:#075D61;margin:26px 0 6px}
+.reader h2,.reader h3{font-family:'Source Serif 4',Georgia,serif;color:#123C56;margin:4px 0 14px;line-height:1.25}
+.reader h2{font-size:28px}.reader h3{font-size:25px}
+.reader hr{border:0;border-top:1px solid #D6DEE2;width:90px;margin:22px auto}
+.reader ul,.reader ol{padding-left:22px;margin:0 0 14px}
+.reader table{border-collapse:collapse;width:100%;margin:0 0 14px;font-size:16px}
+.reader td,.reader th{border:1px solid #E1E7EA;padding:6px 8px;vertical-align:top}
+.mark{position:absolute;inset:0;pointer-events:none;display:flex;flex-wrap:wrap;align-content:space-around;justify-content:space-around;opacity:.07;font-family:'Public Sans',sans-serif;font-size:14px;font-weight:700;color:#123C56;transform:rotate(-24deg) scale(1.4);overflow:hidden}
+.mark span{padding:30px 20px;white-space:nowrap}
+.pager{display:flex;gap:10px;margin-top:16px}
+.pager .btn{margin-top:0}
+.listen{background:#fff;border:1px solid #E1E7EA;border-radius:14px;padding:12px 14px;margin-top:12px}
+.listen .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.listen .pbtn{min-height:44px;border:0;border-radius:10px;background:#075D61;color:#fff;font-weight:600;padding:0 16px;cursor:pointer}
+.listen .pbtn.alt{background:#fff;color:#123C56;border:1px solid #123C56}
+.listen select{min-height:40px;border:1px solid #9AA8B0;border-radius:8px;padding:6px 8px;background:#fff;color:#173344;font-size:14px;max-width:100%}
+.listen .lab{font-size:13px;font-weight:600;color:#4F5F68}
+.listen .auto{display:flex;gap:6px;align-items:center;font-size:14px;color:#173344;margin-top:8px}
+.listen .now{font-size:13px;color:#4F5F68;margin-top:6px}
+.reader .speaking{background:#FFF4DC;border-radius:4px;box-shadow:0 0 0 4px #FFF4DC}
+.foot{margin-top:28px;font-size:12px;color:#4F5F68;text-align:center;line-height:1.5}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media print{.reader,.wrap{display:none!important}body::after{content:'This book can be read inside The 144(P) Plan app.';display:block;padding:40px}}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <a href="144P-Plan-v2.dc.html" id="backApp">‹ App</a>
+  <h1 id="hdr">The Book</h1>
+  <button class="link" id="signOut" hidden type="button">Sign out</button>
+</div></header>
+<main class="wrap" id="app" aria-live="polite"><p class="sub" style="margin-top:24px">Loading…</p></main>
+<script src="./book-import.js"></script>
+<script>
+(function () {
+  const $app = document.getElementById('app'), $hdr = document.getElementById('hdr');
+  const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const st = { me: null, status: null, toc: [], open: null, msg: '', err: '' };
+  const fmtDate = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  const addDays = (d, n) => { const x = new Date(d + 'T12:00:00'); x.setDate(x.getDate() + n); return x.toISOString().slice(0, 10); };
+  const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
+
+  // Only plain book formatting is ever shown
+  const ALLOWED = new Set(['P', 'H2', 'H3', 'EM', 'STRONG', 'B', 'I', 'U', 'HR', 'BR', 'UL', 'OL', 'LI', 'TABLE', 'THEAD', 'TBODY', 'TR', 'TD', 'TH', 'BLOCKQUOTE', 'SPAN']);
+  function safeHTML(html) {
+    const src = new DOMParser().parseFromString('<div>' + html + '</div>', 'text/html').body.firstChild;
+    const walk = (node, into) => node.childNodes.forEach(n => {
+      if (n.nodeType === 3) into.appendChild(document.createTextNode(n.textContent));
+      else if (n.nodeType === 1) {
+        if (ALLOWED.has(n.tagName)) { const el = document.createElement(n.tagName); if (n.tagName === 'P' && n.classList.contains('label')) el.className = 'label'; walk(n, el); into.appendChild(el); }
+        else if (!['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'EMBED'].includes(n.tagName)) walk(n, into);
+      }
+    });
+    const out = document.createElement('div'); walk(src, out); return out;
+  }
+
+  function render() {
+    document.getElementById('signOut').hidden = !st.me;
+    const v = view(); $app.innerHTML = v.html; $hdr.textContent = v.title || 'The Book';
+    if (v.after) v.after();
+    window.scrollTo(0, 0);
+  }
+  const notes = () => (st.err ? `<div class="err" role="alert">${esc(st.err)}</div>` : '') + (st.msg ? `<div class="ok">${esc(st.msg)}</div>` : '');
+
+  function view() {
+    if (!st.me) return { title: 'The Book', html: `
+      <h2 class="t">Sign in to read</h2>
+      <p class="sub">Use the same email and password as your 144(P) Plan account.</p>
+      <form class="card" id="f">
+        <label for="em">Email</label><input id="em" type="email" autocomplete="email" required>
+        <label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required>
+        ${notes()}<button class="btn" type="submit">Sign in</button>
+      </form>
+      <p class="sub" style="margin-top:14px"><a href="reset.html" id="fp">Forgot your password?</a></p>
+      <p class="sub" style="margin-top:8px">New here? <a href="144P-Plan-v2.dc.html">Create your account in the app</a>, then come back.</p>`,
+      after: () => { const fp = document.getElementById('fp'), em = document.getElementById('em'); fp.onclick = () => { if (em.value.trim()) fp.href = 'reset.html?email=' + encodeURIComponent(em.value.trim()); }; document.getElementById('f').onsubmit = async e => { e.preventDefault(); st.err = ''; try { await Cloud.signIn(document.getElementById('em').value.trim().toLowerCase(), document.getElementById('pw').value); await load(); } catch (x) { st.err = errMsg(x); render(); } }; } };
+
+    const s = st.status || {};
+    if (st.open) return reader();
+    if (s.unlocked_week >= 0) return toc();
+
+    // No access yet: explain exactly where they stand
+    if (s.membership === 'pending') return { title: 'Almost there', html: `
+      <h2 class="t">Waiting for approval</h2>
+      <div class="card"><span class="pill wait">Pending</span>
+      <p class="sub" style="margin-top:10px">Your request to join <strong>${esc(s.church_name)}</strong> is with your group leader. You can read the book as soon as they approve you.</p></div>
+      ${joinForm('Wrong church? Enter a different code')}`, after: bindJoin };
+    if (s.seat_status === 'pending_payment') return { title: 'Almost there', html: `
+      <h2 class="t">Your seat is reserved</h2>
+      <div class="card"><span class="pill wait">Waiting for payment</span>
+      <p class="sub" style="margin-top:10px">Your book seat for ${esc(s.season_name)} is reserved. It opens as soon as your payment is confirmed.</p></div>
+      ${joinForm('Joining with your church instead?')}`, after: bindJoin };
+    if (s.membership === 'verified') return { title: 'Almost there', html: `
+      <h2 class="t">You're approved</h2>
+      <div class="card"><span class="pill">Member of ${esc(s.church_name)}</span>
+      <p class="sub" style="margin-top:10px">${s.license_status === 'pending_payment' ? 'Your church’s book license is waiting for payment.' : 'Your church doesn’t have a book license for this season yet.'} The book opens for everyone at your church once it’s active. Ask your church leader about it.</p></div>`, after: null };
+    return { title: 'Join the challenge', html: `
+      <h2 class="t">Get the book in the app</h2>
+      <p class="sub">Join through your church, or get your own seat.</p>
+      ${joinForm('Join with your church code')}
+      <div class="card"><strong>On your own</strong>
+        <p class="sub">No church taking part? Reserve a seat for yourself${st.indPrice != null ? ` for $${Number(st.indPrice).toFixed(2)}` : ''}.</p>
+        <button class="btn alt" id="seat" type="button">Reserve my seat</button></div>`,
+      after: () => { bindJoin(); document.getElementById('seat').onclick = async () => { st.err = ''; try { await Cloud.rpc('request_individual_seat'); await load(); } catch (x) { st.err = errMsg(x); render(); } }; } };
+  }
+  function joinForm(title) {
+    return `<form class="card" id="jf"><strong>${esc(title)}</strong>
+      <p class="sub">Your church code is in the bulletin, or ask your group leader.</p>
+      <label for="code">Church code</label><input id="code" type="text" autocapitalize="characters" autocomplete="off" required>
+      ${notes()}<button class="btn" type="submit">Send my request</button></form>`;
+  }
+  function bindJoin() {
+    const f = document.getElementById('jf'); if (!f) return;
+    f.onsubmit = async e => { e.preventDefault(); st.err = ''; st.msg = '';
+      try { const r = await Cloud.rpc('join_church_by_code', { p_code: document.getElementById('code').value }); st.msg = r === 'pending' ? 'Request sent. Your group leader will approve you.' : 'You’re in.'; await load(); }
+      catch (x) { st.err = errMsg(x); render(); } };
+  }
+
+  function unlockDate(w) { return w <= 1 ? st.status.start_date : addDays(st.status.start_date, (w - 1) * 7); }
+  function toc() {
+    const s = st.status, uw = s.unlocked_week, today = new Date().toISOString().slice(0, 10);
+    const before = today < s.start_date;
+    const item = x => {
+      const open = x.unlock_week <= uw;
+      const num = x.unlock_week || '•';
+      return open ? `<button class="item" type="button" data-slug="${esc(x.slug)}"><span class="num" aria-hidden="true">${num}</span><span class="ti">${esc(x.title)}</span></button>`
+        : `<div class="item locked"><span class="num" aria-hidden="true">${num}</span><span class="ti">${esc(x.title)}<br><span class="meta">Opens ${fmtDate(unlockDate(x.unlock_week))}</span></span></div>`;
+    };
+    const by = k => st.toc.filter(k);
+    const groups = [
+      ['Start here', by(x => x.unlock_week === 0 && x.kind === 'intro')],
+      ['Twelve weeks at the table', by(x => x.unlock_week >= 1 && x.kind !== 'closing')],
+      ['For group leaders', by(x => x.kind === 'guide')],
+      ['For the Christmas season', by(x => x.kind === 'extra')],
+      ['To close', by(x => x.kind === 'closing')]].filter(g => g[1].length);
+    return { title: 'The Book', html: `
+      <h2 class="t">What Will You Give Today?</h2>
+      <p class="sub">${before ? `The challenge starts ${fmtDate(s.start_date)}. Start-here pages are open now; each week opens on its Sunday.` : `Week ${Math.max(uw, 1)} of 12 is open. A new week opens every Sunday.`}</p>
+      ${groups.map(([t, list]) => `<section class="group"><h3>${esc(t)}</h3>${list.map(item).join('')}</section>`).join('')}
+      <p class="foot">© 2026 C. P. Parker. For your personal reading in The 144(P) Plan app.</p>`,
+      after: () => $app.querySelectorAll('[data-slug]').forEach(b => b.onclick = () => openSection(b.dataset.slug)) };
+  }
+  async function openSection(slug, keepListening) {
+    st.err = '';
+    try {
+      const c = await Cloud.sb();
+      const row = Cloud.ok(await c.from('book_sections').select('slug,title,content_html,unlock_week').eq('slug', slug).maybeSingle());
+      if (!row) { st.err = 'That section isn’t open yet.'; return render(); }
+      if (keepListening) Speech.queueNext();
+      st.open = row; render();
+    } catch (x) { st.err = errMsg(x); render(); }
+  }
+  function reader() {
+    const r = st.open, uw = st.status.unlocked_week, list = st.toc.filter(x => x.unlock_week <= uw);
+    const i = list.findIndex(x => x.slug === r.slug), prev = list[i - 1], next = list[i + 1];
+    const who = st.me ? `${st.me.first_name} ${st.me.last_name}` : '';
+    return { title: r.title.split(' · ')[0], html: `
+      <div class="pager" style="margin-top:14px"><button class="btn alt" id="toToc" type="button">‹ Contents</button></div>
+      ${Speech.ok ? `<section class="listen" aria-label="Listen to this section">
+        <div class="row">
+          <button class="pbtn" id="lPlay" type="button">▶ Listen</button>
+          <button class="pbtn alt" id="lStop" type="button" hidden>Stop</button>
+          <span style="flex:1"></span>
+          <label class="lab" for="lRate">Speed</label>
+          <select id="lRate">${[0.75, 1, 1.25, 1.5].map(r => `<option value="${r}" ${Speech.rate === r ? 'selected' : ''}>${r}×</option>`).join('')}</select>
+        </div>
+        <div class="row" style="margin-top:8px"><label class="lab" for="lVoice">Voice</label><select id="lVoice" style="flex:1"></select></div>
+        <label class="auto"><input type="checkbox" id="lAuto" ${Speech.auto ? 'checked' : ''}> Keep going to the next section</label>
+        <div class="now" id="lNow" aria-live="polite"></div>
+      </section>` : `<p class="sub" style="margin-top:10px">Listening isn’t available in this browser. Try Safari or Chrome.</p>`}
+      <article class="reader" aria-label="${esc(r.title)}"><div id="txt"></div>
+        <div class="mark" aria-hidden="true">${Array.from({ length: 24 }, () => `<span>${esc(who)}</span>`).join('')}</div></article>
+      <div class="pager">${prev ? `<button class="btn alt" id="pv" type="button">‹ Previous</button>` : ''}${next ? `<button class="btn" id="nx" type="button">Next ›</button>` : ''}</div>
+      <p class="foot">© 2026 C. P. Parker. All rights reserved. Shared with ${esc(who)} for personal reading.</p>`,
+      after: () => {
+        document.getElementById('txt').appendChild(safeHTML(r.content_html));
+        document.getElementById('toToc').onclick = () => { Speech.stop(); st.open = null; render(); };
+        if (prev) document.getElementById('pv').onclick = () => { Speech.stop(); openSection(prev.slug); };
+        if (next) document.getElementById('nx').onclick = () => { Speech.stop(); openSection(next.slug); };
+        Speech.bind(next ? () => openSection(next.slug, true) : null);
+      } };
+  }
+
+  // ---------- read aloud with the device's built-in voice ----------
+  const Speech = (function () {
+    const ss = window.speechSynthesis, ok = !!(ss && window.SpeechSynthesisUtterance);
+    const load = (k, d) => { try { const v = localStorage.getItem('144p-listen-' + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } };
+    const save = (k, v) => { try { localStorage.setItem('144p-listen-' + k, JSON.stringify(v)); } catch (e) {} };
+    const S = { ok, rate: load('rate', 1), auto: load('auto', true), voiceName: load('voice', ''), parts: [], i: 0, playing: false, paused: false, onDone: null, gen: 0 };
+    const voices = () => (ok ? ss.getVoices().filter(v => /^en(-|_|$)/i.test(v.lang)) : []);
+    const pickVoice = () => { const vs = voices(); return vs.find(v => v.name === S.voiceName) || vs.find(v => /en-US/i.test(v.lang) && v.localService) || vs[0] || null; };
+    const say = t => t.replace(/\s*·\s*/g, ', ').replace(/–/g, ' to ').replace(/\s+/g, ' ').trim();
+    const title = t => t.toLowerCase().replace(/(^|[\s(“"])([a-z])/g, (m, a, b) => a + b.toUpperCase());
+    function collect() {
+      const box = document.getElementById('txt'); if (!box) return [];
+      const out = [];
+      box.querySelectorAll('p, h2, h3, li, td').forEach(el => {
+        if (el.closest('li') && el.tagName !== 'LI') return;
+        let t = el.textContent.trim(); if (!t) return;
+        if (el.classList.contains('label')) t = title(t);
+        t = say(t);
+        // split long paragraphs at sentence ends so mobile voices don't cut off
+        const chunks = t.length > 220 ? t.match(/[^.!?]+[.!?]+[”"’)]*\s*|[^.!?]+$/g) || [t] : [t];
+        let buf = '';
+        chunks.forEach(c => { if ((buf + c).length > 220 && buf) { out.push({ el, text: buf.trim() }); buf = ''; } buf += c; });
+        if (buf.trim()) out.push({ el, text: buf.trim() });
+      });
+      return out;
+    }
+    function mark(el) { document.querySelectorAll('.reader .speaking').forEach(x => x.classList.remove('speaking')); if (el) { el.classList.add('speaking'); const r = el.getBoundingClientRect(); if (r.top < 80 || r.bottom > innerHeight - 40) el.scrollIntoView({ block: 'center', behavior: 'smooth' }); } }
+    function ui() {
+      const p = document.getElementById('lPlay'), s = document.getElementById('lStop'), n = document.getElementById('lNow'); if (!p) return;
+      p.textContent = S.playing && !S.paused ? '❚❚ Pause' : S.paused ? '▶ Resume' : '▶ Listen';
+      s.hidden = !S.playing && !S.paused;
+      n.textContent = S.playing || S.paused ? `Reading part ${Math.min(S.i + 1, S.parts.length)} of ${S.parts.length}${S.paused ? ' · paused' : ''}` : '';
+    }
+    function speakFrom(i) {
+      const g = ++S.gen; ss.cancel(); S.i = i;
+      if (i >= S.parts.length) { S.playing = false; S.paused = false; mark(null); ui(); if (S.auto && S.onDone) S.onDone(); return; }
+      const u = new SpeechSynthesisUtterance(S.parts[i].text), v = pickVoice();
+      if (v) { u.voice = v; u.lang = v.lang; } else u.lang = 'en-US';
+      u.rate = S.rate;
+      u.onend = () => { if (g === S.gen && S.playing && !S.paused) speakFrom(i + 1); };
+      u.onerror = e => { if (g === S.gen && e.error !== 'interrupted' && e.error !== 'canceled') { S.playing = false; ui(); } };
+      mark(S.parts[i].el); S.playing = true; S.paused = false; ui();
+      ss.speak(u);
+    }
+    function stop() { if (!ok) return; S.gen++; ss.cancel(); S.playing = false; S.paused = false; mark(null); ui(); }
+    function fillVoices() {
+      const sel = document.getElementById('lVoice'); if (!sel) return;
+      const vs = voices(), cur = pickVoice();
+      sel.innerHTML = vs.length ? vs.map(v => `<option value="${esc(v.name)}" ${cur && cur.name === v.name ? 'selected' : ''}>${esc(v.name)}${v.lang ? ' (' + esc(v.lang) + ')' : ''}</option>`).join('') : '<option>Default voice</option>';
+    }
+    if (ok) ss.onvoiceschanged = fillVoices;
+    function bind(onDone) {
+      if (!ok) return;
+      S.onDone = onDone; S.parts = collect(); S.i = 0; fillVoices(); ui();
+      document.getElementById('lPlay').onclick = () => {
+        if (S.playing && !S.paused) { S.paused = true; S.gen++; ss.cancel(); ui(); return; } // cancel+restart is steadier than pause() on phones
+        speakFrom(S.paused ? S.i : 0);
+      };
+      document.getElementById('lStop').onclick = stop;
+      document.getElementById('lRate').onchange = e => { S.rate = parseFloat(e.target.value); save('rate', S.rate); if (S.playing && !S.paused) speakFrom(S.i); };
+      document.getElementById('lVoice').onchange = e => { S.voiceName = e.target.value; save('voice', S.voiceName); if (S.playing && !S.paused) speakFrom(S.i); };
+      document.getElementById('lAuto').onchange = e => { S.auto = e.target.checked; save('auto', S.auto); };
+      if (S.continueNext) { S.continueNext = false; speakFrom(0); }
+    }
+    return { get ok() { return ok; }, get rate() { return S.rate; }, get auto() { return S.auto; }, bind, stop, queueNext() { S.continueNext = true; } };
+  })();
+
+  async function load() {
+    st.err = '';
+    const s = await Cloud.session();
+    if (!s) { st.me = null; return render(); }
+    st.me = await Cloud.ensurePartner();
+    const [status, toc] = await Promise.all([Cloud.rpc('my_book_status'), Cloud.rpc('book_toc')]);
+    st.status = (status && status[0]) || {}; st.toc = toc || [];
+    if (!(st.status.unlocked_week >= 0)) {
+      try { const c = await Cloud.sb(); const p = Cloud.ok(await c.from('license_plans').select('price').eq('kind', 'individual').eq('active', true).order('sort_order').limit(1)); st.indPrice = p[0] ? p[0].price : null; } catch (e) { st.indPrice = null; }
+    }
+    const want = new URLSearchParams(location.search).get('s');
+    if (want && st.status.unlocked_week >= 0) return openSection(want);
+    render();
+  }
+  document.getElementById('signOut').onclick = async () => { Speech.stop(); await Cloud.signOut(); st.me = null; st.open = null; st.status = null; render(); };
+  ['copy', 'cut', 'contextmenu', 'dragstart'].forEach(ev => document.addEventListener(ev, e => { if (e.target.closest && e.target.closest('.reader')) e.preventDefault(); }));
+  load().catch(e => { st.err = errMsg(e); render(); });
+})();
+</script>
+</body>
+</html>

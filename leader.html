@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Leader Console · The 144(P) Plan</title>
+<meta name="theme-color" content="#123C56">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
+<script src="./cloud.js"></script>
+<script src="./book-import.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#F3F5F6;color:#173344;font-family:'Public Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select,textarea{font:inherit}
+a{color:#075D61}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,a:focus-visible{outline:3px solid #0E8A7E;outline-offset:2px}
+header{background:#123C56;color:#fff;padding:14px 20px}
+header .in{max-width:1080px;margin:0 auto;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+header h1{margin:0;font-family:'Source Serif 4',Georgia,serif;font-size:21px;font-weight:600;flex:1}
+header .who{font-size:14px;opacity:.9}
+header button{background:none;border:1px solid rgba(255,255,255,.6);color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer}
+nav{background:#fff;border-bottom:1px solid #E1E7EA}
+nav .in{max-width:1080px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padding:0 12px}
+nav button{background:none;border:0;border-bottom:3px solid transparent;padding:14px 12px;font-weight:600;color:#4F5F68;cursor:pointer;white-space:nowrap}
+nav button[aria-current=page]{color:#123C56;border-bottom-color:#075D61}
+main{max-width:1080px;margin:0 auto;padding:20px 20px 60px}
+h2{font-family:'Source Serif 4',Georgia,serif;font-weight:600;color:#123C56;font-size:24px;margin:6px 0 4px}
+p.sub{margin:4px 0 14px;color:#4F5F68;line-height:1.5}
+.card{background:#fff;border:1px solid #E1E7EA;border-radius:12px;padding:16px;margin-bottom:16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grow{flex:1}
+label{font-size:13px;font-weight:600;color:#4F5F68;display:block;margin-bottom:4px}
+input[type=text],input[type=email],input[type=password],input[type=number],input[type=date],select,textarea{min-height:42px;border:1px solid #9AA8B0;border-radius:8px;padding:8px 10px;background:#fff;color:#173344;font-size:15px}
+textarea{width:100%;min-height:320px;font-family:ui-monospace,Menlo,monospace;font-size:13px;line-height:1.5}
+.btn{min-height:42px;border:0;border-radius:8px;background:#123C56;color:#fff;font-weight:600;padding:0 16px;cursor:pointer}
+.btn.teal{background:#075D61}
+.btn.alt{background:#fff;color:#123C56;border:1px solid #123C56}
+.btn.danger{background:#fff;color:#A33A2E;border:1px solid #A33A2E}
+.btn.sm{min-height:34px;padding:0 12px;font-size:14px}
+.btn[disabled]{background:#C9D2D7;color:#fff;border-color:#C9D2D7;cursor:default}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:left;font-size:12px;letter-spacing:.05em;text-transform:uppercase;color:#4F5F68;font-weight:700;padding:8px;border-bottom:2px solid #E1E7EA}
+td{padding:10px 8px;border-bottom:1px solid #EEF1F2;vertical-align:middle}
+td input[type=text],td input[type=number],td select{min-height:36px;width:100%}
+.tbl{overflow-x:auto}
+.pill{display:inline-block;border-radius:999px;padding:3px 10px;font-size:12px;font-weight:700}
+.pill.ok{background:#E8F5F3;color:#075D61}.pill.wait{background:#FFF4DC;color:#6B4E12}.pill.off{background:#EEF1F2;color:#4F5F68}
+.seatbar{height:10px;border-radius:5px;background:#E1E7EA;overflow:hidden;margin-top:8px}
+.seatbar span{display:block;height:100%;background:#075D61}
+.err{background:#FBEAE7;color:#7A2A20;border-radius:8px;padding:10px 12px;margin-bottom:14px}
+.ok{background:#E8F5F3;color:#075D61;border-radius:8px;padding:10px 12px;margin-bottom:14px}
+.empty{color:#4F5F68;padding:14px 4px}
+.code{font-family:ui-monospace,Menlo,monospace;font-weight:700;font-size:18px;letter-spacing:.08em;background:#F3F5F6;border-radius:8px;padding:4px 10px}
+.check{width:20px;height:20px;accent-color:#075D61}
+.sticky{position:sticky;bottom:0;background:#fff;border-top:1px solid #E1E7EA;padding:12px 0 0;margin-top:8px}
+.signin{max-width:420px;margin:40px auto}
+.signin input{width:100%}
+.muted{color:#4F5F68;font-size:14px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+</style>
+</head>
+<body>
+<header><div class="in"><h1>The 144(P) Plan · Leader Console</h1><span class="who" id="who"></span><button id="out" type="button" hidden>Sign out</button></div></header>
+<nav id="nav" hidden><div class="in" id="tabs"></div></nav>
+<main id="app" aria-live="polite"><p class="sub">Loading…</p></main>
+<script>
+(function () {
+  const $ = id => document.getElementById(id), $app = $('app');
+  const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const money = n => '$' + Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fDate = d => d ? new Date(String(d).slice(0, 10) + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '';
+  const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
+  const STATUS = { pending_payment: ['Waiting for payment', 'wait'], active: ['Active', 'ok'], canceled: ['Canceled', 'off'] };
+  const pill = s => { const [t, c] = STATUS[s] || [s || 'None', 'off']; return `<span class="pill ${c}">${esc(t)}</span>`; };
+  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], seats: [], sections: [], editSlug: null, importSecs: null };
+  let c = null;
+
+  const flash = (m, isErr) => { if (isErr) { st.err = m; st.msg = ''; } else { st.msg = m; st.err = ''; } };
+  const notes = () => (st.err ? `<div class="err" role="alert">${esc(st.err)}</div>` : '') + (st.msg ? `<div class="ok" role="status">${esc(st.msg)}</div>` : '');
+  async function run(fn, okMsg) { try { await fn(); if (okMsg) flash(okMsg); } catch (e) { flash(errMsg(e), true); } render(); }
+
+  // ---------- tabs ----------
+  const TABS = () => [['approvals', 'Approvals'], ...(st.admin ? [['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book']] : [])];
+  function renderNav() {
+    $('nav').hidden = false;
+    $('tabs').innerHTML = TABS().map(([k, t]) => `<button type="button" data-tab="${k}" ${st.tab === k ? 'aria-current="page"' : ''}>${t}</button>`).join('');
+    $('tabs').querySelectorAll('[data-tab]').forEach(b => b.onclick = async () => { st.tab = b.dataset.tab; st.msg = st.err = ''; await loadTab(); });
+  }
+  function render() { renderNav(); $app.innerHTML = notes() + (VIEWS[st.tab] || VIEWS.approvals)(); (BIND[st.tab] || (() => {}))(); }
+
+  // ---------- approvals ----------
+  async function loadChurch() {
+    if (!st.church) return;
+    const [mem, seat] = await Promise.all([Cloud.rpc('leader_members', { cid: st.church.church_id }), Cloud.rpc('church_seat_status', { cid: st.church.church_id })]);
+    st.members = mem || []; st.seat = (seat && seat[0]) || null; st.sel = new Set();
+  }
+  const canName = () => st.church && (st.church.role === 'church_admin' || st.church.role === 'platform_admin');
+  const VIEWS = {}, BIND = {};
+  VIEWS.approvals = () => {
+    if (!st.churches.length) return `<h2>Approvals</h2><p class="sub">You aren’t a leader for any church yet. Your church admin can make you a group leader.</p>`;
+    const pend = st.members.filter(m => m.status === 'pending'), ver = st.members.filter(m => m.status === 'verified');
+    const s = st.seat || {}, cap = s.seats || 0, used = s.used || ver.length, left = cap ? cap - used : null;
+    const all = pend.length > 0 && pend.every(m => st.sel.has(m.membership_id));
+    return `<h2>Approvals</h2><p class="sub">Approve people who belong to your church. Approved members can read the book and count toward your church’s score.</p>
+      <div class="card"><div class="row">
+        ${st.churches.length > 1 ? `<div><label for="ch">Church</label><select id="ch">${st.churches.map(x => `<option value="${x.church_id}" ${x.church_id === st.church.church_id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>` : `<div><label>Church</label><strong>${esc(st.church.name)}</strong></div>`}
+        <div class="grow"></div>
+        <div><label>Church code to share</label><span class="code">${esc(st.church.code)}</span></div>
+      </div>
+      <div style="margin-top:14px">${cap ? `<strong>${used} of ${cap}</strong> seats used · ${esc(s.plan_name)} license ${pill(s.license_status)}<div class="seatbar" aria-hidden="true"><span style="width:${Math.min(100, Math.round(used / cap * 100))}%"></span></div>` : `<span class="muted">No book license for ${esc(s.season_name || 'this season')} yet. You can still approve members; the book opens once a license is active.</span>`}</div></div>
+
+      <div class="card"><div class="row"><h3 style="margin:0;font-size:18px" class="grow">Waiting for approval (${pend.length})</h3></div>
+      ${pend.length ? `<div class="tbl"><table><thead><tr>
+          <th style="width:44px"><input type="checkbox" class="check" id="all" ${all ? 'checked' : ''} aria-label="Select all ${pend.length} people waiting"></th>
+          <th>Name</th><th>Email</th><th>Asked</th><th style="width:190px"><span class="sr">Actions</span></th></tr></thead><tbody>
+        ${pend.map(m => `<tr><td><input type="checkbox" class="check" data-sel="${m.membership_id}" ${st.sel.has(m.membership_id) ? 'checked' : ''} aria-label="Select ${esc(m.name)}"></td>
+          <td><strong>${esc(m.name)}</strong></td><td>${esc(m.email)}</td><td>${fDate(m.joined_at)}</td>
+          <td><div class="row"><button class="btn teal sm" type="button" data-ap="${m.membership_id}">Approve</button><button class="btn danger sm" type="button" data-dc="${m.membership_id}">Decline</button></div></td></tr>`).join('')}
+        </tbody></table></div>
+        <div class="sticky row"><span class="muted grow">${st.sel.size} selected${left != null ? ` · ${left} seats left` : ''}</span>
+          <button class="btn danger" type="button" id="dcSel" ${st.sel.size ? '' : 'disabled'}>Decline selected</button>
+          <button class="btn teal" type="button" id="apSel" ${st.sel.size ? '' : 'disabled'}>Approve selected (${st.sel.size})</button></div>`
+        : `<p class="empty">No one is waiting. New requests appear here when people enter your church code in the app.</p>`}</div>
+
+      <div class="card"><h3 style="margin:0 0 8px;font-size:18px">Approved members (${ver.length})</h3>
+      ${ver.length ? `<div class="tbl"><table><thead><tr><th>Name</th><th>Email</th><th>Group leader</th></tr></thead><tbody>
+        ${ver.map(m => `<tr><td>${esc(m.name)}</td><td>${esc(m.email)}</td><td>${canName() ? `<label style="display:flex;gap:8px;align-items:center;margin:0;color:#173344;font-weight:500"><input type="checkbox" class="check" data-ld="${m.membership_id}" ${m.is_leader ? 'checked' : ''}> Can approve members</label>` : (m.is_leader ? 'Yes' : '—')}</td></tr>`).join('')}
+        </tbody></table></div>` : `<p class="empty">No approved members yet.</p>`}</div>`;
+  };
+  BIND.approvals = () => {
+    if ($('ch')) $('ch').onchange = e => run(async () => { st.church = st.churches.find(x => x.church_id === e.target.value); await loadChurch(); });
+    const pend = st.members.filter(m => m.status === 'pending');
+    if ($('all')) $('all').onchange = e => { st.sel = e.target.checked ? new Set(pend.map(m => m.membership_id)) : new Set(); st.msg = st.err = ''; render(); };
+    $app.querySelectorAll('[data-sel]').forEach(b => b.onchange = () => { const id = b.dataset.sel; st.sel.has(id) ? st.sel.delete(id) : st.sel.add(id); st.msg = st.err = ''; render(); });
+    const approve = ids => run(async () => { const n = await Cloud.rpc('approve_memberships', { p_ids: ids }); await loadChurch(); flash(`Approved ${n} ${n === 1 ? 'person' : 'people'}.`); });
+    const decline = ids => { if (!confirm(`Decline ${ids.length === 1 ? 'this request' : ids.length + ' requests'}? They can ask again with the church code.`)) return; run(async () => { const n = await Cloud.rpc('decline_memberships', { p_ids: ids }); await loadChurch(); flash(`Declined ${n}.`); }); };
+    $app.querySelectorAll('[data-ap]').forEach(b => b.onclick = () => approve([b.dataset.ap]));
+    $app.querySelectorAll('[data-dc]').forEach(b => b.onclick = () => decline([b.dataset.dc]));
+    if ($('apSel')) $('apSel').onclick = () => approve([...st.sel]);
+    if ($('dcSel')) $('dcSel').onclick = () => decline([...st.sel]);
+    $app.querySelectorAll('[data-ld]').forEach(b => b.onchange = () => run(async () => { await Cloud.rpc('set_group_leader', { p_membership: b.dataset.ld, p_on: b.checked }); await loadChurch(); }, b.checked ? 'Group leader added.' : 'Group leader removed.'));
+  };
+
+  // ---------- prices ----------
+  VIEWS.prices = () => `<h2>Prices</h2><p class="sub">Set what an individual seat and each church license cost for a 12-week season. A price change applies to new licenses; existing licenses keep the price they were given.</p>
+    <div class="card tbl"><table><thead><tr><th>Name</th><th>Type</th><th>Seats</th><th>Price</th><th>Per seat</th><th>Offered</th><th></th></tr></thead><tbody>
+    ${st.plans.map(p => `<tr data-plan="${p.id}">
+      <td><input type="text" data-f="name" value="${esc(p.name)}" aria-label="Plan name"></td>
+      <td><select data-f="kind" aria-label="Type"><option value="individual" ${p.kind === 'individual' ? 'selected' : ''}>Individual</option><option value="church" ${p.kind === 'church' ? 'selected' : ''}>Church</option></select></td>
+      <td><input type="number" min="1" data-f="seat_limit" value="${p.seat_limit}" aria-label="Seats"></td>
+      <td><input type="number" min="0" step="0.01" data-f="price" value="${Number(p.price).toFixed(2)}" aria-label="Price in dollars"></td>
+      <td class="muted">${money(p.price / p.seat_limit)}</td>
+      <td><input type="checkbox" class="check" data-f="active" ${p.active ? 'checked' : ''} aria-label="Offered"></td>
+      <td><button class="btn sm" type="button" data-save="${p.id}">Save</button></td></tr>`).join('')}
+    </tbody></table>
+    <div class="row" style="margin-top:12px"><button class="btn alt" type="button" id="addPlan">Add a price option</button></div></div>
+    <p class="muted">Card payments through Stripe come later. For now, mark licenses as active in the Licenses tab once a church has paid.</p>`;
+  BIND.prices = () => {
+    const read = tr => { const g = f => tr.querySelector(`[data-f="${f}"]`); return { name: g('name').value.trim(), kind: g('kind').value, seat_limit: parseInt(g('seat_limit').value, 10), price: parseFloat(g('price').value), active: g('active').checked, updated_at: new Date().toISOString() }; };
+    $app.querySelectorAll('[data-save]').forEach(b => b.onclick = () => run(async () => {
+      const v = read(b.closest('tr')); if (!v.name || !(v.seat_limit > 0) || !(v.price >= 0)) throw new Error('Each option needs a name, seats above zero, and a price.');
+      Cloud.ok(await c.from('license_plans').update(v).eq('id', b.dataset.save)); await loadTab(true);
+    }, 'Price saved.'));
+    $('addPlan').onclick = () => run(async () => { Cloud.ok(await c.from('license_plans').insert({ name: 'New option', kind: 'church', seat_limit: 50, price: 400, active: false, sort_order: st.plans.length + 1 })); await loadTab(true); }, 'Added. Set it up and check Offered when it’s ready.');
+  };
+
+  // ---------- licenses ----------
+  VIEWS.licenses = () => {
+    const churchPlans = st.plans.filter(p => p.kind === 'church' && p.active);
+    const lic = id => st.licenses.find(l => l.church_id === id);
+    return `<h2>Licenses · ${esc(st.season ? st.season.name : 'No active season')}</h2><p class="sub">Give each church a license for the season. The book opens for its approved members when the license is Active.</p>
+    <div class="card tbl">${st.allChurches.length ? `<table><thead><tr><th>Church</th><th>Option</th><th>Seats</th><th>Price</th><th>Status</th><th></th></tr></thead><tbody>
+      ${st.allChurches.map(ch => { const l = lic(ch.id) || {}; return `<tr data-ch="${ch.id}">
+        <td><strong>${esc(ch.name)}</strong><br><span class="muted">Code ${esc(ch.code)}</span></td>
+        <td><select data-f="plan_id" aria-label="License option"><option value="">Choose…</option>${churchPlans.map(p => `<option value="${p.id}" data-seats="${p.seat_limit}" data-price="${p.price}" ${l.plan_id === p.id ? 'selected' : ''}>${esc(p.name)} · ${p.seat_limit} seats</option>`).join('')}</select></td>
+        <td><input type="number" min="1" data-f="seats" value="${l.seats || ''}" aria-label="Seats"></td>
+        <td><input type="number" min="0" step="0.01" data-f="price" value="${l.price != null ? Number(l.price).toFixed(2) : ''}" aria-label="Price"></td>
+        <td><select data-f="status" aria-label="Status">${Object.entries(STATUS).map(([k, [t]]) => `<option value="${k}" ${(l.status || 'pending_payment') === k ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
+        <td><button class="btn sm" type="button" data-savelic="${ch.id}">Save</button></td></tr>`; }).join('')}
+      </tbody></table>` : `<p class="empty">No churches yet. Add one in the Churches tab.</p>`}</div>
+    <h2 style="font-size:20px">Individual seats</h2>
+    <div class="card tbl">${st.seats.length ? `<table><thead><tr><th>Name</th><th>Email</th><th>Price</th><th>Status</th><th></th></tr></thead><tbody>
+      ${st.seats.map(x => `<tr><td>${esc(x.name)}</td><td>${esc(x.email)}</td><td>${money(x.price)}</td><td>${pill(x.status)}</td>
+        <td><div class="row">${x.status !== 'active' ? `<button class="btn teal sm" type="button" data-seat="${x.seat_id}" data-to="active">Mark paid</button>` : ''}${x.status !== 'canceled' ? `<button class="btn danger sm" type="button" data-seat="${x.seat_id}" data-to="canceled">Cancel</button>` : ''}</div></td></tr>`).join('')}
+      </tbody></table>` : `<p class="empty">No individual seat requests yet.</p>`}</div>`;
+  };
+  BIND.licenses = () => {
+    $app.querySelectorAll('[data-ch] select[data-f="plan_id"]').forEach(sel => sel.onchange = () => {
+      const o = sel.selectedOptions[0], tr = sel.closest('tr'); if (!o || !o.dataset.seats) return;
+      tr.querySelector('[data-f="seats"]').value = o.dataset.seats; tr.querySelector('[data-f="price"]').value = Number(o.dataset.price).toFixed(2);
+    });
+    $app.querySelectorAll('[data-savelic]').forEach(b => b.onclick = () => run(async () => {
+      if (!st.season) throw new Error('Set up an active season first.');
+      const tr = b.closest('tr'), g = f => tr.querySelector(`[data-f="${f}"]`);
+      const v = { church_id: b.dataset.savelic, season_id: st.season.id, plan_id: g('plan_id').value || null, seats: parseInt(g('seats').value, 10), price: parseFloat(g('price').value), status: g('status').value, updated_at: new Date().toISOString() };
+      if (!(v.seats > 0) || !(v.price >= 0)) throw new Error('Choose an option, or enter seats and a price.');
+      Cloud.ok(await c.from('church_licenses').upsert(v, { onConflict: 'church_id,season_id' })); await loadTab(true);
+    }, 'License saved.'));
+    $app.querySelectorAll('[data-seat]').forEach(b => b.onclick = () => run(async () => { Cloud.ok(await c.from('individual_seats').update({ status: b.dataset.to }).eq('id', b.dataset.seat)); await loadTab(true); }, 'Seat updated.'));
+  };
+
+  // ---------- churches ----------
+  VIEWS.churches = () => `<h2>Churches</h2><p class="sub">Each church gets a code its members enter in the app. New members wait for approval by the church admin or a group leader.</p>
+    <form class="card" id="nc"><div class="row">
+      <div class="grow"><label for="cn">Church name</label><input id="cn" type="text" required style="width:100%"></div>
+      <div><label for="cc">City</label><input id="cc" type="text"></div>
+      <div><label for="cs">State</label><input id="cs" type="text" value="GA" style="width:70px"></div>
+      <div><label>&nbsp;</label><button class="btn" type="submit">Add church</button></div></div></form>
+    <div class="card tbl">${st.allChurches.length ? `<table><thead><tr><th>Church</th><th>City</th><th>Code</th><th>Joining</th></tr></thead><tbody>
+      ${st.allChurches.map(ch => `<tr><td><strong>${esc(ch.name)}</strong></td><td>${esc([ch.city, ch.state].filter(Boolean).join(', '))}</td><td><span class="code">${esc(ch.code)}</span></td><td>${ch.enrollment_policy === 'open' ? 'Anyone with the code' : 'Leader approval'}</td></tr>`).join('')}
+    </tbody></table>` : `<p class="empty">No churches yet.</p>`}</div>`;
+  BIND.churches = () => {
+    $('nc').onsubmit = e => { e.preventDefault(); run(async () => {
+      const name = $('cn').value.trim(); if (!name) throw new Error('Enter the church name.');
+      const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', code = Array.from(crypto.getRandomValues(new Uint8Array(6)), b => A[b % A.length]).join('');
+      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + code.slice(0, 3).toLowerCase();
+      Cloud.ok(await c.from('churches').insert({ name, city: $('cc').value.trim() || null, state: $('cs').value.trim() || null, code, slug, enrollment_policy: 'approval' })); await loadTab(true);
+    }, 'Church added. Share its code with the church.'); };
+  };
+
+  // ---------- season ----------
+  VIEWS.season = () => { const s = st.season || {}; return `<h2>Season</h2><p class="sub">Week 1 of the book opens on the start date, and one new week opens every 7 days after.</p>
+    <form class="card" id="sf"><div class="row">
+      <div class="grow"><label for="sn">Season name</label><input id="sn" type="text" value="${esc(s.name || '')}" required style="width:100%"></div>
+      <div><label for="sd">Start date (Day 1)</label><input id="sd" type="date" value="${esc(s.start_date || '')}" required></div>
+      <div><label for="sc">Last day to join</label><input id="sc" type="date" value="${esc(s.join_cutoff || '')}"></div>
+      <div><label>&nbsp;</label><button class="btn" type="submit">Save season</button></div></div></form>`; };
+  BIND.season = () => { $('sf').onsubmit = e => { e.preventDefault(); run(async () => {
+    const v = { name: $('sn').value.trim(), start_date: $('sd').value, join_cutoff: $('sc').value || null };
+    if (st.season) Cloud.ok(await c.from('seasons').update(v).eq('id', st.season.id)); else Cloud.ok(await c.from('seasons').insert({ ...v, active: true }));
+    await loadTab(true);
+  }, 'Season saved.'); }; };
+
+  // ---------- book ----------
+  VIEWS.book = () => {
+    const ed = st.sections.find(x => x.slug === st.editSlug);
+    if (ed) return `<h2>Edit · ${esc(ed.title)}</h2><p class="sub">Paragraphs are &lt;p&gt;, small headings are &lt;p class="label"&gt;, titles are &lt;h3&gt;.</p>
+      <form class="card" id="ef"><div class="row">
+        <div class="grow"><label for="et">Title</label><input id="et" type="text" value="${esc(ed.title)}" style="width:100%"></div>
+        <div><label for="ew">Opens in week</label><select id="ew">${Array.from({ length: 13 }, (_, w) => `<option value="${w}" ${ed.unlock_week === w ? 'selected' : ''}>${w === 0 ? 'Start (available right away)' : 'Week ' + w}</option>`).join('')}</select></div></div>
+        <label for="eh" style="margin-top:12px">Text</label><textarea id="eh">${esc(ed.content_html)}</textarea>
+        <div class="row" style="margin-top:12px"><button class="btn alt" type="button" id="ecancel">Cancel</button><div class="grow"></div><button class="btn" type="submit">Save section</button></div></form>`;
+    const imp = st.importSecs;
+    return `<h2>Book</h2><p class="sub">What Will You Give Today? as members read it in the app. Upload an updated Word file to replace the whole book, or edit one section.</p>
+    <div class="card"><div class="row"><div class="grow"><label for="docx">Updated book (.docx)</label><input id="docx" type="file" accept=".docx"></div></div>
+    ${imp ? `<div class="ok" style="margin-top:12px">Read ${imp.length} sections from the file: ${imp.filter(x => x.kind === 'week').length} weeks, ${imp.filter(x => x.kind === 'journal').length} journal pages, plus intro and closing pages.</div>
+      <div class="row"><button class="btn alt" type="button" id="impCancel">Cancel</button><button class="btn teal" type="button" id="impGo">Replace the book with this file</button></div>` : ''}</div>
+    <div class="card tbl">${st.sections.length ? `<table><thead><tr><th>#</th><th>Section</th><th>Opens</th><th>Updated</th><th></th></tr></thead><tbody>
+      ${st.sections.map(x => `<tr><td class="muted">${x.sort_order}</td><td>${esc(x.title)}</td><td>${x.unlock_week ? 'Week ' + x.unlock_week : 'Start'}</td><td class="muted">${fDate(x.updated_at)}</td><td><button class="btn alt sm" type="button" data-edit="${esc(x.slug)}">Edit</button></td></tr>`).join('')}
+    </tbody></table>` : `<p class="empty">The book isn’t loaded yet. Upload the Word file above.</p>`}</div>`;
+  };
+  BIND.book = () => {
+    if ($('ef')) {
+      $('ecancel').onclick = () => { st.editSlug = null; render(); };
+      $('ef').onsubmit = e => { e.preventDefault(); run(async () => {
+        Cloud.ok(await c.from('book_sections').update({ title: $('et').value.trim(), unlock_week: parseInt($('ew').value, 10), content_html: $('eh').value, updated_at: new Date().toISOString() }).eq('slug', st.editSlug));
+        st.editSlug = null; await loadTab(true);
+      }, 'Section saved. Readers see it the next time they open it.'); };
+      return;
+    }
+    $app.querySelectorAll('[data-edit]').forEach(b => b.onclick = () => { st.editSlug = b.dataset.edit; st.msg = st.err = ''; render(); });
+    $('docx').onchange = e => { const f = e.target.files[0]; if (!f) return; run(async () => { st.importSecs = await BookImport.fromDocx(f); }); };
+    if ($('impCancel')) $('impCancel').onclick = () => { st.importSecs = null; render(); };
+    if ($('impGo')) $('impGo').onclick = () => {
+      if (!confirm('Replace the whole book in the app with this file? Members see the new text right away.')) return;
+      run(async () => {
+        const now = new Date().toISOString(), rows = st.importSecs.map(x => ({ ...x, updated_at: now }));
+        for (let i = 0; i < rows.length; i += 10) Cloud.ok(await c.from('book_sections').upsert(rows.slice(i, i + 10), { onConflict: 'slug' }));
+        const keep = rows.map(r => r.slug), gone = st.sections.filter(x => !keep.includes(x.slug)).map(x => x.slug);
+        if (gone.length) Cloud.ok(await c.from('book_sections').delete().in('slug', gone));
+        st.importSecs = null; await loadTab(true);
+      }, 'The book is updated.');
+    };
+  };
+
+  // ---------- loading ----------
+  async function loadTab(quiet) {
+    if (!quiet) st.msg = st.err = '';
+    try {
+      if (st.tab === 'approvals') await loadChurch();
+      if (['prices', 'licenses'].includes(st.tab)) st.plans = Cloud.ok(await c.from('license_plans').select('*').order('sort_order'));
+      if (['licenses', 'churches', 'season'].includes(st.tab)) {
+        st.season = Cloud.ok(await c.from('seasons').select('*').eq('active', true).maybeSingle());
+        st.allChurches = Cloud.ok(await c.from('churches').select('id,name,code,city,state,enrollment_policy').order('name'));
+      }
+      if (st.tab === 'licenses') {
+        st.licenses = st.season ? Cloud.ok(await c.from('church_licenses').select('*').eq('season_id', st.season.id)) : [];
+        st.seats = await Cloud.rpc('admin_individual_seats') || [];
+      }
+      if (st.tab === 'book') st.sections = Cloud.ok(await c.from('book_sections').select('slug,title,kind,unlock_week,sort_order,content_html,updated_at').order('sort_order'));
+    } catch (e) { flash(errMsg(e), true); }
+    render();
+  }
+  async function start() {
+    c = await Cloud.sb();
+    const s = await Cloud.session();
+    if (!s) return signin();
+    $('who').textContent = s.user.email; $('out').hidden = false;
+    const roles = await Cloud.rpc('my_admin_roles') || [];
+    st.admin = roles.some(r => r.role === 'platform_admin');
+    st.churches = await Cloud.rpc('my_leader_churches') || [];
+    st.church = st.churches[0] || null;
+    if (!st.churches.length && !st.admin) { $app.innerHTML = `<h2>Leader Console</h2><p class="sub">This account isn’t a church admin or group leader yet. Ask your church admin to make you a group leader, then sign in again.</p>`; return; }
+    if (!st.churches.length && st.admin) st.tab = 'churches';
+    await loadTab();
+  }
+  function signin() {
+    $('nav').hidden = true;
+    $app.innerHTML = `<form class="card signin" id="si"><h2>Sign in</h2><p class="sub">Use your 144(P) Plan account.</p>${notes()}
+      <label for="em">Email</label><input id="em" type="email" autocomplete="email" required>
+      <label for="pw" style="margin-top:10px">Password</label><input id="pw" type="password" autocomplete="current-password" required>
+      <button class="btn" type="submit" style="width:100%;margin-top:16px">Sign in</button>
+      <p style="text-align:center;margin:14px 0 0"><a href="reset.html" id="fp" style="font-weight:600">Forgot your password?</a></p></form>`;
+    $('fp').onclick = () => { const v = $('em').value.trim(); if (v) $('fp').href = 'reset.html?email=' + encodeURIComponent(v); };
+    $('si').onsubmit = async e => { e.preventDefault(); try { await Cloud.signIn($('em').value.trim().toLowerCase(), $('pw').value); st.err = ''; await start(); } catch (x) { st.err = errMsg(x); signin(); } };
+  }
+  $('out').onclick = async () => { await Cloud.signOut(); location.reload(); };
+  start().catch(e => { st.err = errMsg(e); signin(); });
+})();
+</script>
+</body>
+</html>
