@@ -292,6 +292,11 @@ td input[type=text],td input[type=number],td select{min-height:36px;width:100%}
     } catch (e) { flash(errMsg(e), true); }
     render();
   }
+  const ADMIN_MODE = new URLSearchParams(location.search).get('panel') === 'admin';
+  if (ADMIN_MODE) {
+    $('ttl').textContent = 'The 144(P) Plan · Admin Panel'; document.title = 'Admin Panel · The 144(P) Plan';
+    try { history.replaceState(null, '', location.pathname.replace(/[^/]*$/, 'admin.html') + location.hash); } catch (e) {}
+  }
   async function start() {
     c = await Cloud.sb();
     const s = await Cloud.session();
@@ -302,6 +307,7 @@ td input[type=text],td input[type=number],td select{min-height:36px;width:100%}
     st.churches = await Cloud.rpc('my_leader_churches') || [];
     if (st.admin) { $('ttl').textContent = 'The 144(P) Plan · Admin Panel'; document.title = 'Admin Panel · The 144(P) Plan'; }
     st.church = st.churches[0] || null;
+    if (ADMIN_MODE && !st.admin) { $app.innerHTML = `<h2>Admin Panel</h2><p class="sub">This page is for the 144(P) Plan administrator. Church admins and group leaders use the <a href="leader.html">Leader Console</a>.</p>`; return; }
     if (!st.churches.length && !st.admin) { $app.innerHTML = `<h2>Leader Console</h2><p class="sub">This account isn’t a church admin or group leader yet. Ask your church admin to make you a group leader, then sign in again.</p>`; return; }
     if (!st.churches.length && st.admin) st.tab = 'churches';
     await loadTab();
