@@ -68,6 +68,12 @@ td input[type=text],td input[type=number],td select{min-height:36px;width:100%}
 tr.gone td{color:#7A8890}
 td.acts{white-space:nowrap}
 header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;font-size:14px}
+.grp .mlist{list-style:none;padding:0;margin:10px 0 0}
+.mlist{list-style:none;padding:0;margin:6px 0 0}
+.mlist li{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #EEF1F2;flex-wrap:wrap}
+.addbox{border:1px solid #CFE3E0;background:#F7FBFA;border-radius:10px;padding:12px;margin-top:12px}
+.pick{display:flex;gap:10px;align-items:center;margin:0;padding:8px 2px;font-weight:500;color:#173344;border-bottom:1px solid #EEF1F2;cursor:pointer}
+.pick.all{font-weight:700}
 </style>
 </head>
 <body>
@@ -83,7 +89,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
   const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
   const STATUS = { pending_payment: ['Waiting for payment', 'wait'], active: ['Active', 'ok'], canceled: ['Canceled', 'off'] };
   const pill = s => { const [t, c] = STATUS[s] || [s || 'None', 'off']; return `<span class="pill ${c}">${esc(t)}</span>`; };
-  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], churchAdmins: [], challengesAll: [], seats: [], sections: [], editSlug: null, importSecs: null };
+  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], churchAdmins: [], challengesAll: [], groups: [], roster: [], gAdd: null, gSel: new Set(), gRename: null, seats: [], sections: [], editSlug: null, importSecs: null };
   let c = null;
 
   const flash = (m, isErr) => { if (isErr) { st.err = m; st.msg = ''; } else { st.msg = m; st.err = ''; } };
@@ -91,7 +97,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
   async function run(fn, okMsg) { try { await fn(); if (okMsg) flash(okMsg); } catch (e) { flash(errMsg(e), true); } render(); }
 
   // ---------- tabs ----------
-  const TABS = () => [['approvals', 'Approvals'], ...(st.admin ? [['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['challenges', 'Challenges']] : [])];
+  const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ...(st.admin ? [['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['challenges', 'Challenges']] : [])];
   function renderNav() {
     $('nav').hidden = false;
     $('tabs').innerHTML = TABS().map(([k, t]) => `<button type="button" data-tab="${k}" ${st.tab === k ? 'aria-current="page"' : ''}>${t}</button>`).join('');
@@ -134,7 +140,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
         : `<p class="empty">No one is waiting. New requests appear here when people enter your church code in the app.</p>`}</div>
 
       <div class="card"><h3 style="margin:0 0 8px;font-size:18px">Approved members (${ver.length})</h3>
-      ${ver.length ? `<div class="tbl"><table><thead><tr><th>Name</th><th>Email</th><th>Group leader</th></tr></thead><tbody>
+      ${ver.length ? `<div class="tbl"><table><thead><tr><th>Name</th><th>Email</th><th>Can approve new members</th></tr></thead><tbody>
         ${ver.map(m => `<tr><td>${esc(m.name)}</td><td>${esc(m.email)}</td><td>${canName() ? `<label style="display:flex;gap:8px;align-items:center;margin:0;color:#173344;font-weight:500"><input type="checkbox" class="check" data-ld="${m.membership_id}" ${m.is_leader ? 'checked' : ''}> Can approve members</label>` : (m.is_leader ? 'Yes' : '—')}</td></tr>`).join('')}
         </tbody></table></div>` : `<p class="empty">No approved members yet.</p>`}</div>`;
   };
@@ -208,6 +214,70 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
       Cloud.ok(await c.from('church_licenses').upsert(v, { onConflict: 'church_id,season_id' })); await loadTab(true);
     }, 'License saved.'));
     $app.querySelectorAll('[data-seat]').forEach(b => b.onclick = () => run(async () => { Cloud.ok(await c.from('individual_seats').update({ status: b.dataset.to }).eq('id', b.dataset.seat)); await loadTab(true); }, 'Seat updated.'));
+  };
+
+  // ---------- groups ----------
+  async function loadGroups() {
+    if (!st.church) { st.groups = []; st.roster = []; return; }
+    const [g, r] = await Promise.all([Cloud.rpc('church_groups', { cid: st.church.church_id }), Cloud.rpc('group_roster', { cid: st.church.church_id })]);
+    st.groups = g || []; st.roster = r || [];
+    if (st.gAdd && !st.groups.some(x => x.group_id === st.gAdd)) st.gAdd = null;
+  }
+  const boss = () => canName();
+  VIEWS.groups = () => {
+    if (!st.church) return `<h2>Groups</h2><p class="sub">Add a church first in the Churches tab.</p>`;
+    const G = st.groups, R = st.roster, gname = id => (G.find(g => g.group_id === id) || {}).name;
+    const free = R.filter(m => !m.group_id);
+    const picker = st.churches.length > 1 ? `<div><label for="gch">Church</label><select id="gch">${st.churches.map(x => `<option value="${x.church_id}" ${x.church_id === st.church.church_id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>` : `<div><label>Church</label><strong>${esc(st.church.name)}</strong></div>`;
+    const mine = G.find(g => g.i_lead);
+    const card = g => {
+      const mem = R.filter(m => m.group_id === g.group_id), adding = st.gAdd === g.group_id;
+      const pool = boss() ? R.filter(m => m.group_id !== g.group_id) : free;
+      const allOn = pool.length > 0 && pool.every(m => st.gSel.has(m.membership_id));
+      return `<div class="card grp">
+        <div class="row">
+          ${st.gRename === g.group_id ? `<form class="row grow" data-rn="${g.group_id}"><label class="sr" for="rn-${g.group_id}">Group name</label><input id="rn-${g.group_id}" type="text" maxlength="60" value="${esc(g.name)}" required style="flex:1;min-width:180px"><button class="btn sm" type="submit">Save</button><button class="btn alt sm" type="button" data-rncx>Cancel</button></form>`
+            : `<h3 class="grow" style="margin:0;font-size:19px">${esc(g.name)} <span class="muted" style="font-weight:500;font-size:14px">· ${g.members} member${g.members === 1 ? '' : 's'}</span>${g.i_lead ? ' <span class="pill ok">You lead this group</span>' : ''}</h3>
+              ${boss() ? `<button class="btn alt sm" type="button" data-rename="${g.group_id}">Rename</button><button class="btn danger sm" type="button" data-gdel="${g.group_id}">Delete</button>` : ''}`}
+        </div>
+        <div class="row" style="margin-top:10px">${boss() ? `<label for="ld-${g.group_id}" style="margin:0">Group leader</label>
+            <select id="ld-${g.group_id}" data-lead="${g.group_id}"><option value="">No leader yet</option>${R.map(m => `<option value="${m.partner_id}" ${m.partner_id === g.leader_partner_id ? 'selected' : ''}>${esc(m.name)}</option>`).join('')}</select>`
+          : `<span><strong>Group leader:</strong> ${esc(g.leader_name || 'None yet')}</span>`}</div>
+        ${mem.length ? `<ul class="mlist">${mem.map(m => `<li><span><strong>${esc(m.name)}</strong>${m.partner_id === g.leader_partner_id ? ' <span class="pill ok">Leader</span>' : ''} <span class="muted">${esc(m.email)}</span></span>
+            ${g.can_edit && !(g.i_lead && !boss() && m.partner_id === g.leader_partner_id) ? `<button class="btn danger sm" type="button" data-out="${m.membership_id}" data-nm="${esc(m.name)}" data-g="${esc(g.name)}">Remove</button>` : ''}</li>`).join('')}</ul>`
+          : `<p class="empty">No members in this group yet.</p>`}
+        ${g.can_edit ? (adding ? `<div class="addbox"><div class="row"><strong class="grow">Add members to ${esc(g.name)}</strong><button class="btn alt sm" type="button" data-addcx>Close</button></div>
+            ${pool.length ? `<label class="pick all"><input type="checkbox" class="check" id="gAll" ${allOn ? 'checked' : ''}> Select all (${pool.length})</label>
+              ${pool.map(m => `<label class="pick"><input type="checkbox" class="check" data-pick="${m.membership_id}" ${st.gSel.has(m.membership_id) ? 'checked' : ''}> <span>${esc(m.name)} <span class="muted">${esc(m.email)}${m.group_id ? ' · now in ' + esc(gname(m.group_id)) : ''}</span></span></label>`).join('')}
+              <button class="btn teal" type="button" data-addgo="${g.group_id}" ${st.gSel.size ? '' : 'disabled'}>Add selected (${st.gSel.size})</button>`
+            : `<p class="empty">${boss() ? 'Every approved member is already in this group.' : 'Everyone is already in a group. Members appear here after they’re approved and before they’re placed in a group.'}</p>`}</div>`
+          : `<button class="btn teal sm" type="button" data-add="${g.group_id}" style="margin-top:10px">Add members</button>`) : ''}
+      </div>`;
+    };
+    return `<h2>Groups</h2><p class="sub">Groups are smaller circles inside your church. ${boss() ? 'Create groups, choose each group’s leader, and add or remove members.' : 'Add approved members who aren’t in a group yet, or remove members from your group.'} Group leaders can send group-vs-group challenges.</p>
+      <div class="card"><div class="row">${picker}</div>
+      ${boss() ? `<form class="row" id="ng" style="margin-top:12px"><div class="grow"><label for="gn">New group name</label><input id="gn" type="text" maxlength="60" placeholder="Men’s Group, Young Adults, Tuesday Table…" required style="width:100%"></div><div><label>&nbsp;</label><button class="btn" type="submit">Add group</button></div></form>`
+        : (mine ? '' : `<p class="sub" style="margin-top:10px">You aren’t leading a group yet. Your church admin chooses group leaders here in Groups.</p>`)}</div>
+      ${G.length ? G.slice().sort((a, b) => (b.i_lead - a.i_lead)).map(card).join('') : `<div class="card"><p class="empty">No groups yet.${boss() ? ' Add your first group above.' : ''}</p></div>`}
+      <div class="card"><h3 style="margin:0 0 6px;font-size:18px">Not in a group (${free.length})</h3>
+        ${free.length ? `<ul class="mlist">${free.map(m => `<li><span><strong>${esc(m.name)}</strong> <span class="muted">${esc(m.email)}</span></span></li>`).join('')}</ul>` : '<p class="empty">Every approved member is in a group.</p>'}
+        <p class="sub" style="margin-top:8px">Only approved members can be placed in groups. New people show up in Approvals first.</p></div>`;
+  };
+  BIND.groups = () => {
+    if ($('gch')) $('gch').onchange = e => run(async () => { st.church = st.churches.find(x => x.church_id === e.target.value); st.gAdd = null; st.gSel = new Set(); await loadGroups(); });
+    if ($('ng')) $('ng').onsubmit = e => { e.preventDefault(); const nm = $('gn').value.trim(); run(async () => { await Cloud.rpc('save_group', { cid: st.church.church_id, p_id: null, p_name: nm }); await loadGroups(); }, `${nm} added. Choose its leader and add members below.`); };
+    $app.querySelectorAll('[data-rename]').forEach(b => b.onclick = () => { st.gRename = b.dataset.rename; st.msg = st.err = ''; render(); });
+    $app.querySelectorAll('[data-rncx]').forEach(b => b.onclick = () => { st.gRename = null; render(); });
+    $app.querySelectorAll('form[data-rn]').forEach(f => f.onsubmit = e => { e.preventDefault(); run(async () => { await Cloud.rpc('save_group', { cid: st.church.church_id, p_id: f.dataset.rn, p_name: f.querySelector('input').value }); st.gRename = null; await loadGroups(); }, 'Group renamed.'); });
+    $app.querySelectorAll('[data-gdel]').forEach(b => b.onclick = () => { const g = st.groups.find(x => x.group_id === b.dataset.gdel); if (!confirm(`Delete ${g.name}? Its ${g.members} member${g.members === 1 ? '' : 's'} stay in the church and move to “Not in a group.”`)) return; run(async () => { await Cloud.rpc('delete_group', { p_id: g.group_id }); await loadGroups(); }, `${g.name} deleted.`); });
+    $app.querySelectorAll('[data-lead]').forEach(sel => sel.onchange = () => run(async () => { await Cloud.rpc('set_group_lead', { p_group: sel.dataset.lead, p_partner: sel.value || null }); await loadGroups(); }, sel.value ? 'Group leader saved. They can now approve members, manage this group and send group challenges.' : 'Group leader removed.'));
+    $app.querySelectorAll('[data-out]').forEach(b => b.onclick = () => { if (!confirm(`Remove ${b.dataset.nm} from ${b.dataset.g}? They stay a member of the church.`)) return; run(async () => { await Cloud.rpc('set_members_group', { p_ids: [b.dataset.out], p_group: null }); await loadGroups(); }, `${b.dataset.nm} removed from ${b.dataset.g}.`); });
+    $app.querySelectorAll('[data-add]').forEach(b => b.onclick = () => { st.gAdd = b.dataset.add; st.gSel = new Set(); st.msg = st.err = ''; render(); });
+    $app.querySelectorAll('[data-addcx]').forEach(b => b.onclick = () => { st.gAdd = null; st.gSel = new Set(); render(); });
+    const pool = () => { const g = st.gAdd; return canName() ? st.roster.filter(m => m.group_id !== g) : st.roster.filter(m => !m.group_id); };
+    if ($('gAll')) $('gAll').onchange = e => { st.gSel = e.target.checked ? new Set(pool().map(m => m.membership_id)) : new Set(); render(); };
+    $app.querySelectorAll('[data-pick]').forEach(b => b.onchange = () => { const id = b.dataset.pick; st.gSel.has(id) ? st.gSel.delete(id) : st.gSel.add(id); render(); });
+    $app.querySelectorAll('[data-addgo]').forEach(b => b.onclick = () => { const ids = [...st.gSel], g = st.groups.find(x => x.group_id === b.dataset.addgo); run(async () => { const n = await Cloud.rpc('set_members_group', { p_ids: ids, p_group: g.group_id }); st.gAdd = null; st.gSel = new Set(); await loadGroups(); flash(`Added ${n} ${n === 1 ? 'member' : 'members'} to ${g.name}.`); }); });
   };
 
   // ---------- churches ----------
@@ -358,6 +428,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
     if (!quiet) st.msg = st.err = '';
     try {
       if (st.tab === 'approvals') await loadChurch();
+      if (st.tab === 'groups') await loadGroups();
       if (['prices', 'licenses'].includes(st.tab)) st.plans = Cloud.ok(await c.from('license_plans').select('*').order('sort_order'));
       if (['licenses', 'churches', 'season'].includes(st.tab)) {
         st.season = Cloud.ok(await c.from('seasons').select('*').eq('active', true).maybeSingle());
