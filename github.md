@@ -14,7 +14,8 @@ date: 2026-11-18T01:30:00Z
 |---|---|
 | Partner app (all screens) | 144P-Plan-v2.dc.html, cloud.js |
 | Book reader + join church | read.html, cloud.js |
-| Leader console | leader.html, book-import.js, cloud.js |
-| Platform & church admin | 144P-Admin.dc.html, admin-data.js, cloud.js |
+| Admin Panel (platform admin) | admin.html → leader.html?panel=admin |
+| Leader Console (church admins, group leaders) | leader.html, book-import.js, cloud.js |
+| Older admin dashboard (partly sample data) | 144P-Admin.dc.html, admin-data.js, cloud.js |
 | PWA | manifest.json, sw.js, icon-192.png, icon-512.png, apple-touch-icon.png |
 | Database | supabase/migrations/0001_init.sql, 0002_harden_and_rpcs.sql, 0003_book_licenses_approvals.sql |
