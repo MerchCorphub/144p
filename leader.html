@@ -118,7 +118,9 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
     const pend = st.members.filter(m => m.status === 'pending'), ver = st.members.filter(m => m.status === 'verified');
     const s = st.seat || {}, cap = s.seats || 0, used = s.used || ver.length, left = cap ? cap - used : null;
     const all = pend.length > 0 && pend.every(m => st.sel.has(m.membership_id));
-    return `<h2>Approvals</h2><p class="sub">Approve people who belong to your church. Approved members can read the book and count toward your church’s score.</p>
+    const ns = st.notify;
+    const emailCard = ns ? `<div class="card"><label class="pick" style="border:0;padding:0"><input type="checkbox" class="check" id="nsNew" ${ns.email_new_members ? 'checked' : ''}> <span><strong>Email me about new members</strong><br><span class="muted">${st.admin ? 'New accounts, join requests at every church, payments and new churches' : 'Each time someone asks to join your church'}, sent to ${esc(ns.email || 'your account email')}.</span></span></label></div>` : '';
+    return `<h2>Approvals</h2><p class="sub">Approve people who belong to your church. Approved members can read the book and count toward your church’s score.</p>${emailCard}
       <div class="card"><div class="row">
         ${st.churches.length > 1 ? `<div><label for="ch">Church</label><select id="ch">${st.churches.map(x => `<option value="${x.church_id}" ${x.church_id === st.church.church_id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>` : `<div><label>Church</label><strong>${esc(st.church.name)}</strong></div>`}
         <div class="grow"></div>
@@ -157,6 +159,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
       ${rows.length ? `<button class="btn teal" type="button" id="buyGo" ${st.buyPlan ? '' : 'disabled'} style="margin-top:10px">Continue to secure checkout</button><p class="muted" style="margin-top:6px;font-size:13px">You’ll pay on Stripe’s secure page (card, Apple Pay or Google Pay), then come back here.</p>` : ''}</div>`;
   }
   BIND.approvals = () => {
+    if ($('nsNew')) $('nsNew').onchange = e => { const on = e.target.checked; run(async () => { await Cloud.rpc('set_notification_settings', { p_new_members: on }); st.notify.email_new_members = on; }, on ? 'You’ll get an email when someone new signs up.' : 'New-member emails turned off.'); };
     if ($('buyOpen')) $('buyOpen').onclick = () => run(async () => { st.buy = true; st.buyPlan = null; st.buyOpts = null; render(); st.buyOpts = await Cloud.rpc('purchase_options', { cid: st.church.church_id }); });
     if ($('buyClose')) $('buyClose').onclick = () => { st.buy = false; render(); };
     $app.querySelectorAll('input[name=plan]').forEach(r => r.onchange = () => { st.buyPlan = r.value; render(); });
@@ -482,6 +485,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
     const roles = await Cloud.rpc('my_admin_roles') || [];
     st.admin = roles.some(r => r.role === 'platform_admin');
     st.churches = await Cloud.rpc('my_leader_churches') || [];
+    try { st.notify = await Cloud.rpc('my_notification_settings'); } catch (e) { st.notify = null; }
     if (st.admin) { $('ttl').textContent = 'The 144(P) Plan · Admin Panel'; document.title = 'Admin Panel · The 144(P) Plan'; }
     st.church = st.churches[0] || null;
     if (ADMIN_MODE && !st.admin) { $app.innerHTML = `<h2>Admin Panel</h2><p class="sub">This page is for the 144(P) Plan administrator. Church admins and group leaders use the <a href="leader.html">Leader Console</a>.</p>`; return; }
