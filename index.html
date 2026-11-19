@@ -1420,7 +1420,8 @@ class Component extends DCLogic {
         catch (e) { this.fail((e && e.message) || 'That church code wasn\u2019t found.'); }
       },
       saveAccount: () => {
-        const a = { ...ac, first: (ac.first || '').trim(), last: (ac.last || '').trim(), email: (ac.email || '').trim().toLowerCase() };
+        const cap = v => { v = (v || '').trim().replace(/\s+/g, ' '); return v && v === v.toLowerCase() ? v.replace(/(^|[\s'-])([a-z])/g, (m, p1, c) => p1 + c.toUpperCase()) : v; };
+        const a = { ...ac, first: cap(ac.first), last: cap(ac.last), email: (ac.email || '').trim().toLowerCase() };
         if (!a.first || !a.last) return this.fail('Enter your first and last name.');
         if (!EMAIL_RE.test(a.email)) return this.fail('Enter a valid email address.');
         if (db.partners.some(x => x.email === a.email && x.id !== u.id)) return this.fail('That email is already in use.');

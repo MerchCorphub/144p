@@ -1,5 +1,5 @@
 // 144(P) Plan service worker — caches only static app files. Account data lives in app storage, never in this cache.
-const CACHE = '144p-static-v24';
+const CACHE = '144p-static-v25';
 const STATIC = /\.(?:html|js|css|png|jpe?g|webp|svg|ico|json|woff2?|ttf)$/i;
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())));

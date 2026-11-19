@@ -121,7 +121,8 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
     const all = pend.length > 0 && pend.every(m => st.sel.has(m.membership_id));
     const ns = st.notify;
     const emailCard = ns ? `<div class="card"><label class="pick" style="border:0;padding:0"><input type="checkbox" class="check" id="nsNew" ${ns.email_new_members ? 'checked' : ''}> <span><strong>Email me about new members</strong><br><span class="muted">${st.admin ? 'New accounts, join requests at every church, payments and new churches' : 'Each time someone asks to join your church'}, sent to ${esc(ns.email || 'your account email')}.</span></span></label></div>` : '';
-    return `<h2>Approvals</h2><p class="sub">Approve people who belong to your church. Approved members can read the book and count toward your church’s score.</p>${emailCard}
+    const nameCard = st.nameOk === false ? `<div class="card" style="border-color:#D9A62B;background:#FFF8E6"><strong>Add your full name.</strong> Members see your name on messages and approvals. Open <a href="./">the app</a> › More › My Account, enter your first and last name, and tap Save changes.</div>` : '';
+    return `<h2>Approvals</h2><p class="sub">Approve people who belong to your church. Approved members can read the book and count toward your church’s score.</p>${nameCard}${emailCard}
       <div class="card"><div class="row">
         ${st.churches.length > 1 ? `<div><label for="ch">Church</label><select id="ch">${st.churches.map(x => `<option value="${x.church_id}" ${x.church_id === st.church.church_id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>` : `<div><label>Church</label><strong>${esc(st.church.name)}</strong></div>`}
         <div class="grow"></div>
@@ -135,7 +136,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
           <th style="width:44px"><input type="checkbox" class="check" id="all" ${all ? 'checked' : ''} aria-label="Select all ${pend.length} people waiting"></th>
           <th>Name</th><th>Email</th><th>Asked</th><th style="width:190px"><span class="sr">Actions</span></th></tr></thead><tbody>
         ${pend.map(m => `<tr><td><input type="checkbox" class="check" data-sel="${m.membership_id}" ${st.sel.has(m.membership_id) ? 'checked' : ''} aria-label="Select ${esc(m.name)}"></td>
-          <td><strong>${esc(m.name)}</strong></td><td>${esc(m.email)}</td><td>${fDate(m.joined_at)}</td>
+          <td><strong>${esc(m.name)}</strong>${m.same_name ? `<br><span class="pill wait" title="Another member of this church has the same name. Check the email to be sure it's a different person.">Same name as ${m.same_name} other${m.same_name === 1 ? '' : 's'} · check email</span>` : ''}</td><td>${esc(m.email)}</td><td>${fDate(m.joined_at)}</td>
           <td><div class="row"><button class="btn teal sm" type="button" data-ap="${m.membership_id}">Approve</button><button class="btn danger sm" type="button" data-dc="${m.membership_id}">Decline</button></div></td></tr>`).join('')}
         </tbody></table></div>
         <div class="sticky row"><span class="muted grow">${st.sel.size} selected${left != null ? ` · ${left} seats left` : ''}</span>
@@ -145,7 +146,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
 
       <div class="card"><h3 style="margin:0 0 8px;font-size:18px">Approved members (${ver.length})</h3>
       ${ver.length ? `<div class="tbl"><table><thead><tr><th>Name</th><th>Email</th><th>Can approve new members</th></tr></thead><tbody>
-        ${ver.map(m => `<tr><td>${esc(m.name)}</td><td>${esc(m.email)}</td><td>${canName() ? `<label style="display:flex;gap:8px;align-items:center;margin:0;color:#173344;font-weight:500"><input type="checkbox" class="check" data-ld="${m.membership_id}" ${m.is_leader ? 'checked' : ''}> Can approve members</label>` : (m.is_leader ? 'Yes' : '—')}</td></tr>`).join('')}
+        ${ver.map(m => `<tr><td>${esc(m.name)}${m.same_name ? `<br><span class="pill wait" title="Another member of this church has the same name. Check the email to be sure it's a different person.">Same name as ${m.same_name} other${m.same_name === 1 ? '' : 's'} · check email</span>` : ''}</td><td>${esc(m.email)}</td><td>${canName() ? `<label style="display:flex;gap:8px;align-items:center;margin:0;color:#173344;font-weight:500"><input type="checkbox" class="check" data-ld="${m.membership_id}" ${m.is_leader ? 'checked' : ''}> Can approve members</label>` : (m.is_leader ? 'Yes' : '—')}</td></tr>`).join('')}
         </tbody></table></div>` : `<p class="empty">No approved members yet.</p>`}</div>`;
   };
   function buyBox() {
@@ -551,6 +552,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
     st.admin = roles.some(r => r.role === 'platform_admin');
     st.churches = await Cloud.rpc('my_leader_churches') || [];
     try { st.notify = await Cloud.rpc('my_notification_settings'); } catch (e) { st.notify = null; }
+    try { st.nameOk = await Cloud.rpc('my_profile_complete'); } catch (e) { st.nameOk = true; }
     if (st.admin) { $('ttl').textContent = 'The 144(P) Plan · Admin Panel'; document.title = 'Admin Panel · The 144(P) Plan'; }
     st.church = st.churches[0] || null;
     if (ADMIN_MODE && !st.admin) { $app.innerHTML = `<h2>Admin Panel</h2><p class="sub">This page is for the 144(P) Plan administrator. Church admins and group leaders use the <a href="leader.html">Leader Console</a>.</p>`; return; }
