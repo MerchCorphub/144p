@@ -914,7 +914,7 @@ class Component extends DCLogic {
   go(screen, extra) { this.setState({ screen, err: '', menuOpen: false, ...(extra || {}) }); window.scrollTo(0, 0); }
   ask(title, body, ok, action, danger) { this.setState({ confirm: { title, body, ok, action, danger } }); }
   qr(text) { if (!window.qrcode) return ''; if (!this.qrCache[text]) { const q = window.qrcode(0, 'M'); q.addData(text); q.make(); this.qrCache[text] = 'data:image/svg+xml,' + encodeURIComponent(q.createSvgTag({ cellSize: 4, margin: 2 })).replace(/'/g, '%27').replace(/\(/g, '%28').replace(/\)/g, '%29'); } return this.qrCache[text]; }
-  joinLinks(slug) { const dir = location.href.split('?')[0].split('#')[0].replace(/[^/]*$/, ''); const url = `${dir}144P-Plan-v2.dc.html?join=${encodeURIComponent(slug)}`; return { display: url, local: url }; }
+  joinLinks(slug) { const dir = location.href.split('?')[0].split('#')[0].replace(/[^/]*$/, ''); const url = `${dir}?join=${encodeURIComponent(slug)}`; return { display: url, local: url }; }
   csv(name, rows) { const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`; const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([rows.map(r => r.map(esc).join(',')).join('\n')], { type: 'text/csv' })); a.download = name; a.click(); }
 
   // ---------- derived lookups ----------

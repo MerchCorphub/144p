@@ -93,7 +93,7 @@ ol.board li.me{background:#F2FAF8;font-weight:700}
 </head>
 <body>
 <header><div class="in">
-  <a href="144P-Plan-v2.dc.html" id="back">‹ App</a>
+  <a href="./" id="back">‹ App</a>
   <h1 id="hdr"><img src="t4g/t4g-icon-48.png" alt="" width="34" height="34"><span class="tx">Time4God Challenge<small>The 144(P) Plan</small></span></h1>
   <button class="link" id="signOut" hidden type="button">Sign out</button>
 </div></header>
@@ -187,7 +187,7 @@ ol.board li.me{background:#F2FAF8;font-weight:700}
         ${notes()}<button class="btn" type="submit">Sign in</button>
       </form>
       <p class="sub" style="margin-top:14px"><a href="reset.html" id="fp">Forgot your password?</a></p>
-      <p class="sub" style="margin-top:8px">New here? <a href="144P-Plan-v2.dc.html">Create your account in the 144(P) Plan app</a>, then ${p ? 'open this link again. Your challenge is saved on this phone.' : 'come back here to start a challenge.'}</p>`,
+      <p class="sub" style="margin-top:8px">New here? <a href="./">Create your account in the 144(P) Plan app</a>, then ${p ? 'open this link again. Your challenge is saved on this phone.' : 'come back here to start a challenge.'}</p>`,
       after: () => {
         const fp = $('fp'), em = $('em');
         fp.onclick = () => { if (em.value.trim()) fp.href = 'reset.html?email=' + encodeURIComponent(em.value.trim()); };

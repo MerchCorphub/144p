@@ -39,7 +39,7 @@ input{width:100%;min-height:48px;border:1px solid #9AA8B0;border-radius:10px;pad
   const $app = document.getElementById('app');
   const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
   const here = location.href.split('#')[0].split('?')[0];
-  const back = `<div class="links"><a href="144P-Plan-v2.dc.html">Back to the app</a><a href="read.html">Read the Book</a><a href="leader.html">Leader Console</a></div>`;
+  const back = `<div class="links"><a href="./">Back to the app</a><a href="read.html">Read the Book</a><a href="leader.html">Leader Console</a></div>`;
   const qs = new URLSearchParams(location.search), hs = new URLSearchParams(location.hash.slice(1));
   const linkErr = hs.get('error_description') || qs.get('error_description');
   const isRecovery = hs.get('type') === 'recovery' || qs.get('type') === 'recovery';

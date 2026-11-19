@@ -1,5 +1,5 @@
 // 144(P) Plan service worker — caches only static app files. Account data lives in app storage, never in this cache.
-const CACHE = '144p-static-v22';
+const CACHE = '144p-static-v23';
 const STATIC = /\.(?:html|js|css|png|jpe?g|webp|svg|ico|json|woff2?|ttf)$/i;
 self.addEventListener('install', () => self.skipWaiting());
 self.addEventListener('activate', e => e.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))).then(() => self.clients.claim())));
@@ -19,7 +19,7 @@ self.addEventListener('push', e => {
   e.waitUntil(self.registration.showNotification(d.title || 'What will you give today?', {
     body: d.body || 'Open the app and log your time.',
     icon: 't4g/t4g-icon-192.png', badge: 't4g/t4g-icon-48.png',
-    tag: d.tag || 'time4god', renotify: true, data: { url: d.url || 'https://time4god.app/144P-Plan-v2.dc.html' }
+    tag: d.tag || 'time4god', renotify: true, data: { url: d.url || 'https://time4god.app/' }
   }));
 });
 self.addEventListener('notificationclick', e => {
