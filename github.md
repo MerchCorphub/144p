@@ -14,7 +14,7 @@ date: 2026-11-18T01:30:00Z
 ## Screen map
 | Screen | Repo files |
 |---|---|
-| Partner app (all screens) | 144P-Plan-v2.dc.html, cloud.js |
+| Partner app (all screens) — opens at time4god.app/ | index.html, cloud.js (144P-Plan-v2.dc.html forwards to it for old links) |
 | Book reader + join church | read.html, cloud.js |
 | Time4God Challenge (send by text/email, accept, scoreboards) | challenges.html, cloud.js |
 | Admin Panel (platform admin) | admin.html → leader.html?panel=admin |

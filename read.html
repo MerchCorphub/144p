@@ -72,7 +72,7 @@ input[type=text],input[type=email],input[type=password]{width:100%;min-height:48
 </head>
 <body>
 <header><div class="in">
-  <a href="144P-Plan-v2.dc.html" id="backApp">‹ App</a>
+  <a href="./" id="backApp">‹ App</a>
   <h1 id="hdr">The Book</h1>
   <button class="link" id="signOut" hidden type="button">Sign out</button>
 </div></header>
@@ -119,7 +119,7 @@ input[type=text],input[type=email],input[type=password]{width:100%;min-height:48
         ${notes()}<button class="btn" type="submit">Sign in</button>
       </form>
       <p class="sub" style="margin-top:14px"><a href="reset.html" id="fp">Forgot your password?</a></p>
-      <p class="sub" style="margin-top:8px">New here? <a href="144P-Plan-v2.dc.html">Create your account in the app</a>, then come back.</p>${joinCode() ? `<p class="sub">Your church code <strong>${esc(joinCode())}</strong> is saved. Sign in and it will be filled in for you.</p>` : ''}`,
+      <p class="sub" style="margin-top:8px">New here? <a href="./">Create your account in the app</a>, then come back.</p>${joinCode() ? `<p class="sub">Your church code <strong>${esc(joinCode())}</strong> is saved. Sign in and it will be filled in for you.</p>` : ''}`,
       after: () => { const fp = document.getElementById('fp'), em = document.getElementById('em'); fp.onclick = () => { if (em.value.trim()) fp.href = 'reset.html?email=' + encodeURIComponent(em.value.trim()); }; document.getElementById('f').onsubmit = async e => { e.preventDefault(); st.err = ''; try { await Cloud.signIn(document.getElementById('em').value.trim().toLowerCase(), document.getElementById('pw').value); await load(); } catch (x) { st.err = errMsg(x); render(); } }; } };
 
     const s = st.status || {};

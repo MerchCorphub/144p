@@ -162,13 +162,13 @@ begin
     content := private.reminder_content(r.partner_id, ld);
     if r.reminder_enabled then
       perform private.queue_push(r.partner_id, jsonb_build_object('title', content->>'title', 'body', coalesce(nullif(content->>'short', ''), 'Open the app and log your time.'),
-        'url', 'https://time4god.app/144P-Plan-v2.dc.html', 'tag', 'daily-reminder'), 'reminder');
+        'url', 'https://time4god.app/', 'tag', 'daily-reminder'), 'reminder');
     end if;
     if r.email_reminder then
       select u.email into em from auth.users u join partners p on p.auth_user_id = u.id where p.id = r.partner_id;
       perform private.queue_email(coalesce(em, r.pemail), 'What will you give today, ' || r.first_name || '?',
         (select array_agg(x) from json_array_elements_text(content->'lines') x),
-        'Log my time', 'https://time4god.app/144P-Plan-v2.dc.html',
+        'Log my time', 'https://time4god.app/',
         'You asked for a daily reminder. To change the time or turn it off, open the app › Reminders.', 'member.reminder');
     end if;
     n := n + 1;

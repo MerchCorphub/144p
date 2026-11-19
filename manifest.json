@@ -3,7 +3,7 @@
   "name": "The 144(P) Plan",
   "short_name": "144(P) Plan",
   "description": "Give your time to God. Watch it grow.",
-  "start_url": "./144P-Plan-v2.dc.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
