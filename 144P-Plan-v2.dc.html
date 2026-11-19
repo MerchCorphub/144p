@@ -647,9 +647,26 @@ html,body{width:100%;min-height:100%}
         <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Last name<input value="{{ ac.last }}" onChange="{{ acOn.last }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
       </div>
       <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Email address<input type="email" value="{{ ac.email }}" onChange="{{ acOn.email }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
+      <sc-if value="{{ notCloud }}" hint-placeholder-val="{{ false }}">
       <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Church <span style="font-weight:400;color:#6A7A84">(optional)</span><input value="{{ ac.church }}" onChange="{{ acOn.church }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
       <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Table <span style="font-weight:400;color:#6A7A84">(optional)</span><input value="{{ ac.table }}" onChange="{{ acOn.table }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
-      <div style="font-size:13px;color:#6A7A84">Account started {{ startLabel }}. Church and Table links don't give anyone access to your records.</div>
+      </sc-if>
+      <sc-if value="{{ isCloud }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+          <div style="font-size:14px;font-weight:600">Church</div>
+          <sc-if value="{{ hasChurch }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:17px;font-weight:700;color:#123C56">{{ churchName }}</div>
+            <div style="font-size:14px;color:{{ churchStatusColor }};font-weight:600">{{ churchStatus }}</div>
+            <div style="font-size:14px;color:#4F5F68">Group: {{ groupName }}</div>
+          </sc-if>
+          <sc-if value="{{ noChurch }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:14px;color:#4F5F68;line-height:1.45">Not connected to a church yet. Enter the church code from your church leader to ask to join.</div>
+            <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Church code<input value="{{ joinCodeVal }}" onChange="{{ onJoinCode }}" autocapitalize="characters" autocomplete="off" placeholder="e.g. F7Q8D9" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none;text-transform:uppercase;letter-spacing:.08em"></label>
+            <button onClick="{{ joinByCode }}" style="border:none;border-radius:12px;min-height:48px;background:#075D61;color:#FFFFFF;font-size:16px;font-weight:600;cursor:pointer">Join my church</button>
+          </sc-if>
+        </div>
+      </sc-if>
+      <div style="font-size:13px;color:#6A7A84">Account started {{ startLabel }}. Your church leaders see your name and minutes for challenges, never your notes or reflections.</div>
       <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}">
         <div role="alert" style="background:#FBEAE7;color:#8A2E22;border-radius:12px;padding:12px 14px;font-size:14px">{{ err }}</div>
       </sc-if>
@@ -874,7 +891,7 @@ function linkMembership(u, ch) {
 function touchActivity(u) { if (u.cloud && window.Cloud) Cloud.queue('touch', {}); const a = adminStore(); if (!a) return; const t = ymd(new Date()); let ch = false; a.memberships.forEach(m => { if (m.partnerRef === u.id && m.status !== 'removed' && m.lastActive !== t) { m.lastActive = t; ch = true; } }); if (ch) localStorage.setItem(AKEY, JSON.stringify(a)); }
 function mergeCloud(db, data) {
   const id = data.partner.id, old = db.partners.find(p => p.id === id) || {};
-  db.partners = db.partners.filter(p => p.id !== id); db.partners.push({ ...old, ...data.partner, church: data.partner.church || old.church || '', table: data.partner.table || old.table || '' });
+  db.partners = db.partners.filter(p => p.id !== id); db.partners.push({ ...old, ...data.partner, church: data.partner.church || '', table: data.partner.table || '' });
   db.deposits = db.deposits.filter(d => d.partnerId !== id).concat(data.deposits);
   const oldRed = db.redemptions.filter(r => r.partnerId === id);
   db.redemptions = db.redemptions.filter(r => r.partnerId !== id).concat(data.redemptions.map(r => { const o = oldRed.find(x => x.clientKey && x.clientKey === r.clientKey); const it = CATALOG.find(c => c.title === r.title); return { ...r, itemId: o ? o.itemId : it ? it.id : null, slotId: o ? o.slotId : null }; }));
@@ -938,6 +955,7 @@ class Component extends DCLogic {
     b.deposits.filter(d => d.partnerId === sid && oldDep[d.id] !== J(d)).forEach(d => Cloud.queue('deposit', d));
     Object.keys(b.reflections).filter(k => k.startsWith(sid + '|') && J(a.reflections[k]) !== J(b.reflections[k])).forEach(k => { const r = b.reflections[k]; Cloud.queue('reflection', { week: k.split('|')[1], m: r.meaningful, n: r.next }); });
     const ou = a.partners.find(p => p.id === sid) || {}; if ((ou.plan || '') !== (u.plan || '')) Cloud.queue('plan', { plan: u.plan });
+    if (ou.id && ((ou.first || '') !== (u.first || '') || (ou.last || '') !== (u.last || ''))) Cloud.queue('profile', { first: u.first, last: u.last });
     if (J(a.prefs[sid]) !== J(b.prefs[sid]) && b.prefs[sid]) Cloud.queue('prefs', b.prefs[sid]);
     const oldSh = Object.fromEntries(a.sharing.filter(x => x.owner === sid).map(x => [x.id, J(x)]));
     b.sharing.filter(x => x.owner === sid && oldSh[x.id] !== J(x)).forEach(x => Cloud.queue('sharing', x));
@@ -1389,13 +1407,25 @@ class Component extends DCLogic {
       openAccount: () => this.go('account', { acct: null }), signOut: () => this.signOut(),
 
       ac, acOn, startLabel: fDate(u.start, FULL),
+      isCloud: !!u.cloud, notCloud: !u.cloud, hasChurch: !!(u.cloud && u.membership), noChurch: !!(u.cloud && !u.membership),
+      churchName: u.church || 'Your church', groupName: u.table || 'Not in a group yet (your church leader assigns groups)',
+      churchStatus: u.membership === 'verified' ? 'Approved member' : u.membership === 'pending' ? 'Waiting for your church leader to approve you' : (u.membership || ''),
+      churchStatusColor: u.membership === 'verified' ? '#0E7A55' : '#8A5A00',
+      joinCodeVal: s.joinCode || '', onJoinCode: e => { const v = e.target.value; this.setState({ joinCode: v }); },
+      joinByCode: async () => {
+        const code = (this.state.joinCode || '').trim().toUpperCase().replace(/\s+/g, '');
+        if (!code) return this.fail('Enter your church code.');
+        try { const r = await Cloud.rpc('join_church_by_code', { p_code: code }); const data = await Cloud.pullPartner(); this.commit(d => mergeCloud(d, data)); this.setState({ joinCode: '' });
+          this.flash(r === 'pending' ? 'Request sent. Your church leader will approve you.' : 'You joined your church.'); }
+        catch (e) { this.fail((e && e.message) || 'That church code wasn\u2019t found.'); }
+      },
       saveAccount: () => {
         const a = { ...ac, first: (ac.first || '').trim(), last: (ac.last || '').trim(), email: (ac.email || '').trim().toLowerCase() };
         if (!a.first || !a.last) return this.fail('Enter your first and last name.');
         if (!EMAIL_RE.test(a.email)) return this.fail('Enter a valid email address.');
         if (db.partners.some(x => x.email === a.email && x.id !== u.id)) return this.fail('That email is already in use.');
         if (a.email !== u.email && u.pw) return this.fail('Changing your email needs a password re-check, which arrives with the hosted backend.');
-        this.commit(x => { const pp = x.partners.find(y => y.id === u.id); Object.assign(pp, { first: a.first, last: a.last, email: a.email, church: (a.church || '').trim(), table: (a.table || '').trim() }); this.audit(x, 'account.updated', 'partner', u.id); });
+        this.commit(x => { const pp = x.partners.find(y => y.id === u.id); Object.assign(pp, { first: a.first, last: a.last, email: a.email }, u.cloud ? {} : { church: (a.church || '').trim(), table: (a.table || '').trim() }); this.audit(x, 'account.updated', 'partner', u.id); });
         this.setState({ acct: null }); this.flash('Account updated.');
       },
       exportData: () => this.exportData(), deleteAccount: () => this.deleteAccount(),
