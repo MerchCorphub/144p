@@ -31,7 +31,7 @@
   async function ensurePartner() {
     const c = await sb(), s = await session(); if (!s) return null;
     let p = ok(await c.from('partners').select('*').maybeSingle());
-    if (!p) { const m = s.user.user_metadata || {}; p = ok(await c.from('partners').insert({ auth_user_id: s.user.id, first_name: m.first || 'Partner', last_name: m.last || '', email: s.user.email, timezone: m.tz || 'America/New_York' }).select().single()); }
+    if (!p) { const m = s.user.user_metadata || {}; p = ok(await c.from('partners').insert({ auth_user_id: s.user.id, first_name: m.first || (s.user.email || 'Member').split('@')[0].slice(0, 40), last_name: m.last || '', email: s.user.email, timezone: m.tz || 'America/New_York' }).select().single()); }
     return p;
   }
   async function pullPartner() {
