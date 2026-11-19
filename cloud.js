@@ -37,11 +37,12 @@
   async function pullPartner() {
     const c = await sb(), p = await ensurePartner(); if (!p) return null;
     const [deps, notes, refl, reds, prefs, share, mem, tmr] = await Promise.all([
-      c.from('time_deposits').select('*').then(ok), c.from('deposit_notes').select('*').then(ok), c.from('weekly_reflections').select('*').then(ok),
-      c.from('time_redemptions').select('*').then(ok), c.from('notification_preferences').select('*').maybeSingle().then(ok),
+      // Always filter to this person: leaders and admins can see other people's rows through their roles.
+      c.from('time_deposits').select('*').eq('partner_id', p.id).then(ok), c.from('deposit_notes').select('*').eq('partner_id', p.id).then(ok), c.from('weekly_reflections').select('*').eq('partner_id', p.id).then(ok),
+      c.from('time_redemptions').select('*').eq('partner_id', p.id).then(ok), c.from('notification_preferences').select('*').eq('partner_id', p.id).maybeSingle().then(ok),
       c.from('sharing_permissions').select('*').eq('owner_partner_id', p.id).then(ok),
-      c.from('memberships').select('status, church_id, table_id, churches(name, slug), tables(name)').neq('status', 'removed').maybeSingle().then(ok),
-      c.from('active_timers').select('*').maybeSingle().then(ok)]);
+      c.from('memberships').select('status, church_id, table_id, churches(name, slug), tables(name)').eq('partner_id', p.id).neq('status', 'removed').order('joined_at', { ascending: false }).limit(1).then(ok).then(r => r[0] || null),
+      c.from('active_timers').select('*').eq('partner_id', p.id).maybeSingle().then(ok)]);
     const nm = Object.fromEntries(notes.map(n => [n.deposit_id, n.note || '']));
     return {
       partner: { id: p.id, first: p.first_name, last: p.last_name, email: p.email, pw: null, cloud: true, demo: false, start: p.account_start_date, created: ms(p.created_at), plan: p.giving_plan || '',
