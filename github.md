@@ -21,7 +21,7 @@ date: 2026-11-18T01:30:00Z
 | Leader Console (church admins, group leaders: approvals, groups) | leader.html, book-import.js, cloud.js |
 | Older admin dashboard (partly sample data) | 144P-Admin.dc.html, admin-data.js, cloud.js |
 | PWA | manifest.json, sw.js, icon-192.png, icon-512.png, apple-touch-icon.png |
-| Database | supabase/migrations/0001_init.sql, 0002_harden_and_rpcs.sql, 0003_book_licenses_approvals.sql, 0004_church_admins.sql, 0005_book_hidden_sections.sql, 0006_challenges.sql, 0006b_challenges_null_safety.sql, 0007_groups.sql, 0008_payments.sql, 0009_email_notifications.sql, 0010_reminders_messages.sql |
+| Database | supabase/migrations/0001_init.sql, 0002_harden_and_rpcs.sql, 0003_book_licenses_approvals.sql, 0004_church_admins.sql, 0005_book_hidden_sections.sql, 0006_challenges.sql, 0006b_challenges_null_safety.sql, 0007_groups.sql, 0008_payments.sql, 0009_email_notifications.sql, 0010_reminders_messages.sql, 0011_book_keys.sql |
 
 ## Payments (Stripe)
 - Server function `supabase/functions/stripe-pay` (deployed on the 144p Supabase project). Needs the secret `STRIPE_SECRET_KEY` (Supabase › Edge Functions › Secrets). Use an `sk_test_` key for testing, then the `sk_live_` key to go live.
@@ -35,3 +35,8 @@ date: 2026-11-18T01:30:00Z
 - Members turn on **Daily reminder** (phone/desktop notification) and/or **Email reminder** in the app's Reminders screen and pick a time. A cron job every 5 minutes queues each member's reminder at their time in their time zone: yesterday's minutes, streak, this week's chapter, challenge standing.
 - Phone notifications: `supabase/functions/send-push` (Web Push with VAPID; keys in Supabase Vault). Emails: `send-emails` (Resend).
 - Leader Console › Messages: church admins message the whole church or any group; group leaders message their own group (5 per church per day). Members see messages on the Time4God Challenge page under "From your church".
+
+## App edition for print readers (book keys)
+- The printed book carries a book key and the address time4god.app/redeem (`redeem.html`).
+- Each reader gets a different check: a random printed page and a word on it; they type the word that comes next. Correct answer → free 1-year app seat; one claim per account; 3 tries per question, 6 questions an hour.
+- Admin Panel › Book keys: upload the print interior PDF (`print-import.js` reads it in the browser with pdf.js, keyed by the printed page numbers, without running heads/footers), manage keys (on/off, claim limit, end date), and see claims.

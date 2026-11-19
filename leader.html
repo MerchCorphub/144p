@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
 <script src="./cloud.js"></script>
 <script src="./book-import.js"></script>
+<script src="./print-import.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <style>
 *{box-sizing:border-box}
@@ -89,7 +90,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
   const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
   const STATUS = { pending_payment: ['Waiting for payment', 'wait'], active: ['Active', 'ok'], canceled: ['Canceled', 'off'] };
   const pill = s => { const [t, c] = STATUS[s] || [s || 'None', 'off']; return `<span class="pill ${c}">${esc(t)}</span>`; };
-  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], churchAdmins: [], challengesAll: [], msgs: [], msgDraft: '', msgTo: '', payments: [], buy: false, buyOpts: null, buyPlan: null, groups: [], roster: [], gAdd: null, gSel: new Set(), gRename: null, seats: [], sections: [], editSlug: null, importSecs: null };
+  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], churchAdmins: [], challengesAll: [], keys: [], claims: [], printStat: null, printPrev: null, printBusy: '', msgs: [], msgDraft: '', msgTo: '', payments: [], buy: false, buyOpts: null, buyPlan: null, groups: [], roster: [], gAdd: null, gSel: new Set(), gRename: null, seats: [], sections: [], editSlug: null, importSecs: null };
   let c = null;
 
   const flash = (m, isErr) => { if (isErr) { st.err = m; st.msg = ''; } else { st.msg = m; st.err = ''; } };
@@ -97,7 +98,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
   async function run(fn, okMsg) { try { await fn(); if (okMsg) flash(okMsg); } catch (e) { flash(errMsg(e), true); } render(); }
 
   // ---------- tabs ----------
-  const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'], ...(st.admin ? [['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['challenges', 'Challenges'], ['payments', 'Payments']] : [])];
+  const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'], ...(st.admin ? [['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments']] : [])];
   function renderNav() {
     $('nav').hidden = false;
     $('tabs').innerHTML = TABS().map(([k, t]) => `<button type="button" data-tab="${k}" ${st.tab === k ? 'aria-current="page"' : ''}>${t}</button>`).join('');
@@ -418,6 +419,40 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
       ${P.map(p => `<tr><td class="muted">${fDate(p.paid_at || p.created_at)}</td><td>${esc(p.description)}</td><td>${esc(p.buyer || '')}<br><span class="muted">${esc(p.buyer_email || '')}</span></td><td><strong>${money(p.amount)}</strong></td><td>${p.status === 'paid' ? '<span class="pill ok">Paid</span>' : '<span class="pill off">Not completed</span>'}</td></tr>`).join('')}
       </tbody></table>` : '<p class="empty">No payments yet.</p>'}</div>`; };
 
+  // ---------- book keys (app edition for print readers) ----------
+  VIEWS.keys = () => { const ps = st.printStat || {}, K = st.keys;
+    return `<h2>Book keys</h2><p class="sub">Print readers claim the app edition at <strong>time4god.app/redeem</strong> with the key printed in the book. Each reader gets a different check: a random page and a word on it, and they type the word that comes next. One claim per account; it turns on a free 1-year app seat.</p>
+    <div class="card"><h3 style="margin:0 0 6px;font-size:18px">1 · Print interior</h3>
+      <p class="muted" style="margin:0 0 10px">${ps.pages ? `<strong>${ps.pages}</strong> printed pages loaded (pages ${ps.first}–${ps.last}, ${Number(ps.words).toLocaleString()} words) · updated ${fDate(ps.updated_at)}` : 'Not loaded yet. Upload the exact interior PDF you send to IngramSpark (and KDP, if the pages match).'}</p>
+      <label for="pdf">Interior PDF</label><input id="pdf" type="file" accept="application/pdf,.pdf">
+      ${st.printBusy ? `<p class="muted">${esc(st.printBusy)}</p>` : ''}
+      ${st.printPrev ? `<div class="addbox"><strong>Check it:</strong> ${st.printPrev.pages.length} numbered pages found in ${st.printPrev.pdfPages} PDF pages (pages ${st.printPrev.pages[0].page}–${st.printPrev.pages[st.printPrev.pages.length - 1].page}).
+        <div class="row" style="margin-top:8px"><label for="pp" style="margin:0">Preview page</label><select id="pp">${st.printPrev.pages.map(p => `<option value="${p.page}" ${p.page === st.printPrev.show ? 'selected' : ''}>${p.page}</option>`).join('')}</select></div>
+        <p style="font-family:Georgia,serif;font-size:14px;line-height:1.6;max-height:180px;overflow:auto;background:#fff;border:1px solid #E1E7EA;border-radius:8px;padding:10px">${esc((st.printPrev.pages.find(p => p.page === st.printPrev.show) || st.printPrev.pages[0]).words.join(' '))}</p>
+        <p class="muted">Open your PDF to the same page. If the words match, save it. Headers, footers and page numbers are left out on purpose.</p>
+        <div class="row"><button class="btn teal" type="button" id="ppSave">Save these ${st.printPrev.pages.length} pages</button><button class="btn alt" type="button" id="ppCancel">Cancel</button></div></div>` : ''}
+      <p class="muted" style="margin-top:8px;font-size:13px">Upload again whenever the printed pages change. If KDP and IngramSpark pages don’t match, use the IngramSpark file.</p></div>
+    <div class="card"><h3 style="margin:0 0 6px;font-size:18px">2 · Book key</h3>
+      ${K.length ? `<div class="tbl"><table><thead><tr><th>Key</th><th>Label</th><th>Claims</th><th>Limit</th><th>Ends</th><th>Status</th><th></th></tr></thead><tbody>${K.map(k => `<tr><td><strong style="letter-spacing:.06em">${esc(k.code)}</strong></td><td>${esc(k.label || '')}</td><td>${k.claims}</td><td>${k.max_claims || '—'}</td><td>${k.ends_on ? fDate(k.ends_on) : '—'}</td><td>${k.active ? '<span class="pill ok">On</span>' : '<span class="pill off">Off</span>'}</td><td><button class="btn alt sm" type="button" data-ktog="${k.id}">${k.active ? 'Turn off' : 'Turn on'}</button></td></tr>`).join('')}</tbody></table></div>` : '<p class="empty">No key yet.</p>'}
+      <form class="row" id="kf" style="margin-top:10px"><div><label for="kc">New key</label><input id="kc" type="text" maxlength="30" placeholder="TABLE-12" style="text-transform:uppercase" required></div>
+        <div class="grow"><label for="kl">Label</label><input id="kl" type="text" placeholder="IngramSpark 2027 edition" style="width:100%"></div>
+        <div><label for="km">Claim limit</label><input id="km" type="number" min="1" placeholder="None" style="width:100px"></div>
+        <div><label for="ke">Ends</label><input id="ke" type="date"></div>
+        <div><label>&nbsp;</label><button class="btn" type="submit">Add key</button></div></form>
+      <p class="muted" style="margin-top:6px;font-size:13px">Print the key in the book. If it gets shared too widely, turn it off and print a new key in the next printing.</p></div>
+    <div class="card tbl"><h3 style="margin:0 0 6px;font-size:18px">Claims (${st.claims.length})</h3>${st.claims.length ? `<table><thead><tr><th>Date</th><th>Reader</th><th>Key</th><th>Page checked</th></tr></thead><tbody>${st.claims.map(c => `<tr><td class="muted">${fDate(c.claimed_at)}</td><td>${esc(c.name)}<br><span class="muted">${esc(c.email)}</span></td><td>${esc(c.code)}</td><td>${c.page}</td></tr>`).join('')}</tbody></table>` : '<p class="empty">No claims yet.</p>'}</div>`; };
+  BIND.keys = () => {
+    if ($('pdf')) $('pdf').onchange = e => { const f = e.target.files[0]; if (!f) return; st.printPrev = null; st.printBusy = 'Reading the PDF…'; render();
+      PrintImport.fromPdf(f, (i, n) => { st.printBusy = `Reading page ${i} of ${n}…`; if (i % 10 === 0 || i === n) render(); })
+        .then(r => { st.printBusy = ''; if (!r.pages.length) throw new Error('No numbered pages were found. Make sure page numbers are printed on the pages.'); r.show = r.pages[Math.min(10, r.pages.length - 1)].page; st.printPrev = r; render(); })
+        .catch(x => { st.printBusy = ''; flash((x && x.message) || 'That PDF could not be read.', true); render(); }); };
+    if ($('pp')) $('pp').onchange = e => { st.printPrev.show = Number(e.target.value); render(); };
+    if ($('ppCancel')) $('ppCancel').onclick = () => { st.printPrev = null; render(); };
+    if ($('ppSave')) $('ppSave').onclick = () => run(async () => { const n = await Cloud.rpc('admin_print_pages_replace', { p_pages: st.printPrev.pages.map(p => ({ page: p.page, words: p.words })) }); st.printPrev = null; await loadTab(true); flash(`Saved ${n} printed pages. Readers can claim the app edition now.`); });
+    if ($('kf')) $('kf').onsubmit = e => { e.preventDefault(); run(async () => { await Cloud.rpc('admin_save_book_key', { p_id: null, p_code: $('kc').value, p_label: $('kl').value, p_active: true, p_ends_on: $('ke').value || null, p_max_claims: $('km').value ? Number($('km').value) : null }); await loadTab(true); }, 'Book key added.'); };
+    $app.querySelectorAll('[data-ktog]').forEach(b => b.onclick = () => { const k = st.keys.find(x => x.id === b.dataset.ktog); run(async () => { await Cloud.rpc('admin_save_book_key', { p_id: k.id, p_code: k.code, p_label: k.label, p_active: !k.active, p_ends_on: k.ends_on, p_max_claims: k.max_claims }); await loadTab(true); }, k.active ? 'Key turned off.' : 'Key turned on.'); });
+  };
+
   // ---------- season ----------
   VIEWS.season = () => { const s = st.season || {}; return `<h2>Season</h2><p class="sub">Week 1 of the book opens on the start date, and one new week opens every 7 days after.</p>
     <form class="card" id="sf"><div class="row">
@@ -490,6 +525,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
         st.season = Cloud.ok(await c.from('seasons').select('*').eq('active', true).maybeSingle());
         st.allChurches = Cloud.ok(await c.from('churches').select('id,name,code,city,state,enrollment_policy').order('name'));
       }
+      if (st.tab === 'keys') { const [k, c, p] = await Promise.all([Cloud.rpc('admin_book_keys'), Cloud.rpc('admin_key_claims'), Cloud.rpc('admin_print_status')]); st.keys = k || []; st.claims = c || []; st.printStat = p; }
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
       if (st.tab === 'challenges') st.challengesAll = await Cloud.rpc('admin_challenges') || [];
       if (st.tab === 'churches') st.churchAdmins = await Cloud.rpc('admin_church_admins') || [];
