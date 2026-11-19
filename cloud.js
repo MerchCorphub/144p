@@ -66,6 +66,7 @@
       else ok(await c.from('deposit_notes').delete().eq('deposit_id', d.id));
     },
     async reflection(c, r, pid) { ok(await c.from('weekly_reflections').upsert({ partner_id: pid, week_start_date: r.week, meaningful_time: r.m || null, next_week_plan: r.n || null, updated_at: new Date().toISOString() }, { onConflict: 'partner_id,week_start_date' })); },
+    async profile(c, r, pid) { const f = String(r.first || '').trim().slice(0, 60), l = String(r.last || '').trim().slice(0, 60); if (f && l) ok(await c.from('partners').update({ first_name: f, last_name: l }).eq('id', pid)); },
     async plan(c, r, pid) { ok(await c.from('partners').update({ giving_plan: r.plan || null }).eq('id', pid)); },
     async prefs(c, r, pid) { ok(await c.from('notification_preferences').upsert({ partner_id: pid, reminder_enabled: !!r.reminder, email_reminder: !!r.emailReminder, reminder_time: r.time || '07:00', timezone: r.tz || Intl.DateTimeFormat().resolvedOptions().timeZone || null })); },
     async sharing(c, r, pid) { ok(await c.from('sharing_permissions').upsert({ id: r.id, owner_partner_id: pid, recipient_label: r.recipient, permission_type: r.type || 'weekly_balance', enabled: r.enabled, revoked_at: iso(r.revokedAt) })); },
