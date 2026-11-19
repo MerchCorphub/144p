@@ -21,7 +21,7 @@ date: 2026-11-18T01:30:00Z
 | Leader Console (church admins, group leaders: approvals, groups) | leader.html, book-import.js, cloud.js |
 | Older admin dashboard (partly sample data) | 144P-Admin.dc.html, admin-data.js, cloud.js |
 | PWA | manifest.json, sw.js, icon-192.png, icon-512.png, apple-touch-icon.png |
-| Database | supabase/migrations/0001_init.sql, 0002_harden_and_rpcs.sql, 0003_book_licenses_approvals.sql, 0004_church_admins.sql, 0005_book_hidden_sections.sql, 0006_challenges.sql, 0006b_challenges_null_safety.sql, 0007_groups.sql, 0008_payments.sql, 0009_email_notifications.sql |
+| Database | supabase/migrations/0001_init.sql, 0002_harden_and_rpcs.sql, 0003_book_licenses_approvals.sql, 0004_church_admins.sql, 0005_book_hidden_sections.sql, 0006_challenges.sql, 0006b_challenges_null_safety.sql, 0007_groups.sql, 0008_payments.sql, 0009_email_notifications.sql, 0010_reminders_messages.sql |
 
 ## Payments (Stripe)
 - Server function `supabase/functions/stripe-pay` (deployed on the 144p Supabase project). Needs the secret `STRIPE_SECRET_KEY` (Supabase › Edge Functions › Secrets). Use an `sk_test_` key for testing, then the `sk_live_` key to go live.
@@ -30,3 +30,8 @@ date: 2026-11-18T01:30:00Z
 ## Email notifications (Resend)
 - Database triggers queue emails in `email_outbox`; a one-minute cron job wakes `supabase/functions/send-emails`, which sends through Resend. Needs the secret `RESEND_API_KEY`; optional `EMAIL_FROM` (default `Time4God Challenge <notifications@time4god.app>`) and `EMAIL_REPLY_TO`.
 - Church admins and group leaders: each new join request for their church. Platform admins: new accounts, join requests, payments, new churches. Everyone can turn these off in the Leader Console (Approvals › "Email me about new members").
+
+## Daily reminders and leader messages
+- Members turn on **Daily reminder** (phone/desktop notification) and/or **Email reminder** in the app's Reminders screen and pick a time. A cron job every 5 minutes queues each member's reminder at their time in their time zone: yesterday's minutes, streak, this week's chapter, challenge standing.
+- Phone notifications: `supabase/functions/send-push` (Web Push with VAPID; keys in Supabase Vault). Emails: `send-emails` (Resend).
+- Leader Console › Messages: church admins message the whole church or any group; group leaders message their own group (5 per church per day). Members see messages on the Time4God Challenge page under "From your church".
