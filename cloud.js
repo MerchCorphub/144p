@@ -49,7 +49,7 @@
       deposits: deps.map(d => ({ id: d.id, partnerId: p.id, category: d.category, minutes: d.minutes, date: d.activity_date, time: d.activity_time ? d.activity_time.slice(0, 5) : '', note: nm[d.id] || '', source: d.entry_method, createdAt: ms(d.created_at), updatedAt: ms(d.updated_at), voidedAt: ms(d.voided_at), clientKey: d.client_key })),
       reflections: Object.fromEntries(refl.map(r => [`${p.id}|${r.week_start_date}`, { meaningful: r.meaningful_time || '', next: r.next_week_plan || '', updatedAt: ms(r.updated_at) }])),
       redemptions: reds.map(r => ({ id: r.id, partnerId: p.id, itemId: null, title: r.title, detail: r.detail || '', slotId: null, cost: r.minute_cost, status: r.status === 'canceled' ? 'Cancelled' : 'Confirmed', createdAt: ms(r.created_at), clientKey: r.client_key })),
-      prefs: prefs ? { reminder: prefs.reminder_enabled, time: (prefs.reminder_time || '07:00').slice(0, 5), tz: prefs.timezone || p.timezone } : null,
+      prefs: prefs ? { reminder: prefs.reminder_enabled, emailReminder: !!prefs.email_reminder, time: (prefs.reminder_time || '07:00').slice(0, 5), tz: prefs.timezone || p.timezone } : null,
       timer: tmr ? { category: tmr.category, startedAt: ms(tmr.started_at) || Date.now(), accum: Number(tmr.accumulated_ms) || 0, running: tmr.running } : null,
       sharing: share.map(x => ({ id: x.id, owner: p.id, recipient: x.recipient_label || '', type: x.permission_type, enabled: x.enabled, createdAt: ms(x.created_at), revokedAt: ms(x.revoked_at) }))
     };
@@ -67,7 +67,7 @@
     },
     async reflection(c, r, pid) { ok(await c.from('weekly_reflections').upsert({ partner_id: pid, week_start_date: r.week, meaningful_time: r.m || null, next_week_plan: r.n || null, updated_at: new Date().toISOString() }, { onConflict: 'partner_id,week_start_date' })); },
     async plan(c, r, pid) { ok(await c.from('partners').update({ giving_plan: r.plan || null }).eq('id', pid)); },
-    async prefs(c, r, pid) { ok(await c.from('notification_preferences').upsert({ partner_id: pid, reminder_enabled: !!r.reminder, reminder_time: r.time || '07:00', timezone: r.tz || null })); },
+    async prefs(c, r, pid) { ok(await c.from('notification_preferences').upsert({ partner_id: pid, reminder_enabled: !!r.reminder, email_reminder: !!r.emailReminder, reminder_time: r.time || '07:00', timezone: r.tz || Intl.DateTimeFormat().resolvedOptions().timeZone || null })); },
     async sharing(c, r, pid) { ok(await c.from('sharing_permissions').upsert({ id: r.id, owner_partner_id: pid, recipient_label: r.recipient, permission_type: r.type || 'weekly_balance', enabled: r.enabled, revoked_at: iso(r.revokedAt) })); },
     async redeem(c, r) { ok(await c.rpc('redeem_time', { p_title: r.title, p_detail: r.detail || null, p_cost: r.cost, p_client_key: r.clientKey })); },
     async timer(c, t, pid) {
@@ -100,6 +100,30 @@
   }
   window.addEventListener('online', () => flush());
 
+  // ---------- phone / desktop notifications (Web Push) ----------
+  const VAPID_PUBLIC = 'BGxgsbreRFPPuTCC3MN5cgWTrJltJqip0PGsphLOYMmWgfW7k_J8K25J3IaZlZ19ocSX4sjBK_9OlPMk1LbrLnI';
+  const pushSupported = () => 'serviceWorker' in navigator && 'PushManager' in window && typeof Notification !== 'undefined';
+  const fromB64u = s => { s = s.replace(/-/g, '+').replace(/_/g, '/'); while (s.length % 4) s += '='; const b = atob(s), u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+  const toB64u = buf => { const b = new Uint8Array(buf); let s = ''; for (let i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+  // Ask permission, subscribe this device and save it to the member's account. Returns true or throws a plain-language Error.
+  async function enablePush() {
+    if (!pushSupported()) throw new Error('This browser can\u2019t show notifications. On iPhone, add the app to your Home Screen first (Share › Add to Home Screen), then turn reminders on there. Or use email reminders.');
+    let perm = Notification.permission;
+    if (perm === 'default') perm = await Notification.requestPermission();
+    if (perm !== 'granted') throw new Error('Notifications are blocked for this site. Allow them in your browser or phone settings, or use email reminders.');
+    try { await navigator.serviceWorker.register('sw.js'); } catch (e) {}
+    const reg = await navigator.serviceWorker.ready;
+    let sub = await reg.pushManager.getSubscription();
+    if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: fromB64u(VAPID_PUBLIC) });
+    await rpc('save_push_subscription', { p_endpoint: sub.endpoint, p_p256dh: toB64u(sub.getKey('p256dh')), p_auth: toB64u(sub.getKey('auth')), p_user_agent: navigator.userAgent.slice(0, 300) });
+    return true;
+  }
+  async function disablePush() {
+    if (!pushSupported()) return;
+    try { const reg = await navigator.serviceWorker.getRegistration(); const sub = reg && await reg.pushManager.getSubscription();
+      if (sub) { try { await rpc('delete_push_subscription', { p_endpoint: sub.endpoint }); } catch (e) {} await sub.unsubscribe(); } } catch (e) {}
+  }
+
   // ---------- payments (Stripe, through the stripe-pay server function) ----------
   async function pay(body) {
     const c = await sb(); const { data } = await c.auth.getSession();
@@ -130,5 +154,5 @@
     return result;
   }
 
-  window.Cloud = { url: URL_, sb, session, signUp, signIn, signOut, rpc, ensurePartner, pullPartner, queue, flush, pending: () => readBox().length, pay, checkout, settlePayments, isUuid, ms, iso, ok, resetPid: () => { pidCache = null; } };
+  window.Cloud = { url: URL_, sb, session, signUp, signIn, signOut, rpc, ensurePartner, pullPartner, queue, flush, pending: () => readBox().length, pay, checkout, settlePayments, enablePush, disablePush, pushSupported, isUuid, ms, iso, ok, resetPid: () => { pidCache = null; } };
 })();

@@ -131,7 +131,7 @@ ol.board li.me{background:#F2FAF8;font-weight:700}
   }
 
   // ---------- data ----------
-  async function loadList() { st.list = (await Cloud.rpc('my_challenges')) || []; }
+  async function loadList() { st.list = (await Cloud.rpc('my_challenges')) || []; try { st.inbox = (await Cloud.rpc('my_messages')) || []; } catch (e) { st.inbox = []; } }
   async function load() {
     st.err = '';
     const s = await Cloud.session();
@@ -164,7 +164,8 @@ ol.board li.me{background:#F2FAF8;font-weight:700}
     $('signOut').hidden = !st.me;
     const v = (st.me ? VIEWS[st.view] || VIEWS.home : VIEWS.signedOut)();
     $app.innerHTML = v.html; (v.after || (() => {}))();
-    window.scrollTo(0, 0);
+    const anchor = location.hash === '#messages' && document.getElementById('messages');
+    if (anchor) anchor.scrollIntoView(); else window.scrollTo(0, 0);
   }
   const VIEWS = {};
 
@@ -234,6 +235,7 @@ ol.board li.me{background:#F2FAF8;font-weight:700}
     const sec = (t, arr, empty) => `<div class="group"><h3>${t}</h3>${arr.length ? arr.map(item).join('') : `<p class="empty">${empty}</p>`}</div>`;
     return { html: `<div class="hero small"><picture><source srcset="t4g/t4g-logo.webp" type="image/webp"><img src="t4g/t4g-logo.png" alt="Time4God Challenge" width="150" height="150"></picture><h2>Time4God Challenge</h2><div class="s2">The 144(P) Plan</div><p>Who will give the most time to God? Challenge a friend${st.opts.group_name ? ', another group' : ''}${st.opts.church_name ? ' or another church' : ''}.</p></div><div style="height:4px"></div>${notes()}
       <button class="btn teal" id="new" type="button">Challenge someone</button>
+      ${(st.inbox || []).length ? `<div class="group" id="messages"><h3>From your church</h3>${st.inbox.map(m => `<div class="card msg" style="margin-top:0;margin-bottom:8px;padding:14px"><div class="meta" style="font-size:13px;color:#4F5F68">${esc(m.group_name ? m.group_name + ' · ' + m.church_name : m.church_name)} · ${esc(fDate(m.created_at))}</div><div style="margin:6px 0 4px;font-size:16px;line-height:1.5;white-space:pre-wrap">${esc(m.body)}</div><div class="meta" style="font-size:13px;color:#4F5F68">— ${esc(m.sender_name)}</div></div>`).join('')}</div>` : ''}
       ${join.length ? sec('Join a challenge', join, '') : ''}
       ${sec('Active', active, 'No active challenges yet.')}
       ${sec('Waiting for an answer', waiting, 'Nothing waiting.')}

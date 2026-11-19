@@ -89,7 +89,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
   const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
   const STATUS = { pending_payment: ['Waiting for payment', 'wait'], active: ['Active', 'ok'], canceled: ['Canceled', 'off'] };
   const pill = s => { const [t, c] = STATUS[s] || [s || 'None', 'off']; return `<span class="pill ${c}">${esc(t)}</span>`; };
-  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], churchAdmins: [], challengesAll: [], payments: [], buy: false, buyOpts: null, buyPlan: null, groups: [], roster: [], gAdd: null, gSel: new Set(), gRename: null, seats: [], sections: [], editSlug: null, importSecs: null };
+  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], churchAdmins: [], challengesAll: [], msgs: [], msgDraft: '', msgTo: '', payments: [], buy: false, buyOpts: null, buyPlan: null, groups: [], roster: [], gAdd: null, gSel: new Set(), gRename: null, seats: [], sections: [], editSlug: null, importSecs: null };
   let c = null;
 
   const flash = (m, isErr) => { if (isErr) { st.err = m; st.msg = ''; } else { st.msg = m; st.err = ''; } };
@@ -97,7 +97,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
   async function run(fn, okMsg) { try { await fn(); if (okMsg) flash(okMsg); } catch (e) { flash(errMsg(e), true); } render(); }
 
   // ---------- tabs ----------
-  const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ...(st.admin ? [['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['challenges', 'Challenges'], ['payments', 'Payments']] : [])];
+  const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'], ...(st.admin ? [['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['challenges', 'Challenges'], ['payments', 'Payments']] : [])];
   function renderNav() {
     $('nav').hidden = false;
     $('tabs').innerHTML = TABS().map(([k, t]) => `<button type="button" data-tab="${k}" ${st.tab === k ? 'aria-current="page"' : ''}>${t}</button>`).join('');
@@ -299,6 +299,34 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
     $app.querySelectorAll('[data-addgo]').forEach(b => b.onclick = () => { const ids = [...st.gSel], g = st.groups.find(x => x.group_id === b.dataset.addgo); run(async () => { const n = await Cloud.rpc('set_members_group', { p_ids: ids, p_group: g.group_id }); st.gAdd = null; st.gSel = new Set(); await loadGroups(); flash(`Added ${n} ${n === 1 ? 'member' : 'members'} to ${g.name}.`); }); });
   };
 
+  // ---------- messages to members ----------
+  VIEWS.messages = () => {
+    if (!st.church) return `<h2>Messages</h2><p class="sub">Add a church first.</p>`;
+    const boss = canName(), mine = st.groups.filter(g => g.i_lead);
+    const targets = boss ? [['', 'Whole church · ' + st.church.name], ...st.groups.map(g => [g.group_id, g.name + ' (' + g.members + ')'])] : mine.map(g => [g.group_id, g.name + ' (' + g.members + ')']);
+    if (!targets.some(t => t[0] === st.msgTo)) st.msgTo = targets.length ? targets[0][0] : '';
+    const picker = st.churches.length > 1 ? `<div><label for="mch">Church</label><select id="mch">${st.churches.map(x => `<option value="${x.church_id}" ${x.church_id === st.church.church_id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>` : '';
+    return `<h2>Messages</h2><p class="sub">Send a short note to your members, like “Join us Sunday for the Week 3 kickoff.” Members see it in the app. Those who turned on reminders also get it as a phone notification or email.</p>
+      ${targets.length ? `<form class="card" id="mf"><div class="row">${picker}<div class="grow"><label for="mto">Send to</label><select id="mto" style="width:100%">${targets.map(t => `<option value="${t[0]}" ${t[0] === st.msgTo ? 'selected' : ''}>${esc(t[1])}</option>`).join('')}</select></div></div>
+        <label for="mb" style="margin-top:12px">Message</label><textarea id="mb" maxlength="500" rows="4" style="width:100%" placeholder="Join us Sunday after service for the Week 3 kickoff!">${esc(st.msgDraft)}</textarea>
+        <div class="row" style="margin-top:6px"><span class="muted grow" id="mcount">${st.msgDraft.length}/500</span><button class="btn teal" type="submit">Send message</button></div>
+        <p class="muted" style="margin-top:6px;font-size:13px">Up to 5 messages a day per church.</p></form>`
+      : `<div class="card"><p class="empty">You can send messages once your church admin makes you the leader of a group (Groups tab).</p></div>`}
+      <div class="card"><h3 style="margin:0 0 8px;font-size:18px">Sent</h3>${st.msgs.length ? `<ul class="mlist">${st.msgs.map(m => `<li style="display:block"><div class="row"><strong class="grow">${esc(m.group_name || 'Whole church')}</strong><span class="muted">${fDate(m.created_at)}</span></div>
+        <div style="margin:4px 0">${esc(m.body)}</div><span class="muted">From ${esc(m.sender_name)} · ${m.members} member${m.members === 1 ? '' : 's'} · ${m.pushes} notification${m.pushes === 1 ? '' : 's'} · ${m.emails} email${m.emails === 1 ? '' : 's'}</span></li>`).join('')}</ul>` : '<p class="empty">No messages sent yet.</p>'}</div>`;
+  };
+  BIND.messages = () => {
+    if ($('mch')) $('mch').onchange = e => run(async () => { st.church = st.churches.find(x => x.church_id === e.target.value); st.msgTo = ''; await loadTab(true); });
+    if ($('mto')) $('mto').onchange = e => { st.msgTo = e.target.value; };
+    if ($('mb')) $('mb').oninput = e => { st.msgDraft = e.target.value; $('mcount').textContent = st.msgDraft.length + '/500'; };
+    if ($('mf')) $('mf').onsubmit = e => { e.preventDefault(); const body = st.msgDraft.trim(); if (!body) { flash('Write a message first.', true); render(); return; }
+      const label = $('mto').selectedOptions[0].textContent;
+      if (!confirm(`Send this message to ${label}?`)) return;
+      run(async () => { const r = await Cloud.rpc('send_member_message', { cid: st.church.church_id, p_group: st.msgTo || null, p_body: body }); st.msgDraft = '';
+        st.msgs = await Cloud.rpc('leader_messages', { cid: st.church.church_id }) || [];
+        flash(`Sent to ${r.members} member${r.members === 1 ? '' : 's'}: ${r.pushes} notification${r.pushes === 1 ? '' : 's'} and ${r.emails} email${r.emails === 1 ? '' : 's'}. Everyone sees it in the app.`); }); };
+  };
+
   // ---------- churches ----------
   const joinUrl = code => location.href.split('?')[0].split('#')[0].replace(/[^/]*$/, '') + 'read.html?code=' + encodeURIComponent(code);
   function qrSvg(text, cell) {
@@ -456,6 +484,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
     try {
       if (st.tab === 'approvals') await loadChurch();
       if (st.tab === 'groups') await loadGroups();
+      if (st.tab === 'messages') { await loadGroups(); st.msgs = st.church ? (await Cloud.rpc('leader_messages', { cid: st.church.church_id }) || []) : []; }
       if (['prices', 'licenses'].includes(st.tab)) st.plans = Cloud.ok(await c.from('license_plans').select('*').order('sort_order'));
       if (['licenses', 'churches', 'season'].includes(st.tab)) {
         st.season = Cloud.ok(await c.from('seasons').select('*').eq('active', true).maybeSingle());
