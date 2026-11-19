@@ -80,7 +80,7 @@ begin
   for a in select private.admin_emails() loop
     perform private.queue_email(a, 'New account: ' || new.first_name || ' ' || new.last_name,
       array['<strong>' || h(new.first_name || ' ' || new.last_name) || '</strong> (' || h(new.email) || ') just created a 144(P) Plan account.',
-            'They haven''t joined a church or bought a seat yet.'],
+            'There is nothing to approve yet. When they enter a church code, that church''s leaders get a separate "New request to join" email and the request shows under Approvals.'],
       'Open the Admin Panel', 'https://time4god.app/admin.html', null, 'admin.new_account');
   end loop;
   return null;
