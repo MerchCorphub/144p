@@ -128,6 +128,15 @@ table.mini td{padding:3px 12px 3px 0}
     if (!st.church) return;
     const [mem, seat] = await Promise.all([Cloud.rpc('leader_members', { cid: st.church.church_id }), Cloud.rpc('church_seat_status', { cid: st.church.church_id })]);
     st.members = mem || []; st.seat = (seat && seat[0]) || null; st.sel = new Set();
+    st.invoices = [];
+    if (canName()) {
+      try { st.invoices = (await Cloud.rpc('church_invoices', { cid: st.church.church_id })) || []; } catch (e) { st.invoices = []; }
+      // An invoice may have been paid since we last looked: ask Stripe, then reload once
+      if (st.invoices.some(i => i.status === 'open') && !st.invoiceSynced) {
+        st.invoiceSynced = true;
+        try { const r = await Cloud.pay({ action: 'sync_invoices' }); if (Object.values((r && r.checked) || {}).includes('paid')) return loadChurch(); } catch (e) {}
+      }
+    }
   }
   const canName = () => st.church && (st.church.role === 'church_admin' || st.church.role === 'platform_admin');
   const VIEWS = {}, BIND = {};
@@ -146,6 +155,7 @@ table.mini td{padding:3px 12px 3px 0}
         <div><label>Church code to share</label><span class="code">${esc(st.church.code)}</span></div>
       </div>
       <div style="margin-top:14px">${cap ? `<strong>${used} of ${cap}</strong> seats used · ${esc(s.plan_name || '')} license ${pill(s.license_status)}${s.expires_at ? ` <span class="muted">· good through ${fDate(s.expires_at)}</span>` : ''}<div class="seatbar" aria-hidden="true"><span style="width:${Math.min(100, Math.round(used / cap * 100))}%"></span></div>` : `<span class="muted">No book license for ${esc(s.season_name || 'this season')} yet. You can still approve members; the book opens once a license is active.</span>`}</div>
+      ${invoiceList()}
       ${canName() ? (st.buy ? buyBox() : `<button class="btn teal" type="button" id="buyOpen" style="margin-top:12px">${s.license_status === 'active' ? 'Add seats' : 'Buy seats for your church'}</button>`) : ''}</div>
 
       <div class="card"><div class="row"><h3 style="margin:0;font-size:18px" class="grow">Waiting for approval (${pend.length})</h3></div>
@@ -180,7 +190,7 @@ table.mini td{padding:3px 12px 3px 0}
       else if (n > room) note = `For more than ${nf(o.max_seats)} seats in total, contact us and we’ll set it up.`;
       else if (!tier) note = 'Seats aren’t available for that number right now.';
     }
-    const ok = tier && !note;
+    const ok = tier && !note, big = ok && o.invoice_min && n * tier.rate >= Number(o.invoice_min);
     return `<div class="addbox"><div class="row"><strong class="grow">${cur ? `Add seats · you have ${nf(cur.seats)}` : 'Buy seats for your church'}</strong><button class="btn alt sm" type="button" id="buyClose">Close</button></div>
       <p class="muted" style="margin:6px 0 10px">${cur ? `Added seats cost the rate for your new total and end on ${cur.expires_at ? fDate(cur.expires_at) : 'the same date as your others'}.` : 'One payment, good for one year from today. Members you approve read free.'} Prices include tax. All sales are final.</p>
       <div class="tbl"><table><thead><tr><th>Seats in total</th><th>Price per seat</th></tr></thead><tbody>${T.map((t, i) => `<tr${tier && tier.id === t.id ? ' style="background:#E6F2F2;font-weight:700"' : ''}><td>${esc(t.name)} · ${i === T.length - 1 ? nf(t.min) + '+' : nf(t.min) + '–' + nf(t.max)}</td><td>${money(t.rate)}</td></tr>`).join('')}</tbody></table></div>
@@ -188,13 +198,30 @@ table.mini td{padding:3px 12px 3px 0}
       <input id="buyN" type="number" inputmode="numeric" min="${min}" step="1" value="${esc(st.buySeats || '')}" placeholder="${cur ? 'e.g. 10' : 'At least ' + min}" style="max-width:200px">
       ${note ? `<p class="err" style="margin-top:8px">${esc(note)}</p>` : ''}
       ${ok ? `<p style="margin:10px 0 0;font-size:17px"><strong>${nf(n)} seat${n === 1 ? '' : 's'} × ${money(tier.rate)} = ${money(n * tier.rate)}</strong>${cur ? ` <span class="muted">· ${nf(total)} seats in total</span>` : ''}</p>` : ''}
-      <button class="btn teal" type="button" id="buyGo" ${ok ? '' : 'disabled'} style="margin-top:10px">Continue to secure checkout</button><p class="muted" style="margin-top:6px;font-size:13px">You’ll pay on Stripe’s secure page (card, Apple Pay or Google Pay), then come back here.</p></div>`;
+      ${big && o.open_invoice ? `<p class="muted" style="margin-top:10px">Invoice ${esc(o.open_invoice.number || '')} for ${money(o.open_invoice.amount)} is already waiting for payment. You can pay this one by card, or wait until that invoice is paid to ask for another.</p>` : ''}
+      ${big && !o.open_invoice ? `<div class="two" style="margin-top:10px;gap:10px;display:grid;grid-template-columns:1fr 1fr">
+          <button class="btn teal" type="button" id="buyInv" ${st.invBusy ? 'disabled' : ''}>${st.invBusy ? 'Creating your invoice…' : 'Send me an invoice'}</button>
+          <button class="btn alt" type="button" id="buyGo" style="margin-top:0">Pay by card now</button></div>
+        <p class="muted" style="margin-top:6px;font-size:13px">Purchases of ${money(o.invoice_min)} or more can be paid by invoice. We email it to you from Stripe. Pay within ${o.invoice_days || 15} days by bank transfer (wire or ACH, using the account details on the invoice) or by card. Your seats turn on as soon as the payment arrives.</p>`
+      : `<button class="btn teal" type="button" id="buyGo" ${ok ? '' : 'disabled'} style="margin-top:10px">Continue to secure checkout</button><p class="muted" style="margin-top:6px;font-size:13px">You’ll pay on Stripe’s secure page (card, Apple Pay or Google Pay), then come back here.${o.invoice_min ? ` Spending ${money(o.invoice_min)} or more? You can ask for an invoice and pay by bank transfer.` : ''}</p>`}</div>`;
+  }
+  function invoiceList() {
+    const L = (st.invoices || []).filter(i => i.status === 'open' || i.status === 'paid');
+    if (!L.length) return '';
+    return L.map(i => { const late = i.status === 'open' && i.due_date && i.due_date < new Date().toISOString().slice(0, 10);
+      return `<div class="card" style="margin:12px 0 0;${i.status === 'open' ? 'border-color:#D9A62B;background:#FFF8E6' : ''}"><div class="row"><div class="grow"><strong>Invoice ${esc(i.number || '')} · ${money(i.amount)}</strong> ${i.status === 'paid' ? '<span class="pill ok">Paid</span>' : late ? '<span class="pill off">Past due</span>' : '<span class="pill wait">Waiting for payment</span>'}<br>
+        <span class="muted">${esc(i.description)}${i.status === 'open' && i.due_date ? ` · due ${fDate(i.due_date + 'T12:00:00')}` : ''}</span>
+        ${i.status === 'open' ? '<br><span class="muted">These seats turn on as soon as the payment arrives. Bank transfers can take 1–3 business days to arrive.</span>' : ''}</div>
+        ${i.url ? `<a class="btn ${i.status === 'open' ? 'teal' : 'alt'} sm" href="${esc(i.url)}" target="_blank" rel="noopener">${i.status === 'open' ? 'View or pay invoice' : 'View invoice'}</a>` : ''}</div></div>`; }).join('');
   }
   BIND.approvals = () => {
     if ($('nsNew')) $('nsNew').onchange = e => { const on = e.target.checked; run(async () => { await Cloud.rpc('set_notification_settings', { p_new_members: on }); st.notify.email_new_members = on; }, on ? 'You’ll get an email when someone new signs up.' : 'New-member emails turned off.'); };
     if ($('buyOpen')) $('buyOpen').onclick = () => run(async () => { st.buy = true; st.buySeats = ''; st.buyOpts = null; render(); st.buyOpts = await Cloud.rpc('purchase_options', { cid: st.church.church_id }); });
     if ($('buyClose')) $('buyClose').onclick = () => { st.buy = false; render(); };
     if ($('buyN')) $('buyN').oninput = e => { if (st.buySeats === e.target.value) return; st.buySeats = e.target.value; const pos = e.target.selectionStart; render(); const i = $('buyN'); if (i) { i.focus(); try { i.setSelectionRange(pos, pos); } catch (x) {} } };
+    if ($('buyInv')) $('buyInv').onclick = () => { if (!confirm(`Send an invoice for ${parseInt(st.buySeats, 10).toLocaleString()} seats to your email? Your seats turn on when it’s paid.`)) return;
+      st.invBusy = true; render();
+      run(async () => { try { const r = await Cloud.pay({ action: 'invoice', type: 'church', church_id: st.church.church_id, seats: parseInt(st.buySeats, 10) }); st.buy = false; await loadChurch(); flash(`Invoice ${r.number || ''} is on its way to your email. You can also open it here.`); } finally { st.invBusy = false; } }); };
     if ($('buyGo')) $('buyGo').onclick = () => { const b = $('buyGo'); b.disabled = true; b.textContent = 'Opening secure checkout…'; run(async () => { await Cloud.checkout('church', { church_id: st.church.church_id, seats: parseInt(st.buySeats, 10) }); }); };
     if ($('ch')) $('ch').onchange = e => run(async () => { st.church = st.churches.find(x => x.church_id === e.target.value); await loadChurch(); });
     const pend = st.members.filter(m => m.status === 'pending');
@@ -468,7 +495,7 @@ table.mini td{padding:3px 12px 3px 0}
     return `<h2>Payments</h2><p class="sub">Every payment made through Stripe: individual seats, church seats and added seats. Prices include tax. All sales are final. Payouts and receipts are in your Stripe dashboard.</p>
     <div class="card"><div class="row"><span><strong>${money(tot)}</strong> collected</span><span><strong>${paid.length}</strong> payments</span><span><strong>${paid.filter(p => p.kind === 'individual').length}</strong> individual seats</span><span><strong>${paid.filter(p => p.kind !== 'individual').length}</strong> church purchases</span></div></div>
     <div class="card tbl">${P.length ? `<table><thead><tr><th>Date</th><th>What</th><th>Buyer</th><th>Amount</th><th>Status</th></tr></thead><tbody>
-      ${P.map(p => `<tr><td class="muted">${fDate(p.paid_at || p.created_at)}</td><td>${esc(p.description)}</td><td>${esc(p.buyer || '')}<br><span class="muted">${esc(p.buyer_email || '')}</span></td><td><strong>${money(p.amount)}</strong></td><td>${p.status === 'paid' ? '<span class="pill ok">Paid</span>' : '<span class="pill off">Not completed</span>'}</td></tr>`).join('')}
+      ${P.map(p => `<tr><td class="muted">${fDate(p.paid_at || p.created_at)}</td><td>${esc(p.description)}</td><td>${esc(p.buyer || '')}<br><span class="muted">${esc(p.buyer_email || '')}</span></td><td><strong>${money(p.amount)}</strong></td><td>${p.status === 'paid' ? '<span class="pill ok">Paid</span>' : p.status === 'open' ? `<span class="pill wait">Invoice ${esc(p.invoice_number || '')} · due ${p.due_date ? fDate(p.due_date + 'T12:00:00') : ''}</span>` : p.status === 'void' ? '<span class="pill off">Invoice canceled</span>' : '<span class="pill off">Not completed</span>'}${p.method === 'invoice' && p.status === 'paid' ? ' <span class="muted">by invoice</span>' : ''}${p.test ? ' <span class="pill off">Test</span>' : ''}${p.invoice_url ? `<br><a href="${esc(p.invoice_url)}" target="_blank" rel="noopener">Invoice</a>` : ''}</td></tr>`).join('')}
       </tbody></table>` : '<p class="empty">No payments yet.</p>'}</div>`; };
 
   // ---------- book keys (app edition for print readers) ----------
@@ -530,6 +557,7 @@ table.mini td{padding:3px 12px 3px 0}
     const M = D.members, E = D.engagement, C = D.churches, R = D.revenue, CH = D.challenges, S = D.season || {};
     const todo = [C.requests ? `<button class="btn alt sm" type="button" data-go="churches">${C.requests} church/group request${C.requests === 1 ? '' : 's'} to approve</button>` : '',
       M.pending ? `<button class="btn alt sm" type="button" data-go="approvals">${M.pending} member${M.pending === 1 ? '' : 's'} waiting for church approval</button>` : '',
+      D.invoices && D.invoices.open ? `<button class="btn alt sm" type="button" data-go="payments">${D.invoices.open} invoice${D.invoices.open === 1 ? '' : 's'} waiting for payment (${usd(D.invoices.open_amount)})${D.invoices.overdue ? ` · ${D.invoices.overdue} past due` : ''}</button>` : '',
       C.leader_requests ? `<span class="pill wait">${C.leader_requests} group-leader request${C.leader_requests === 1 ? '' : 's'} (church admins approve)</span>` : ''].filter(Boolean).join(' ');
     const seatPct = C.seats_sold ? Math.round(C.seats_used / C.seats_sold * 100) : 0;
     return `<h2>Dashboard</h2><p class="sub">Operating overview · updated ${new Date(D.as_of).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })} <button class="btn alt sm" type="button" id="dRef">Refresh</button></p>
