@@ -62,3 +62,7 @@ date: 2026-11-18T01:30:00Z
 - Leader Console › Buy seats: at $20,000+ the leader can choose "Send me an invoice" or pay by card. stripe-pay `invoice` action creates a Stripe customer (saved on the church), a 15-day invoice (bank transfer/wire, ACH or card) and emails it (migration 0018).
 - Seats turn on only when Stripe reports the invoice paid. Checked every 15 minutes (cron `sync-invoices` → stripe-pay with x-notify-token) and when the church admin opens the Leader Console. Voided invoices close.
 - One open invoice per church at a time. Pete gets an email when an invoice is sent and when it's paid. Admin Panel › Payments lists invoices; Dashboard shows invoices waiting and past due.
+
+## Email settings
+- Admin Panel › Settings (migration 0019, table `app_settings`): admin notification email(s), reply-to email, and support email. Blank admin email = each platform admin's sign-in email.
+- send-emails reads reply-to from settings (the EMAIL_REPLY_TO secret is only a fallback). The support email shows on Help & Support, the study book page and the leaders page (`public_contact`).

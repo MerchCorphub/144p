@@ -189,7 +189,8 @@ const nf = n => Number(n).toLocaleString('en-US');
         ${p.invoice_min != null ? `<p class="sub" style="font-size:13px;margin-top:6px"><strong>Spending ${esc(money(p.invoice_min))} or more?</strong> Pay by card, or ask for an invoice and pay within ${esc(String(p.invoice_days || 15))} days by bank transfer (wire or ACH) or card. Seats turn on when the payment arrives.</p>` : ''}</div>
       <div class="tabs" role="tablist"><button class="tab" role="tab" type="button" data-as="church" aria-selected="${st.as === 'church'}">I lead a church</button><button class="tab" role="tab" type="button" data-as="group" aria-selected="${st.as === 'group'}">I lead a group</button></div>
       ${statusList()}${form()}
-      <p class="sub" style="margin-top:16px">Just want the study book for yourself? <a href="access.html">See individual pricing</a>.</p>`;
+      <p class="sub" style="margin-top:16px">Just want the study book for yourself? <a href="access.html">See individual pricing</a>.</p>
+      ${st.support ? `<p class="sub" style="margin-top:8px">Questions before you sign up? Email <a href="mailto:${esc(st.support)}">${esc(st.support)}</a></p>` : ''}`;
     bind();
   }
 
@@ -209,6 +210,7 @@ const nf = n => Number(n).toLocaleString('en-US');
 
   async function load() {
     try { st.price = await Cloud.rpc('public_pricing'); } catch (e) {}
+    try { st.support = (await Cloud.rpc('public_contact')).support_email; } catch (e) {}
     const s = await Cloud.session();
     if (s) { st.me = await Cloud.ensurePartner(); try { st.reqs = await Cloud.rpc('my_leader_requests'); } catch (e) {} }
     render();

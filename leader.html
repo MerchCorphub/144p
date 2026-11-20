@@ -115,7 +115,7 @@ table.mini td{padding:3px 12px 3px 0}
   async function run(fn, okMsg) { try { await fn(); if (okMsg) flash(okMsg); } catch (e) { flash(errMsg(e), true); } render(); }
 
   // ---------- tabs ----------
-  const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'], ...(st.admin ? [['dash', 'Dashboard'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments']] : [])];
+  const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'], ...(st.admin ? [['dash', 'Dashboard'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['settings', 'Settings']] : [])];
   function renderNav() {
     $('nav').hidden = false;
     $('tabs').innerHTML = TABS().map(([k, t]) => `<button type="button" data-tab="${k}" ${st.tab === k ? 'aria-current="page"' : ''}>${t}</button>`).join('');
@@ -187,7 +187,7 @@ table.mini td{padding:3px 12px 3px 0}
     let note = '';
     if (st.buySeats !== '' && st.buySeats != null) {
       if (!(n >= min)) note = cur ? 'Enter at least 1 seat.' : `The smallest purchase is ${min} seats.`;
-      else if (n > room) note = `For more than ${nf(o.max_seats)} seats in total, contact us and we’ll set it up.`;
+      else if (n > room) note = `For more than ${nf(o.max_seats)} seats in total, contact us${st.support ? ' at ' + st.support : ''} and we’ll set it up.`;
       else if (!tier) note = 'Seats aren’t available for that number right now.';
     }
     const ok = tier && !note, big = ok && o.invoice_min && n * tier.rate >= Number(o.invoice_min);
@@ -216,7 +216,7 @@ table.mini td{padding:3px 12px 3px 0}
   }
   BIND.approvals = () => {
     if ($('nsNew')) $('nsNew').onchange = e => { const on = e.target.checked; run(async () => { await Cloud.rpc('set_notification_settings', { p_new_members: on }); st.notify.email_new_members = on; }, on ? 'You’ll get an email when someone new signs up.' : 'New-member emails turned off.'); };
-    if ($('buyOpen')) $('buyOpen').onclick = () => run(async () => { st.buy = true; st.buySeats = ''; st.buyOpts = null; render(); st.buyOpts = await Cloud.rpc('purchase_options', { cid: st.church.church_id }); });
+    if ($('buyOpen')) $('buyOpen').onclick = () => run(async () => { st.buy = true; st.buySeats = ''; st.buyOpts = null; render(); st.buyOpts = await Cloud.rpc('purchase_options', { cid: st.church.church_id }); try { st.support = (await Cloud.rpc('public_contact')).support_email; } catch (e) {} });
     if ($('buyClose')) $('buyClose').onclick = () => { st.buy = false; render(); };
     if ($('buyN')) $('buyN').oninput = e => { if (st.buySeats === e.target.value) return; st.buySeats = e.target.value; const pos = e.target.selectionStart; render(); const i = $('buyN'); if (i) { i.focus(); try { i.setSelectionRange(pos, pos); } catch (x) {} } };
     if ($('buyInv')) $('buyInv').onclick = () => { if (!confirm(`Send an invoice for ${parseInt(st.buySeats, 10).toLocaleString()} seats to your email? Your seats turn on when it’s paid.`)) return;
@@ -498,6 +498,30 @@ table.mini td{padding:3px 12px 3px 0}
       ${P.map(p => `<tr><td class="muted">${fDate(p.paid_at || p.created_at)}</td><td>${esc(p.description)}</td><td>${esc(p.buyer || '')}<br><span class="muted">${esc(p.buyer_email || '')}</span></td><td><strong>${money(p.amount)}</strong></td><td>${p.status === 'paid' ? '<span class="pill ok">Paid</span>' : p.status === 'open' ? `<span class="pill wait">Invoice ${esc(p.invoice_number || '')} · due ${p.due_date ? fDate(p.due_date + 'T12:00:00') : ''}</span>` : p.status === 'void' ? '<span class="pill off">Invoice canceled</span>' : '<span class="pill off">Not completed</span>'}${p.method === 'invoice' && p.status === 'paid' ? ' <span class="muted">by invoice</span>' : ''}${p.test ? ' <span class="pill off">Test</span>' : ''}${p.invoice_url ? `<br><a href="${esc(p.invoice_url)}" target="_blank" rel="noopener">Invoice</a>` : ''}</td></tr>`).join('')}
       </tbody></table>` : '<p class="empty">No payments yet.</p>'}</div>`; };
 
+  // ---------- settings (platform admin) ----------
+  VIEWS.settings = () => { const S = st.settings; if (!S) return '<h2>Settings</h2><p class="sub">Loading…</p>';
+    return `<h2>Settings</h2><p class="sub">Email addresses the app uses. Changes take effect right away.</p>
+    <form class="card" id="setF">
+      <label for="sAdmin" style="font-weight:700">Admin notification email</label>
+      <p class="muted" style="margin:2px 0 6px">Where emails about new accounts, join requests, payments, invoices and new churches go. Separate more than one address with commas.</p>
+      <input id="sAdmin" type="text" inputmode="email" autocomplete="off" value="${esc(S.admin_emails || '')}" placeholder="Blank = ${esc(S.admin_default || 'your sign-in email')}">
+      <p class="muted" style="margin:4px 0 0;font-size:13px">${S.admin_emails ? '' : `Now going to your sign-in email: ${esc(S.admin_default || '')}.`}</p>
+      <label for="sReply" style="font-weight:700;margin-top:18px;display:block">Reply-to email</label>
+      <p class="muted" style="margin:2px 0 6px">When someone replies to any email from the app, their reply goes here.</p>
+      <input id="sReply" type="email" autocomplete="off" value="${esc(S.reply_to || '')}" placeholder="name@example.com">
+      <label for="sSupport" style="font-weight:700;margin-top:18px;display:block">Support email for questions</label>
+      <p class="muted" style="margin:2px 0 6px">Shown to members, leaders and churches on Help &amp; Support, the study book page and the leaders page.</p>
+      <input id="sSupport" type="email" autocomplete="off" value="${esc(S.support_email || '')}" placeholder="name@example.com">
+      <div class="row" style="margin-top:16px"><button class="btn teal" type="submit">Save settings</button><button class="btn alt" type="button" id="sTest">Send a test email</button></div>
+      <p class="muted" style="margin-top:8px;font-size:13px">The test goes to the admin notification email. Reply to it to check the reply-to address.${S.updated_at ? ` Last changed ${fDate(S.updated_at)}.` : ''}</p>
+    </form>`; };
+  BIND.settings = () => {
+    if (!$('setF')) return;
+    $('setF').onsubmit = e => { e.preventDefault(); const a = { p_admin_emails: $('sAdmin').value, p_reply_to: $('sReply').value, p_support: $('sSupport').value };
+      run(async () => { await Cloud.rpc('admin_save_settings', a); st.settings = await Cloud.rpc('admin_settings'); }, 'Settings saved.'); };
+    $('sTest').onclick = () => run(async () => { const n = await Cloud.rpc('admin_send_test_email'); flash(`Test email sent to ${n} address${n === 1 ? '' : 'es'}. It should arrive within a minute or two.`); });
+  };
+
   // ---------- book keys (app edition for print readers) ----------
   VIEWS.keys = () => { const ps = st.printStat || {}, K = st.keys;
     return `<h2>Book keys</h2><p class="sub">Print readers claim the app edition at <strong>time4god.app/redeem</strong> with the key printed in the book. Each reader gets a different check: a random page and a word on it, and they type the word that comes next. One claim per account; it turns on a free 1-year app seat.</p>
@@ -675,6 +699,7 @@ table.mini td{padding:3px 12px 3px 0}
       if (st.tab === 'keys') { const [k, c, p] = await Promise.all([Cloud.rpc('admin_book_keys'), Cloud.rpc('admin_key_claims'), Cloud.rpc('admin_print_status')]); st.keys = k || []; st.claims = c || []; st.printStat = p; }
       if (st.tab === 'dash') st.dash = await Cloud.rpc('admin_dashboard');
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
+      if (st.tab === 'settings') st.settings = await Cloud.rpc('admin_settings');
       if (st.tab === 'challenges') st.challengesAll = await Cloud.rpc('admin_challenges') || [];
       if (st.tab === 'churches') st.churchAdmins = await Cloud.rpc('admin_church_admins') || [];
       if (st.tab === 'churches') st.orgReqs = await Cloud.rpc('admin_org_requests') || [];

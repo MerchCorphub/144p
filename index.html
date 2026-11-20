@@ -771,6 +771,7 @@ html,body{width:100%;min-height:100%}
         <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px"><span style="font-size:15px;font-weight:700">{{ q.q }}</span><span style="font-size:14px;line-height:1.5;color:#173344">{{ q.a }}</span></div>
       </sc-for>
       <div style="font-size:14px;color:#6A7A84;line-height:1.5">Still need help? Talk with your church's 144(P) Plan coordinator.</div>
+      <sc-if value="{{ hasSupport }}" hint-placeholder-val="{{ false }}"><a href="{{ supportHref }}" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;border-radius:14px;background:#123C56;color:#FFFFFF;font-size:16px;font-weight:600;text-decoration:none"><i class="icon-mail"></i>Email us: {{ supportEmail }}</a></sc-if>
     </div>
   </sc-if>
   <sc-if value="{{ isInstall }}" hint-placeholder-val="{{ false }}">
@@ -990,6 +991,7 @@ class Component extends DCLogic {
     if (!this.state.join) joinChurchCloud().then(j => { if (j) this.setState({ join: j }); });
     try { const st0 = new URLSearchParams(location.search).get('start'); if ((st0 === 'register' || st0 === 'signin') && this.state.screen === 'welcome') this.setState({ screen: st0, form: {} }); } catch (e) {}
     try { if (window.Cloud && Cloud.rpc) Cloud.rpc('public_pricing').then(p => this.setState({ pricing: p })).catch(() => {}); } catch (e) {}
+    try { if (window.Cloud && Cloud.rpc) Cloud.rpc('public_contact').then(c => this.setState({ supportEmail: (c && c.support_email) || '' })).catch(() => {}); } catch (e) {}
     this.onOnline = () => this.cloudRefresh(); window.addEventListener('online', this.onOnline);
     this.iv = setInterval(() => { const u = this.me(); if (!u) return; const t = this.state.db.timers[u.id]; if (t && t.running) this.forceUpdate(); this.checkReminder(u); if (u.cloud && document.visibilityState === 'visible' && Date.now() - (this.lastPull || 0) > 60000) { this.lastPull = Date.now(); this.cloudRefresh(); } }, 1000);
     try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
@@ -1228,6 +1230,7 @@ class Component extends DCLogic {
       authSubmit: () => (scr === 'register' ? this.register() : this.signin()),
       toRegister: () => this.setState({ screen: 'register', err: '', form: {} }),
       toGroupLeader: () => { location.href = 'leaders.html?as=group'; }, toChurchLeader: () => { location.href = 'leaders.html?as=church'; },
+      hasSupport: !!this.state.supportEmail, supportEmail: this.state.supportEmail || '', supportHref: 'mailto:' + (this.state.supportEmail || '') + '?subject=' + encodeURIComponent('Question about the 144(P) Plan app'),
       priceShort: this.state.pricing && this.state.pricing.individual != null ? '$' + Number(this.state.pricing.individual).toFixed(Number(this.state.pricing.individual) % 1 ? 2 : 0) : 'available',
       hasJoin: !!s.join, joinName: s.join ? s.join.name : '',
       toSignin: () => this.setState({ screen: 'signin', err: '', form: {} }),
