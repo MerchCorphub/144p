@@ -521,7 +521,8 @@ table.mini td{padding:3px 12px 3px 0}
         ${tile('Accounts', n0(M.accounts), `+${n0(M.new_7)} this week · +${n0(M.new_30)} in 30 days`)}
         ${tile('In a church', n0(M.in_church), `${n0(M.pending)} waiting for approval`, M.pending > 0)}
         ${tile('Have the study book', n0(M.with_book), `${n0(M.own_seats)} bought their own · ${n0(M.key_claims)} with a book key`)}
-        ${tile('No church yet', n0(M.no_church), 'Candidates for a church code or own seat')}</div>
+        ${tile('No church yet', n0(M.no_church), 'Candidates for a church code or own seat')}
+        ${D.guests ? tile('Guest seats used', `${n0(D.guests.used)} of ${n0(D.guests.given)}`, `${n0(D.guests.active)} reading now · ${n0(D.guests.kept_going)} kept going`) : ''}</div>
       ${bars('cSign', 'New accounts per week (last 12 weeks)', M.signups_by_week.map(r => ({ k: r.week, v: r.n })), n0, (k, full) => full ? 'Week of ' + dShort(k) : dShort(k))}
       <h3 class="dh">Engagement</h3><div class="tiles">
         ${tile('Active last 7 days', n0(E.active_7), 'Logged any time with God')}

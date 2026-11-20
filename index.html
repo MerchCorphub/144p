@@ -1220,7 +1220,7 @@ class Component extends DCLogic {
     const base = {
       isWelcome: !u && scr === 'welcome', isAuthForm: !u && (scr === 'register' || scr === 'signin'), isApp: !!u,
       isRegister: scr === 'register', isSignin: scr === 'signin',
-      priceNote: this.state.pricing && this.state.pricing.individual != null ? `The 12-week study book in the app is $${Number(this.state.pricing.individual).toFixed(Number(this.state.pricing.individual) % 1 ? 2 : 0)} for one year, or included if your church has seats or you have the printed book.` : 'The 12-week study book in the app is a separate one-year purchase, or included if your church has seats or you have the printed book.',
+      priceNote: this.state.pricing && this.state.pricing.individual != null ? `The 12-week study book in the app is $${Number(this.state.pricing.individual).toFixed(Number(this.state.pricing.individual) % 1 ? 2 : 0)} for one year and includes a seat to give someone you challenge, or it’s included if your church has seats or you have the printed book.` : 'The 12-week study book in the app is a separate one-year purchase, or included if your church has seats or you have the printed book.',
       authTitle: scr === 'register' ? 'Create Account' : 'Sign In',
       authCta: s.busy ? 'Please wait…' : scr === 'register' ? 'Create account' : 'Sign in',
       authSwapLabel: scr === 'register' ? 'I already have an account' : 'New here? Create an account',
