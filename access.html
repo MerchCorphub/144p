@@ -126,13 +126,16 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
     $('signOut').hidden = !st.me;
     const p = st.price || {}, a = st.acc;
     const covered = a && (a.church_covers || a.seat || a.admin);
+    const guest = a && !covered && a.guest_active, keep = a && !covered && a.keep_going_price != null;
     let status = '';
     if (st.me && a) {
       if (a.admin) status = `<div class="status yes"><strong>You have full access</strong> as the platform admin.</div>`;
       else if (a.seat) status = `<div class="status yes"><strong>You have the study book.</strong>${a.seat_expires ? ` Your access runs through ${esc(fDate(a.seat_expires))}.` : ''}</div>`;
+      else if (guest) status = `<div class="status yes"><strong>${a.guest_from ? esc(a.guest_from) + ' gave you a seat.' : 'You have a guest seat.'}</strong> The full study book is yours through ${esc(fDate(a.guest_until + 'T12:00:00'))}, the last day of your challenge.</div>`;
       else if (a.church_covers) status = `<div class="status yes"><strong>${esc(a.church)} covers your study book.</strong> Nothing to pay.</div>`;
       else if (a.church && a.church_status === 'pending') status = `<div class="status no"><strong>Waiting for ${esc(a.church)} to approve you.</strong> If your church has seats, you won’t need to pay. You can also get the book yourself below.</div>`;
       else if (a.church && !a.church_license) status = `<div class="status no"><strong>${esc(a.church)} hasn’t added study book seats yet.</strong> Ask your church leader, or get the book yourself below.</div>`;
+      else if (keep) status = `<div class="status no"><strong>Your guest seat has ended.</strong> Keep going with your own year at the guest price below.</div>`;
       else status = `<div class="status no"><strong>You don’t have the study book yet.</strong> Choose one of the options below.</div>`;
     }
     let html = `<div class="hero small"><picture><source srcset="t4g/t4g-logo.webp" type="image/webp"><img src="t4g/t4g-logo.png" alt="Time4God Challenge" width="150" height="150"></picture><h2>Time4God Challenge</h2><div class="s2">The 144(P) Plan</div><p>Signing up is free. The 12-week study book is how you go deeper.</p></div>
@@ -142,10 +145,14 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
         <ul class="ticks"><li>Log the time you give to God each day</li><li>Daily reminders and your streak</li><li>Take part in the Time4God Challenge</li></ul></div>
       <div class="card"><strong>The study book in the app</strong>
         <div style="display:flex;align-items:baseline;gap:8px;margin-top:10px"><span class="price">${esc(money(p.individual))}</span><span class="per">one payment · one year · tax included</span></div>
-        <ul class="ticks"><li><em>What Will You Give Today?</em>, one chapter each week for 12 weeks</li><li>Weekly journal pages and checkpoints</li><li>Listen to any chapter read aloud</li></ul></div>`;
+        <ul class="ticks"><li><em>What Will You Give Today?</em>, one chapter each week for 12 weeks</li><li>Weekly journal pages and checkpoints</li><li>Listen to any chapter read aloud</li><li><strong>A seat to give.</strong> The first person who accepts your Time4God Challenge gets the study book free for that challenge</li></ul></div>`;
     if (!st.me) {
       html += `<a class="btn teal" href="./">Create your free account</a><a class="btn alt" href="./">Sign in</a>
         <p class="sub" style="margin-top:12px">After you sign in, come back here to get the study book.</p>`;
+    } else if (keep) {
+      html += `<div class="card opt"><h3>Keep going · ${esc(money(a.keep_going_price))}</h3><p class="sub" style="margin:0 0 4px">Your own full year of the study book for ${esc(money(a.keep_going_price))} instead of ${esc(money(p.individual))}, because you came as a guest. It includes a seat to give the next person you challenge. All sales are final.</p>
+          <button class="btn teal" id="keep" type="button" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Opening secure checkout…' : 'Keep going · ' + esc(money(a.keep_going_price))}</button></div>
+        ${guest ? '<a class="btn alt" href="read.html">Open the study book</a>' : ''}`;
     } else if (!covered) {
       html += `<div class="card opt"><h3>Buy it for yourself · ${esc(money(p.individual))}</h3><p class="sub" style="margin:0 0 4px">Pay securely with card, Apple Pay or Google Pay. All sales are final.</p>
           <button class="btn teal" id="buy" type="button" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Opening secure checkout…' : 'Get the study book · ' + esc(money(p.individual))}</button></div>
@@ -153,10 +160,13 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
         <div class="card opt"><h3>Is your church taking part?</h3><p class="sub" style="margin:0">If your church bought seats, the study book is included once you’re approved. Enter your church code in My Account.</p><a class="btn alt" href="./">Join my church</a></div>`;
     } else {
       html += `<a class="btn teal" href="read.html">Open the study book</a>`;
+      if (a && a.guest_seats_left > 0) html += `<div class="card"><strong>You have a seat to give</strong><p class="sub" style="margin:6px 0 0">Challenge a friend to the Time4God Challenge. The first person who accepts gets the study book free for that challenge.</p><a class="btn alt" href="challenges.html">Challenge someone</a></div>`;
+      else if (a && a.seat && a.guest_seat_given_to) html += `<p class="sub" style="margin-top:12px">You gave your guest seat to ${esc(a.guest_seat_given_to)}.</p>`;
     }
     html += `<div class="card"><strong>Do you lead a church or a group?</strong><p class="sub" style="margin:6px 0 0">Register your church or group, get a join code for your members, and buy study book seats for everyone${p.church_from != null ? ` (packs from ${esc(money(p.church_from))})` : ''}.</p>
       <div class="two" style="margin-top:12px"><a class="btn alt" href="leaders.html?as=church" style="margin-top:0">Church leaders</a><a class="btn alt" href="leaders.html?as=group" style="margin-top:0">Group leaders</a></div></div>`;
     $app.innerHTML = html;
+    if ($('keep')) $('keep').onclick = async () => { st.err = ''; st.busy = true; render(); try { await Cloud.checkout('keep_going'); } catch (e) { st.busy = false; st.err = errMsg(e); render(); } };
     if ($('buy')) $('buy').onclick = async () => { st.err = ''; st.busy = true; render(); try { await Cloud.checkout('individual'); } catch (e) { st.busy = false; st.err = errMsg(e); render(); } };
   }
 

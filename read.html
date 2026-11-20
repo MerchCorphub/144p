@@ -141,12 +141,20 @@ input[type=text],input[type=email],input[type=password]{width:100%;min-height:48
       <h2 class="t">You're approved</h2>
       <div class="card"><span class="pill">Member of ${esc(s.church_name)}</span>
       <p class="sub" style="margin-top:10px">${s.license_status === 'pending_payment' ? 'Your church’s book license is waiting for payment.' : 'Your church doesn’t have a book license for this season yet.'} The book opens for everyone at your church once it’s active. Ask your church leader about it.</p></div>`, after: null };
+    if (st.keepPrice != null) return { title: 'Keep going', html: `
+      <h2 class="t">Keep going</h2>
+      <div class="card"><span class="pill">Guest seat</span>
+      <p class="sub" style="margin-top:10px">Your guest seat from a Time4God Challenge has ended. Keep the study book for your own full year${st.indPrice != null ? `, $${Number(st.keepPrice).toFixed(2)} instead of $${Number(st.indPrice).toFixed(2)}` : ''}. Your year includes a seat to give the next person you challenge.</p>
+        <button class="btn" id="keep" type="button">Keep going · $${Number(st.keepPrice).toFixed(2)}</button>
+        <p class="sub" style="font-size:13px;margin-top:8px">You’ll pay on Stripe’s secure checkout page (card, Apple Pay or Google Pay). All sales are final.</p></div>
+      ${joinForm('Or join with your church code')}`,
+      after: () => { bindJoin(); const b = document.getElementById('keep'); b.onclick = async () => { st.err = ''; b.disabled = true; b.textContent = 'Opening secure checkout…'; try { await Cloud.checkout('keep_going'); } catch (x) { st.err = errMsg(x); render(); } }; } };
     return { title: 'Join the challenge', html: `
       <h2 class="t">Get the book in the app</h2>
       <p class="sub">Join through your church, or get your own seat.</p>
       ${joinForm('Join with your church code')}
       <div class="card"><strong>On your own</strong>
-        <p class="sub">No church taking part? Get the book in the app for yourself${st.indPrice != null ? ` for $${Number(st.indPrice).toFixed(2)}` : ''}. One payment, good for one year. Tax included.</p>
+        <p class="sub">No church taking part? Get the book in the app for yourself${st.indPrice != null ? ` for $${Number(st.indPrice).toFixed(2)}` : ''}. One payment, good for one year. Tax included. Includes a seat to give the first person you challenge.</p>
         <button class="btn" id="seat" type="button">Buy my seat${st.indPrice != null ? ` · $${Number(st.indPrice).toFixed(2)}` : ''}</button>
         <p class="sub" style="font-size:13px;margin-top:8px">You’ll pay on Stripe’s secure checkout page (card, Apple Pay or Google Pay). All sales are final.</p></div>`,
       after: () => { bindJoin(); const b = document.getElementById('seat'); b.onclick = async () => { st.err = ''; b.disabled = true; b.textContent = 'Opening secure checkout…'; try { await Cloud.checkout('individual'); } catch (x) { st.err = errMsg(x); render(); } }; } };
@@ -314,7 +322,7 @@ input[type=text],input[type=email],input[type=password]{width:100%;min-height:48
     const [status, toc] = await Promise.all([Cloud.rpc('my_book_status'), Cloud.rpc('book_toc')]);
     st.status = (status && status[0]) || {}; st.toc = toc || [];
     if (!(st.status.unlocked_week >= 0)) {
-      try { const c = await Cloud.sb(); const p = Cloud.ok(await c.from('license_plans').select('price').eq('kind', 'individual').eq('active', true).order('sort_order').limit(1)); st.indPrice = p[0] ? p[0].price : null; } catch (e) { st.indPrice = null; }
+      try { const o = await Cloud.rpc('purchase_options'); st.indPrice = o ? o.individual_price : null; st.keepPrice = o ? o.keep_going_price : null; } catch (e) { st.indPrice = null; st.keepPrice = null; }
     }
     const want = new URLSearchParams(location.search).get('s');
     if (want && st.status.unlocked_week >= 0) return openSection(want);

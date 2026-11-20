@@ -46,3 +46,9 @@ date: 2026-11-18T01:30:00Z
   - Church leader → registers a church (pending until the platform admin approves in Admin Panel › Churches; requester becomes church admin).
   - Group leader → inside a church in the app (church code + group name; the church admin approves in Leader Console › Groups) or an independent group (approved like a church).
 - App welcome screen: "I'm joining as: An individual · A group leader · A church leader". Leaders return to the leaders page after creating an account or signing in.
+
+## Give one (guest seats)
+- Every paid individual purchase (including "keep going") includes one guest seat (`guest_passes`, migration 0016).
+- Sending a person challenge needs the study book. The first person who accepts gets the study book through the challenge's end date, using the sender's guest seat.
+- Guests can't send person challenges. From the day they accept until 30 days after their challenge ends, they can buy their own year at the current individual price minus $5 (`keep_going` checkout).
+- Admin Panel › Dashboard shows guest seats given, used, reading now, and kept going.
