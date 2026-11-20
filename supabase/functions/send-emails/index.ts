@@ -1,7 +1,7 @@
 // send-emails: sends what the database queued in email_outbox, through Resend.
 // Woken once a minute by the database (pg_cron + pg_net) only when emails are waiting.
 // Secret: RESEND_API_KEY (from resend.com). The cron job proves itself with a token kept in Supabase Vault.
-// Optional: EMAIL_FROM (default "Time4God Challenge <notifications@time4god.app>"), EMAIL_REPLY_TO.
+// Optional: EMAIL_FROM (default "Time4God Challenge <notifications@time4god.app>"). Reply-to is set in Admin Panel › Settings.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
@@ -16,7 +16,9 @@ Deno.serve(async (req) => {
   if (!key) return new Response(JSON.stringify({ waiting: true, reason: 'RESEND_API_KEY is not set yet' }), { status: 503 });
 
   const from = Deno.env.get('EMAIL_FROM') || 'Time4God Challenge <notifications@time4god.app>';
-  const replyTo = Deno.env.get('EMAIL_REPLY_TO');
+  // Reply-to comes from Admin Panel › Settings; the EMAIL_REPLY_TO secret is only a fallback.
+  const { data: cfg } = await db.rpc('email_settings');
+  const replyTo = (cfg && cfg.reply_to) || Deno.env.get('EMAIL_REPLY_TO');
 
   const { data: rows, error } = await db.from('email_outbox')
     .select('id,to_email,subject,html,body_text,attempts')

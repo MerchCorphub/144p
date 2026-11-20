@@ -165,6 +165,7 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
     }
     html += `<div class="card"><strong>Do you lead a church or a group?</strong><p class="sub" style="margin:6px 0 0">Register your church or group, get a join code for your members, and buy study book seats for everyone${p.church_top_rate != null ? ` (${esc(money(p.church_top_rate))} a seat, less for larger churches)` : ''}.</p>
       <div class="two" style="margin-top:12px"><a class="btn alt" href="leaders.html?as=church" style="margin-top:0">Church leaders</a><a class="btn alt" href="leaders.html?as=group" style="margin-top:0">Group leaders</a></div></div>`;
+    if (st.support) html += `<p class="sub" style="margin-top:14px;text-align:center">Questions? Email <a href="mailto:${esc(st.support)}">${esc(st.support)}</a></p>`;
     $app.innerHTML = html;
     if ($('keep')) $('keep').onclick = async () => { st.err = ''; st.busy = true; render(); try { await Cloud.checkout('keep_going'); } catch (e) { st.busy = false; st.err = errMsg(e); render(); } };
     if ($('buy')) $('buy').onclick = async () => { st.err = ''; st.busy = true; render(); try { await Cloud.checkout('individual'); } catch (e) { st.busy = false; st.err = errMsg(e); render(); } };
@@ -172,6 +173,7 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
 
   async function load() {
     try { st.price = await Cloud.rpc('public_pricing'); } catch (e) {}
+    try { st.support = (await Cloud.rpc('public_contact')).support_email; } catch (e) {}
     const s = await Cloud.session();
     if (s) {
       st.me = await Cloud.ensurePartner();
