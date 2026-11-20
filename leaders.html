@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>For church and group leaders · Time4God Challenge</title>
+<meta property="og:title" content="Lead the Time4God Challenge at your church">
+<meta property="og:description" content="Free sign-up. Study book seats for your members, approvals, groups, messages and church-vs-church challenges.">
+<meta property="og:image" content="https://time4god.app/t4g/t4g-icon-512.png">
+<meta name="theme-color" content="#0B2257">
+<meta name="description" content="Give God your time for 12 weeks and challenge a friend, your group or another church. Part of The 144(P) Plan.">
+<meta property="og:title" content="Time4God Challenge">
+<meta property="og:description" content="Who will give the most time to God? Take the 12-week Time4God Challenge. #Time4GodChallenge">
+<meta property="og:image" content="https://time4god.app/t4g/t4g-icon-512.png">
+<link rel="manifest" href="manifest-t4g.json">
+<link rel="icon" type="image/png" sizes="32x32" href="t4g/t4g-icon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="t4g/t4g-icon-48.png">
+<link rel="apple-touch-icon" href="t4g/t4g-apple-touch.png">
+<meta name="apple-mobile-web-app-title" content="Time4God">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
+<script src="./cloud.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#F7F3EA;color:#14284B;font-family:'Public Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#075D61}
+button,input,select,textarea{font:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #0E8A7E;outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto;padding:0 18px 48px}
+header{position:sticky;top:0;z-index:5;background:#0B2257;border-bottom:2px solid #D9A62B;color:#fff;padding:calc(12px + env(safe-area-inset-top)) 18px 12px}
+header .in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px}
+header a,header button.link{color:#fff;text-decoration:none;font-weight:600;font-size:15px;background:none;border:0;padding:8px 0;cursor:pointer;min-width:60px}
+header button.link{text-align:right}
+header h1{flex:1;margin:0;font-size:17px;font-weight:700;text-align:center;line-height:1.2;display:flex;align-items:center;justify-content:center;gap:10px}
+header h1 img{width:34px;height:34px;flex:none}
+header h1 .tx{display:block;text-align:left;white-space:nowrap;font-size:15px}
+header h1 small{display:block;font-size:12px;font-weight:600;color:#F2C94C;letter-spacing:.04em}
+.hero{margin:0 -18px;padding:28px 22px 30px;text-align:center;color:#fff;background:linear-gradient(180deg,#0B2257 0%,#123A86 62%,#2B4FA0 80%,#C9772A 100%)}
+.hero img{width:min(240px,62vw);height:auto;display:block;margin:0 auto 12px;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}
+.hero h2{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.hero .s2{font-size:14px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#F2C94C;margin:0 0 10px}
+.hero p{color:#fff;font-size:16px;line-height:1.55;margin:0 auto;max-width:440px;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.hero.small{padding:18px 22px 20px}
+.hero.small img{width:min(150px,40vw);margin-bottom:8px}
+.hero .tag{color:#F2C94C}
+.card{background:#fff;border:1px solid #E6DFCC;border-radius:14px;box-shadow:0 1px 2px rgba(11,34,87,.05);padding:18px;margin-top:16px}
+h2.t{font-family:'Source Serif 4',Georgia,serif;font-size:24px;font-weight:600;margin:22px 0 4px;color:#0B2257}
+p.sub{margin:4px 0 0;color:#4F5F68;font-size:15px;line-height:1.5}
+label{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}
+input[type=text],input[type=email],input[type=password],input[type=date],textarea{width:100%;min-height:48px;border:1px solid #9AA8B0;border-radius:10px;padding:10px 12px;font-size:16px;background:#fff;color:#173344}
+textarea{min-height:86px;resize:vertical}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border:0;border-radius:12px;background:#0B2257;color:#fff;font-weight:600;font-size:16px;cursor:pointer;margin-top:12px;text-decoration:none;padding:0 14px}
+.btn.teal{background:linear-gradient(180deg,#F6CF5A,#D9A62B);color:#0B2257;box-shadow:0 2px 0 #A87A12}
+.btn.teal:hover{filter:brightness(1.04)}
+.btn.alt{background:#fff;color:#0B2257;border:1px solid #0B2257}
+.btn.danger{background:#fff;color:#A33A2E;border:1px solid #A33A2E}
+.btn[disabled]{background:#9AA8B0;cursor:default}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two .btn{margin-top:0}
+.err{background:#FBEAE7;color:#7A2A20;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:14px}
+.ok{background:#E8F5F3;color:#075D61;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:14px}
+.pill{display:inline-block;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;background:#E8F5F3;color:#075D61}
+.pill.wait{background:#FFF4DC;color:#6B4E12}.pill.off{background:#EEF1F2;color:#4F5F68}.pill.live{background:#0B2257;color:#F2C94C}
+.group{margin-top:24px}
+.group h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#4F5F68;margin:0 0 8px}
+.item{display:block;width:100%;text-align:left;background:#fff;border:1px solid #E1E7EA;border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;color:#173344}
+.item:hover{border-color:#075D61}
+.item .top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.item .ti{font-weight:700;font-size:15px}
+.item .meta{font-size:13px;color:#4F5F68;margin-top:4px}
+.empty{color:#4F5F68;font-size:14px;padding:4px 2px}
+.choice{display:flex;gap:12px;align-items:flex-start;border:1px solid #E1E7EA;border-radius:12px;padding:12px 14px;margin-top:8px;cursor:pointer;font-weight:500}
+.choice:has(input:checked){border-color:#075D61;background:#F2FAF8}
+.choice input{margin-top:4px;width:18px;height:18px;accent-color:#075D61;flex:none}
+.choice strong{display:block}
+.choice span{font-size:14px;color:#4F5F68}
+.score{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;text-align:center}
+.score .side{border-radius:12px;padding:14px 8px;background:#F3F5F6}
+.score .side.lead{background:#FFF6DC;outline:2px solid #D9A62B}
+.score .nm{font-weight:700;font-size:15px;line-height:1.3}
+.score .big{font-family:'Source Serif 4',Georgia,serif;font-size:30px;font-weight:600;color:#0B2257;margin:6px 0 2px}
+.score .sm{font-size:12px;color:#4F5F68;line-height:1.4}
+.score .vs{font-weight:700;color:#4F5F68}
+.msgbox{background:#F3F5F6;border-radius:10px;padding:12px;font-size:15px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+table.days{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+table.days th,table.days td{padding:8px 6px;border-bottom:1px solid #E1E7EA;text-align:right}
+table.days th:first-child,table.days td:first-child{text-align:left}
+ol.board{list-style:none;padding:0;margin:6px 0 0}
+ol.board li{display:flex;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid #E1E7EA}
+ol.board .rk{width:26px;font-weight:700;color:#4F5F68}
+ol.board .nm{flex:1}
+ol.board li.me{background:#F2FAF8;font-weight:700}
+.tag{font-size:13px;font-weight:700;color:#075D61;letter-spacing:.04em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.page-q{background:#FFF6DC;border:2px solid #D9A62B;border-radius:14px;padding:18px;text-align:center;margin-top:16px}
+.page-q .pg{font-family:'Source Serif 4',Georgia,serif;font-size:44px;font-weight:600;color:#0B2257;line-height:1}
+.page-q .wd{font-family:'Source Serif 4',Georgia,serif;font-size:28px;font-weight:600;color:#0B2257;margin:6px 0}
+.steps{margin:10px 0 0;padding-left:20px;color:#4F5F68;font-size:15px;line-height:1.6}
+input.key{text-transform:uppercase;letter-spacing:.08em;font-weight:700;text-align:center;font-size:20px}
+.price{font-family:'Source Serif 4',Georgia,serif;font-size:40px;font-weight:600;color:#0B2257;line-height:1}
+.per{font-size:14px;color:#4F5F68}
+ul.ticks{list-style:none;padding:0;margin:12px 0 0}
+ul.ticks li{padding:6px 0 6px 26px;position:relative;font-size:15px;line-height:1.45}
+ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A55;font-weight:700}
+.status{border-radius:12px;padding:14px;margin-top:16px;font-size:15px;line-height:1.5}
+.status.yes{background:#E8F5EE;color:#0E5A3E;border:1px solid #BFE3CF}
+.status.no{background:#FFF8E6;color:#6B4E12;border:1px solid #F1D8A0}
+.opt{margin-top:14px}
+.opt h3{margin:0 0 4px;font-size:17px;color:#0B2257}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}
+.tab{border:2px solid #0B2257;border-radius:12px;min-height:50px;background:#fff;color:#0B2257;font-weight:700;font-size:16px;cursor:pointer}
+.tab[aria-selected=true]{background:#0B2257;color:#fff}
+table.plans{width:100%;border-collapse:collapse;margin-top:8px;font-size:15px}
+table.plans td{padding:10px 4px;border-bottom:1px solid #EEE7D6}
+table.plans td:last-child{text-align:right;font-weight:700;color:#0B2257}
+ol.how{margin:8px 0 0;padding-left:22px;line-height:1.6;font-size:15px}
+.req{border:1px solid #E6DFCC;border-radius:12px;padding:12px;margin-top:8px;font-size:15px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+select{width:100%;min-height:48px;border:1px solid #9AA8B0;border-radius:10px;padding:10px 12px;font-size:16px;background:#fff}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <a href="./">‹ App</a>
+  <h1><img src="t4g/t4g-icon-48.png" alt="" width="34" height="34"><span class="tx">For leaders<small>The 144(P) Plan</small></span></h1>
+  <button class="link" id="signOut" hidden type="button">Sign out</button>
+</div></header>
+<main class="wrap" id="app" aria-live="polite"><p class="sub" style="margin-top:24px">Loading…</p></main>
+<script>
+(function () {
+  const $app = document.getElementById('app'), $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const money = n => n == null ? '' : '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: Number(n) % 1 ? 2 : 0 });
+  const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
+  const q = new URLSearchParams(location.search);
+  const st = { as: q.get('as') === 'group' ? 'group' : 'church', gmode: 'inchurch', price: null, me: null, reqs: null, msg: '', err: '', busy: false };
+  const AFTER = '144p-after-auth';
+  const goAuth = mode => { try { localStorage.setItem(AFTER, 'leaders.html?as=' + st.as); } catch (e) {} location.href = './?start=' + mode; };
+  const field = (id, label, opts) => `<label for="${id}">${label}${opts && opts.opt ? ' <span style="font-weight:400;color:#4F5F68">(optional)</span>' : ''}</label><input id="${id}" type="${(opts && opts.type) || 'text'}" ${opts && opts.opt ? '' : 'required'} ${opts && opts.ph ? `placeholder="${esc(opts.ph)}"` : ''} ${opts && opts.max ? `maxlength="${opts.max}"` : ''} ${opts && opts.up ? 'style="text-transform:uppercase;letter-spacing:.08em"' : ''}>`;
+
+  function statusList() {
+    const r = st.reqs; if (!r) return '';
+    const rows = [...(r.orgs || []).map(o => `<div class="req"><strong>${esc(o.name)}</strong> · ${o.kind === 'church' ? 'church' : 'independent group'}<br>${o.status === 'pending' ? '<span class="pill wait">Waiting for approval</span> We’ll email you when it’s reviewed.' : o.status === 'active' ? `<span class="pill">Approved</span> Code <strong>${esc(o.code)}</strong> · <a href="leader.html">Open the Leader Console</a>` : '<span class="pill off">Not approved</span> Reply to our email and we’ll help.'}</div>`),
+      ...(r.groups || []).map(g => `<div class="req"><strong>${esc(g.group_name)}</strong> at ${esc(g.church)}<br>${g.status === 'pending' ? '<span class="pill wait">Waiting for your church admin</span>' : g.status === 'approved' ? '<span class="pill">Approved</span> <a href="leader.html">Open the Leader Console</a>' : '<span class="pill off">Not approved</span>'}</div>`)];
+    return rows.length ? `<div class="card"><strong>Your requests</strong>${rows.join('')}</div>` : '';
+  }
+
+  function form() {
+    if (!st.me) return `<div class="card"><strong>Step 1: create your free account</strong><p class="sub">Leaders use the same free account as members. You’ll come right back here to finish.</p>
+      <button class="btn teal" type="button" id="reg">Create my free account</button><button class="btn alt" type="button" id="sin">I already have an account</button></div>`;
+    if (st.as === 'church') return `<form class="card" id="cf"><strong>Register your church</strong><p class="sub">You become the church admin once we approve it, usually within a day.</p>
+      ${field('cn', 'Church name', { ph: 'Mount Moriah Baptist Church', max: 100 })}
+      <div class="grid2"><div>${field('cc', 'City', { ph: 'Atlanta' })}</div><div>${field('cs', 'State', { ph: 'GA', max: 2, up: 1 })}</div></div>
+      ${field('cr', 'Your role', { ph: 'Pastor, church administrator, ministry leader…' })}
+      ${field('cp', 'Church phone', { opt: 1, type: 'tel' })}${field('cw', 'Website', { opt: 1, ph: 'https://' })}
+      <label for="cnote">Anything we should know? <span style="font-weight:400;color:#4F5F68">(optional)</span></label><textarea id="cnote" maxlength="300" placeholder="About how many members might take part?"></textarea>
+      <button class="btn teal" type="submit" ${st.busy ? 'disabled' : ''}>Send for approval</button></form>`;
+    return `<div class="card"><strong>Lead a group</strong>
+      <label class="choice"><input type="radio" name="gm" value="inchurch" ${st.gmode === 'inchurch' ? 'checked' : ''}><div><strong>My church is in the app</strong><span>Ask your church admin to make you the leader of your group.</span></div></label>
+      <label class="choice"><input type="radio" name="gm" value="indep" ${st.gmode === 'indep' ? 'checked' : ''}><div><strong>We’re an independent group</strong><span>A home Bible study, workplace or family group without a church in the app.</span></div></label></div>
+      ${st.gmode === 'inchurch' ? `<form class="card" id="gf">${field('gc', 'Church code', { ph: 'From your church office', up: 1, max: 12 })}${field('gn', 'Your group’s name', { ph: 'Men’s Breakfast, Young Adults, Tuesday Table…', max: 60 })}
+          <label for="gnote">Note to your church admin <span style="font-weight:400;color:#4F5F68">(optional)</span></label><textarea id="gnote" maxlength="300"></textarea>
+          <button class="btn teal" type="submit" ${st.busy ? 'disabled' : ''}>Ask to lead this group</button>
+          <p class="sub" style="font-size:13px;margin-top:8px">Your church admin approves you and places you over the group. Study book seats come from your church.</p></form>`
+        : `<form class="card" id="if">${field('in', 'Group name', { ph: 'Thursday Night Bible Study', max: 100 })}
+          <div class="grid2"><div>${field('ic', 'City', { ph: 'Decatur' })}</div><div>${field('is', 'State', { ph: 'GA', max: 2, up: 1 })}</div></div>
+          ${field('ir', 'What kind of group?', { ph: 'Home Bible study, workplace, family…' })}
+          <label for="inote">Anything we should know? <span style="font-weight:400;color:#4F5F68">(optional)</span></label><textarea id="inote" maxlength="300" placeholder="About how many people?"></textarea>
+          <button class="btn teal" type="submit" ${st.busy ? 'disabled' : ''}>Send for approval</button>
+          <p class="sub" style="font-size:13px;margin-top:8px">Once approved you get your own group code and can buy seats for your members, starting with the Small group pack.</p></form>`}`;
+  }
+
+  function render() {
+    $('signOut').hidden = !st.me;
+    const p = st.price || {};
+    $app.innerHTML = `<div class="hero small"><picture><source srcset="t4g/t4g-logo.webp" type="image/webp"><img src="t4g/t4g-logo.png" alt="Time4God Challenge" width="150" height="150"></picture><h2>Time4God Challenge</h2><div class="s2">For church and group leaders</div><p>Lead your people through 12 weeks of giving God their time, with the study book, a leader console and friendly challenges.</p></div>
+      ${(st.err ? `<div class="err" role="alert">${esc(st.err)}</div>` : '') + (st.msg ? `<div class="ok">${esc(st.msg)}</div>` : '')}
+      <div class="card"><strong>How it works</strong><ol class="how">
+        <li>Create your free account and register your ${st.as === 'church' ? 'church' : 'group'}.</li>
+        <li>We approve it, usually within a day. You get a join code and a QR sign.</li>
+        <li>Buy study book seats for your members (one payment, good for a year).</li>
+        <li>Members sign up free and enter your code. You approve them.</li>
+        <li>Place people in groups, send messages and challenge other churches.</li></ol></div>
+      <div class="card"><strong>Seat packs</strong><p class="sub" style="margin-top:4px">Each seat gives one member the 12-week study book in the app for a year. Prices include tax.</p>
+        <table class="plans">${(p.church_plans || []).map(x => `<tr><td>${esc(x.name)} · up to ${x.seats} members</td><td>${esc(money(x.price))}</td></tr>`).join('')}
+        ${p.individual != null ? `<tr><td>One person on their own</td><td>${esc(money(p.individual))}</td></tr>` : ''}</table>
+        <p class="sub" style="font-size:13px;margin-top:8px">You can move up to a larger pack later and pay only the difference.</p></div>
+      <div class="tabs" role="tablist"><button class="tab" role="tab" type="button" data-as="church" aria-selected="${st.as === 'church'}">I lead a church</button><button class="tab" role="tab" type="button" data-as="group" aria-selected="${st.as === 'group'}">I lead a group</button></div>
+      ${statusList()}${form()}
+      <p class="sub" style="margin-top:16px">Just want the study book for yourself? <a href="access.html">See individual pricing</a>.</p>`;
+    bind();
+  }
+
+  async function submit(fn, ok) { st.err = st.msg = ''; st.busy = true; render(); try { await fn(); st.msg = ok; st.reqs = await Cloud.rpc('my_leader_requests'); } catch (e) { st.err = errMsg(e); } st.busy = false; render(); window.scrollTo(0, 0); }
+  function bind() {
+    $app.querySelectorAll('[data-as]').forEach(b => b.onclick = () => { st.as = b.dataset.as; st.err = st.msg = ''; render(); });
+    $app.querySelectorAll('input[name=gm]').forEach(r => r.onchange = () => { st.gmode = r.value; render(); });
+    if ($('reg')) $('reg').onclick = () => goAuth('register');
+    if ($('sin')) $('sin').onclick = () => goAuth('signin');
+    if ($('cf')) $('cf').onsubmit = e => { e.preventDefault(); const a = { p_kind: 'church', p_name: $('cn').value, p_city: $('cc').value, p_state: $('cs').value, p_phone: $('cp').value, p_website: $('cw').value, p_role: $('cr').value, p_note: $('cnote').value }; submit(() => Cloud.rpc('request_organization', a),
+      'Thank you! Your church is waiting for approval. We’ll email you, usually within a day.'); };
+    if ($('if')) $('if').onsubmit = e => { e.preventDefault(); const a = { p_kind: 'group', p_name: $('in').value, p_city: $('ic').value, p_state: $('is').value, p_phone: '', p_website: '', p_role: $('ir').value, p_note: $('inote').value }; submit(() => Cloud.rpc('request_organization', a),
+      'Thank you! Your group is waiting for approval. We’ll email you, usually within a day.'); };
+    if ($('gf')) $('gf').onsubmit = e => { e.preventDefault(); const a = { p_code: $('gc').value, p_group_name: $('gn').value, p_note: $('gnote').value }; submit(() => Cloud.rpc('request_group_lead', a),
+      'Request sent. Your church admin will approve you as the group leader.'); };
+  }
+
+  async function load() {
+    try { st.price = await Cloud.rpc('public_pricing'); } catch (e) {}
+    const s = await Cloud.session();
+    if (s) { st.me = await Cloud.ensurePartner(); try { st.reqs = await Cloud.rpc('my_leader_requests'); } catch (e) {} }
+    render();
+  }
+  $('signOut').onclick = async () => { await Cloud.signOut(); st.me = null; st.reqs = null; render(); };
+  load().catch(e => { st.err = errMsg(e); render(); });
+})();
+</script>
+</body>
+</html>

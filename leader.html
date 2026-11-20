@@ -242,6 +242,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
     if (!st.church) { st.groups = []; st.roster = []; return; }
     const [g, r] = await Promise.all([Cloud.rpc('church_groups', { cid: st.church.church_id }), Cloud.rpc('group_roster', { cid: st.church.church_id })]);
     st.groups = g || []; st.roster = r || [];
+    try { st.leadReqs = canName() ? (await Cloud.rpc('group_lead_requests_for', { cid: st.church.church_id }) || []) : []; } catch (e) { st.leadReqs = []; }
     if (st.gAdd && !st.groups.some(x => x.group_id === st.gAdd)) st.gAdd = null;
   }
   const boss = () => canName();
@@ -275,7 +276,12 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
           : `<button class="btn teal sm" type="button" data-add="${g.group_id}" style="margin-top:10px">Add members</button>`) : ''}
       </div>`;
     };
-    return `<h2>Groups</h2><p class="sub">Groups are smaller circles inside your church. ${boss() ? 'Create groups, choose each group’s leader, and add or remove members.' : 'Add approved members who aren’t in a group yet, or remove members from your group.'} Group leaders can send group-vs-group challenges.</p>
+    const LR = st.leadReqs || [];
+    const reqCard = LR.length ? `<div class="card" style="border-color:#D9A62B;background:#FFF8E6"><h3 style="margin:0 0 6px;font-size:18px">Group leader requests (${LR.length})</h3>${LR.map(r => `<div style="border-top:1px solid #F1D8A0;padding:10px 0">
+        <strong>${esc(r.name)}</strong> <span class="muted">${esc(r.email)}</span> wants to lead <strong>${esc(r.group_name)}</strong>${r.member_status === 'pending' ? ' <span class="pill wait">Also waiting to join</span>' : ''}${r.note ? `<br><em>${esc(r.note)}</em>` : ''}
+        <div class="row" style="margin-top:8px"><label for="lr-${r.id}" style="margin:0">Group</label><select id="lr-${r.id}"><option value="">New group: ${esc(r.group_name)}</option>${G.map(g => `<option value="${g.group_id}">${esc(g.name)}${g.leader_name ? ' (led by ' + esc(g.leader_name) + ')' : ''}</option>`).join('')}</select>
+        <button class="btn teal sm" type="button" data-lrok="${r.id}">Approve</button><button class="btn danger sm" type="button" data-lrno="${r.id}">Decline</button></div></div>`).join('')}</div>` : '';
+    return reqCard + `<h2>Groups</h2><p class="sub">Groups are smaller circles inside your church. ${boss() ? 'Create groups, choose each group’s leader, and add or remove members.' : 'Add approved members who aren’t in a group yet, or remove members from your group.'} Group leaders can send group-vs-group challenges.</p>
       <div class="card"><div class="row">${picker}</div>
       ${boss() ? `<form class="row" id="ng" style="margin-top:12px"><div class="grow"><label for="gn">New group name</label><input id="gn" type="text" maxlength="60" placeholder="Men’s Group, Young Adults, Tuesday Table…" required style="width:100%"></div><div><label>&nbsp;</label><button class="btn" type="submit">Add group</button></div></form>`
         : (mine ? '' : `<p class="sub" style="margin-top:10px">You aren’t leading a group yet. Your church admin chooses group leaders here in Groups.</p>`)}</div>
@@ -285,6 +291,8 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
         <p class="sub" style="margin-top:8px">Only approved members can be placed in groups. New people show up in Approvals first.</p></div>`;
   };
   BIND.groups = () => {
+    $app.querySelectorAll('[data-lrok]').forEach(b => b.onclick = () => { const r = (st.leadReqs || []).find(x => x.id === b.dataset.lrok), gsel = $('lr-' + r.id).value || null; run(async () => { await Cloud.rpc('decide_group_lead', { p_id: r.id, p_approve: true, p_group: gsel }); await loadGroups(); }, `${r.name} is now a group leader. We emailed them.`); });
+    $app.querySelectorAll('[data-lrno]').forEach(b => b.onclick = () => { const r = (st.leadReqs || []).find(x => x.id === b.dataset.lrno); if (!confirm(`Decline ${r.name}'s request to lead ${r.group_name}?`)) return; run(async () => { await Cloud.rpc('decide_group_lead', { p_id: r.id, p_approve: false, p_group: null }); await loadGroups(); }, 'Request declined.'); });
     if ($('gch')) $('gch').onchange = e => run(async () => { st.church = st.churches.find(x => x.church_id === e.target.value); st.gAdd = null; st.gSel = new Set(); await loadGroups(); });
     if ($('ng')) $('ng').onsubmit = e => { e.preventDefault(); const nm = $('gn').value.trim(); run(async () => { await Cloud.rpc('save_group', { cid: st.church.church_id, p_id: null, p_name: nm }); await loadGroups(); }, `${nm} added. Choose its leader and add members below.`); };
     $app.querySelectorAll('[data-rename]').forEach(b => b.onclick = () => { st.gRename = b.dataset.rename; st.msg = st.err = ''; render(); });
@@ -353,7 +361,13 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
       <script>setTimeout(function(){window.print()},300)<\/script></body></html>`);
     w.document.close();
   }
-  VIEWS.churches = () => `<h2>Churches</h2><p class="sub">Each church gets a code, a join link and a QR code. Members who join wait for approval by the church admin or a group leader. The church admin you assign here signs in to the Leader Console at <strong>leader.html</strong>.</p>
+  const orgReqCard = () => (st.orgReqs || []).length ? `<div class="card" style="border-color:#D9A62B;background:#FFF8E6"><h3 style="margin:0 0 6px;font-size:18px">Waiting for your approval (${st.orgReqs.length})</h3>
+    ${st.orgReqs.map(r => `<div style="border-top:1px solid #F1D8A0;padding:10px 0"><div class="row"><div class="grow"><strong>${esc(r.name)}</strong> <span class="pill ${r.kind === 'church' ? 'ok' : 'wait'}">${r.kind === 'church' ? 'Church' : 'Independent group'}</span><br>
+      <span class="muted">${esc([r.city, r.state].filter(Boolean).join(', '))}${r.phone ? ' · ' + esc(r.phone) : ''}${r.website ? ' · ' + esc(r.website) : ''}</span><br>
+      Requested by <strong>${esc(r.requester || '')}</strong> <span class="muted">${esc(r.email || '')} · ${fDate(r.created_at)}</span>${r.note ? `<br><em>${esc(r.note)}</em>` : ''}</div>
+      <div class="row"><button class="btn teal sm" type="button" data-orgok="${r.id}">Approve</button><button class="btn danger sm" type="button" data-orgno="${r.id}">Decline</button></div></div></div>`).join('')}
+    <p class="muted" style="font-size:13px;margin:6px 0 0">Approving makes the requester its admin and emails them the join code. Leaders sign up at <strong>time4god.app/leaders</strong>.</p></div>` : '';
+  VIEWS.churches = () => orgReqCard() + `<h2>Churches</h2><p class="sub">Each church gets a code, a join link and a QR code. Members who join wait for approval by the church admin or a group leader. The church admin you assign here signs in to the Leader Console at <strong>leader.html</strong>.</p>
     <form class="card" id="nc"><div class="row">
       <div class="grow"><label for="cn">Church name</label><input id="cn" type="text" required style="width:100%"></div>
       <div><label for="cc">City</label><input id="cc" type="text"></div>
@@ -380,6 +394,8 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
         <form class="row" data-add="${esc(ch.id)}"><label class="sr" for="ae-${esc(ch.id)}">Email of the church admin</label><input id="ae-${esc(ch.id)}" type="email" placeholder="Email of their 144(P) account" required style="flex:1;min-width:220px"><button class="btn sm teal" type="submit">Make church admin</button></form>
       </div></div>`; }).join('') : `<div class="card"><p class="empty">No churches yet.</p></div>`}`;
   BIND.churches = () => {
+    $app.querySelectorAll('[data-orgok]').forEach(b => b.onclick = () => { const r = st.orgReqs.find(x => x.id === b.dataset.orgok); if (!confirm(`Approve ${r.name}? ${r.requester} becomes its admin.`)) return; run(async () => { await Cloud.rpc('admin_decide_org', { p_id: r.id, p_approve: true }); await loadTab(true); }, `${r.name} approved. We emailed ${r.requester} the join code.`); });
+    $app.querySelectorAll('[data-orgno]').forEach(b => b.onclick = () => { const r = st.orgReqs.find(x => x.id === b.dataset.orgno); if (!confirm(`Decline ${r.name}?`)) return; run(async () => { await Cloud.rpc('admin_decide_org', { p_id: r.id, p_approve: false }); await loadTab(true); }, `${r.name} declined. We emailed ${r.requester}.`); });
     $('nc').onsubmit = e => { e.preventDefault(); run(async () => {
       const name = $('cn').value.trim(); if (!name) throw new Error('Enter the church name.');
       const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', code = Array.from(crypto.getRandomValues(new Uint8Array(6)), b => A[b % A.length]).join('');
@@ -524,12 +540,13 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
       if (['prices', 'licenses'].includes(st.tab)) st.plans = Cloud.ok(await c.from('license_plans').select('*').order('sort_order'));
       if (['licenses', 'churches', 'season'].includes(st.tab)) {
         st.season = Cloud.ok(await c.from('seasons').select('*').eq('active', true).maybeSingle());
-        st.allChurches = Cloud.ok(await c.from('churches').select('id,name,code,city,state,enrollment_policy').order('name'));
+        st.allChurches = Cloud.ok(await c.from('churches').select('id,name,code,city,state,enrollment_policy,status,kind').neq('status', 'pending').order('name'));
       }
       if (st.tab === 'keys') { const [k, c, p] = await Promise.all([Cloud.rpc('admin_book_keys'), Cloud.rpc('admin_key_claims'), Cloud.rpc('admin_print_status')]); st.keys = k || []; st.claims = c || []; st.printStat = p; }
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
       if (st.tab === 'challenges') st.challengesAll = await Cloud.rpc('admin_challenges') || [];
       if (st.tab === 'churches') st.churchAdmins = await Cloud.rpc('admin_church_admins') || [];
+      if (st.tab === 'churches') st.orgReqs = await Cloud.rpc('admin_org_requests') || [];
       if (st.tab === 'licenses') {
         st.licenses = st.season ? Cloud.ok(await c.from('church_licenses').select('*').eq('season_id', st.season.id)) : [];
         st.seats = await Cloud.rpc('admin_individual_seats') || [];

@@ -154,7 +154,8 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
     } else {
       html += `<a class="btn teal" href="read.html">Open the study book</a>`;
     }
-    if (p.church_from != null) html += `<p class="sub" style="margin-top:16px">Church leaders: seat packs start at ${esc(money(p.church_from))}. Buy them in the <a href="leader.html">Leader Console</a>.</p>`;
+    html += `<div class="card"><strong>Do you lead a church or a group?</strong><p class="sub" style="margin:6px 0 0">Register your church or group, get a join code for your members, and buy study book seats for everyone${p.church_from != null ? ` (packs from ${esc(money(p.church_from))})` : ''}.</p>
+      <div class="two" style="margin-top:12px"><a class="btn alt" href="leaders.html?as=church" style="margin-top:0">Church leaders</a><a class="btn alt" href="leaders.html?as=group" style="margin-top:0">Group leaders</a></div></div>`;
     $app.innerHTML = html;
     if ($('buy')) $('buy').onclick = async () => { st.err = ''; st.busy = true; render(); try { await Cloud.checkout('individual'); } catch (e) { st.busy = false; st.err = errMsg(e); render(); } };
   }
