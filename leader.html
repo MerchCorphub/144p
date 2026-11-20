@@ -75,6 +75,23 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
 .addbox{border:1px solid #CFE3E0;background:#F7FBFA;border-radius:10px;padding:12px;margin-top:12px}
 .pick{display:flex;gap:10px;align-items:center;margin:0;padding:8px 2px;font-weight:500;color:#173344;border-bottom:1px solid #EEF1F2;cursor:pointer}
 .pick.all{font-weight:700}
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:12px}
+.tile{background:#fff;border:1px solid #E1E7EA;border-radius:14px;padding:14px}
+.tile.warn{border-color:#D9A62B;background:#FFF8E6}
+.tile .tl{font-size:13px;color:#4F5F68;font-weight:600}
+.tile .tv{font-size:28px;font-weight:700;color:#123C56;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.tile .ts{font-size:12.5px;color:#4F5F68;line-height:1.45}
+h3.dh{margin:22px 0 10px;font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:#4F5F68}
+.meter{display:block;height:6px;border-radius:3px;background:#E8EEF1;margin:4px 0 6px;overflow:hidden}
+.meter span{display:block;height:100%;background:#123C56;border-radius:3px}
+.chart .cw{position:relative;margin-top:8px}
+.chart svg{width:100%;height:auto;display:block}
+.chart .ax{font-size:11px;fill:#6A7A84}
+.chart .pk{font-size:11px;fill:#173344;font-weight:700}
+.chart .bar.on path{fill:#2A62A6}
+.chart .tip{position:absolute;background:#173344;color:#fff;font-size:12.5px;padding:6px 8px;border-radius:6px;pointer-events:none;white-space:nowrap}
+table.mini{font-size:13px;margin-top:6px}
+table.mini td{padding:3px 12px 3px 0}
 </style>
 </head>
 <body>
@@ -90,7 +107,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
   const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
   const STATUS = { pending_payment: ['Waiting for payment', 'wait'], active: ['Active', 'ok'], canceled: ['Canceled', 'off'] };
   const pill = s => { const [t, c] = STATUS[s] || [s || 'None', 'off']; return `<span class="pill ${c}">${esc(t)}</span>`; };
-  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], churchAdmins: [], challengesAll: [], keys: [], claims: [], printStat: null, printPrev: null, printBusy: '', msgs: [], msgDraft: '', msgTo: '', payments: [], buy: false, buyOpts: null, buyPlan: null, groups: [], roster: [], gAdd: null, gSel: new Set(), gRename: null, seats: [], sections: [], editSlug: null, importSecs: null };
+  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], churchAdmins: [], challengesAll: [], dash: null, keys: [], claims: [], printStat: null, printPrev: null, printBusy: '', msgs: [], msgDraft: '', msgTo: '', payments: [], buy: false, buyOpts: null, buyPlan: null, groups: [], roster: [], gAdd: null, gSel: new Set(), gRename: null, seats: [], sections: [], editSlug: null, importSecs: null };
   let c = null;
 
   const flash = (m, isErr) => { if (isErr) { st.err = m; st.msg = ''; } else { st.msg = m; st.err = ''; } };
@@ -98,7 +115,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
   async function run(fn, okMsg) { try { await fn(); if (okMsg) flash(okMsg); } catch (e) { flash(errMsg(e), true); } render(); }
 
   // ---------- tabs ----------
-  const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'], ...(st.admin ? [['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments']] : [])];
+  const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'], ...(st.admin ? [['dash', 'Dashboard'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments']] : [])];
   function renderNav() {
     $('nav').hidden = false;
     $('tabs').innerHTML = TABS().map(([k, t]) => `<button type="button" data-tab="${k}" ${st.tab === k ? 'aria-current="page"' : ''}>${t}</button>`).join('');
@@ -470,6 +487,72 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
     $app.querySelectorAll('[data-ktog]').forEach(b => b.onclick = () => { const k = st.keys.find(x => x.id === b.dataset.ktog); run(async () => { await Cloud.rpc('admin_save_book_key', { p_id: k.id, p_code: k.code, p_label: k.label, p_active: !k.active, p_ends_on: k.ends_on, p_max_claims: k.max_claims }); await loadTab(true); }, k.active ? 'Key turned off.' : 'Key turned on.'); });
   };
 
+  // ---------- operations dashboard (platform admin) ----------
+  const n0 = v => Number(v || 0).toLocaleString('en-US');
+  const usd = v => '$' + Number(v || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const hmin = v => { v = Math.round(v || 0); return v >= 60 ? Math.floor(v / 60).toLocaleString('en-US') + 'h ' + (v % 60) + 'm' : v + 'm'; };
+  const tile = (label, value, sub, warn) => `<div class="tile${warn ? ' warn' : ''}"><div class="tl">${esc(label)}</div><div class="tv">${esc(value)}</div>${sub ? `<div class="ts">${sub}</div>` : ''}</div>`;
+  // single-series bar chart: one hue, rounded data ends anchored to the baseline, hover tooltip, table view
+  function bars(id, title, rows, fmtVal, fmtLab) {
+    const W = 640, H = 170, padL = 8, padB = 22, padT = 18, n = rows.length, gap = 2;
+    const max = Math.max(1, ...rows.map(r => r.v)), bw = (W - padL * 2) / n - gap;
+    const y = v => padT + (H - padT - padB) * (1 - v / max);
+    const path = (x, top, w, base) => { const h = base - top; if (h <= 0) return ''; const r = Math.min(4, w / 2, h); return `M${x},${base}V${top + r}Q${x},${top} ${x + r},${top}H${x + w - r}Q${x + w},${top} ${x + w},${top + r}V${base}Z`; };
+    const base = H - padB, last = rows.length - 1;
+    const marks = rows.map((r, i) => { const x = padL + i * (bw + gap); return `<g class="bar" data-tip="${esc(fmtLab(r.k, true))}: ${esc(fmtVal(r.v))}"><rect x="${x - gap / 2}" y="0" width="${bw + gap}" height="${H}" fill="transparent"></rect><path d="${path(x, y(r.v), bw, base)}" fill="#123C56"></path>
+      ${i % Math.ceil(n / 6) === 0 || i === last ? `<text x="${x + bw / 2}" y="${H - 6}" text-anchor="middle" class="ax">${esc(fmtLab(r.k))}</text>` : ''}</g>`; }).join('');
+    const peak = rows.reduce((a, r, i) => r.v > rows[a].v ? i : a, 0);
+    const peakLbl = rows[peak].v > 0 ? `<text x="${padL + peak * (bw + gap) + bw / 2}" y="${y(rows[peak].v) - 5}" text-anchor="middle" class="pk">${esc(fmtVal(rows[peak].v))}</text>` : '';
+    return `<div class="card chart"><div class="row"><strong class="grow">${esc(title)}</strong></div>
+      <div class="cw" id="${id}"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(title)}"><line x1="${padL}" x2="${W - padL}" y1="${base}" y2="${base}" stroke="#D5DDE1" stroke-width="1"></line>${marks}${peakLbl}</svg><div class="tip" hidden></div></div>
+      <details><summary class="muted">Show as table</summary><table class="mini">${rows.map(r => `<tr><td>${esc(fmtLab(r.k, true))}</td><td>${esc(fmtVal(r.v))}</td></tr>`).join('')}</table></details></div>`;
+  }
+  const dShort = d => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', timeZone: 'UTC' });
+  VIEWS.dash = () => { const D = st.dash; if (!D) return '<h2>Dashboard</h2><p class="sub">Loading…</p>';
+    const M = D.members, E = D.engagement, C = D.churches, R = D.revenue, CH = D.challenges, S = D.season || {};
+    const todo = [C.requests ? `<button class="btn alt sm" type="button" data-go="churches">${C.requests} church/group request${C.requests === 1 ? '' : 's'} to approve</button>` : '',
+      M.pending ? `<button class="btn alt sm" type="button" data-go="approvals">${M.pending} member${M.pending === 1 ? '' : 's'} waiting for church approval</button>` : '',
+      C.leader_requests ? `<span class="pill wait">${C.leader_requests} group-leader request${C.leader_requests === 1 ? '' : 's'} (church admins approve)</span>` : ''].filter(Boolean).join(' ');
+    const seatPct = C.seats_sold ? Math.round(C.seats_used / C.seats_sold * 100) : 0;
+    return `<h2>Dashboard</h2><p class="sub">Operating overview · updated ${new Date(D.as_of).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })} <button class="btn alt sm" type="button" id="dRef">Refresh</button></p>
+      <div class="card" style="background:#0B2257;color:#fff;border-color:#0B2257"><strong style="color:#F2C94C">${esc(S.name || 'Season')}</strong><div style="margin-top:4px;font-size:17px">${S.week ? `Week ${S.week} of 12 is underway.` : S.days_to_start != null ? `Starts in <strong>${n0(S.days_to_start)} days</strong> (${esc(dShort(S.start))}).` : ''}</div></div>
+      ${todo ? `<div class="card" style="border-color:#D9A62B;background:#FFF8E6"><strong>Needs your attention</strong><div class="row" style="margin-top:8px">${todo}</div></div>` : ''}
+      <h3 class="dh">Members</h3><div class="tiles">
+        ${tile('Accounts', n0(M.accounts), `+${n0(M.new_7)} this week · +${n0(M.new_30)} in 30 days`)}
+        ${tile('In a church', n0(M.in_church), `${n0(M.pending)} waiting for approval`, M.pending > 0)}
+        ${tile('Have the study book', n0(M.with_book), `${n0(M.own_seats)} bought their own · ${n0(M.key_claims)} with a book key`)}
+        ${tile('No church yet', n0(M.no_church), 'Candidates for a church code or own seat')}</div>
+      ${bars('cSign', 'New accounts per week (last 12 weeks)', M.signups_by_week.map(r => ({ k: r.week, v: r.n })), n0, (k, full) => full ? 'Week of ' + dShort(k) : dShort(k))}
+      <h3 class="dh">Engagement</h3><div class="tiles">
+        ${tile('Active last 7 days', n0(E.active_7), 'Logged any time with God')}
+        ${tile('Time given, 7 days', hmin(E.minutes_7), `${hmin(E.minutes_all)} all time`)}
+        ${tile('Days at 144, 7 days', n0(E.days_at_144_7), 'Member-days that reached 2h 24m')}
+        ${tile('Reminders on', n0(E.reminders_push + E.reminders_email), `${n0(E.reminders_push)} notifications · ${n0(E.reminders_email)} email · ${n0(E.devices)} devices`)}</div>
+      ${bars('cMin', 'Minutes given per day (last 14 days)', E.minutes_by_day.map(r => ({ k: r.day, v: r.m })), v => hmin(v), (k, full) => full ? new Date(k).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', timeZone: 'UTC' }) : dShort(k))}
+      <h3 class="dh">Churches and groups</h3><div class="tiles">
+        ${tile('Churches', n0(C.active), `${n0(C.groups_independent)} independent groups · ${n0(C.groups_inside)} groups inside churches`)}
+        ${tile('Requests waiting', n0(C.requests), 'New churches and independent groups', C.requests > 0)}
+        ${tile('Churches with seats', n0(C.licensed), 'Active study book license')}
+        ${tile('Seats used', `${n0(C.seats_used)} of ${n0(C.seats_sold)}`, `<span class="meter"><span style="width:${seatPct}%"></span></span>${seatPct}% of church seats filled`)}</div>
+      ${C.top.length ? `<div class="card tbl"><strong>Churches</strong><table><thead><tr><th>Church</th><th>Members</th><th>Waiting</th><th>Seats</th><th>Time given, 7 days</th></tr></thead><tbody>${C.top.map(t => `<tr><td>${esc(t.name)}</td><td>${n0(t.members)}</td><td>${n0(t.pending)}</td><td>${t.seats ? n0(t.seats) : '<span class="muted">none</span>'}</td><td>${hmin(t.minutes_7)}</td></tr>`).join('')}</tbody></table></div>` : ''}
+      <h3 class="dh">Time4God Challenge</h3><div class="tiles">
+        ${tile('Live now', n0(CH.live))}${tile('Starting later', n0(CH.upcoming))}${tile('Waiting for an answer', n0(CH.waiting))}${tile('Finished', n0(CH.finished))}</div>
+      <h3 class="dh">Revenue</h3><p class="sub" style="margin-top:-6px">Real (live) Stripe payments only, before Stripe fees. Prices include tax. Licenses you enter by hand in the Licenses tab aren’t counted.</p><div class="tiles">
+        ${tile('Total revenue', usd(R.total), `${n0(R.payments)} payment${R.payments === 1 ? '' : 's'}`)}
+        ${tile('This month', usd(R.month), `${usd(R.last_30)} in the last 30 days`)}
+        ${tile('Where it came from', usd(R.individual + R.church + R.upgrades), `Individuals ${usd(R.individual)} · Church packs ${usd(R.church)} · Upgrades ${usd(R.upgrades)}`)}
+        ${tile('Renewals in 60 days', n0(R.renewals_60), `${n0(R.abandoned_30)} unfinished checkout${R.abandoned_30 === 1 ? '' : 's'} in 30 days`)}</div>
+      ${bars('cRev', 'Revenue per month (last 12 months)', R.by_month.map(r => ({ k: r.month, v: Number(r.amount) })), usd, (k, full) => new Date(k).toLocaleDateString('en-US', full ? { month: 'long', year: 'numeric', timeZone: 'UTC' } : { month: 'short', timeZone: 'UTC' }))}
+      ${R.test_payments ? `<p class="muted" style="font-size:13px">Stripe test mode: ${n0(R.test_payments)} practice payment${R.test_payments === 1 ? '' : 's'} (${usd(R.test_total)}) are left out of these totals.</p>` : ''}
+      ${R.recent.length ? `<div class="card tbl"><strong>Latest payments</strong><table><tbody>${R.recent.map(p => `<tr><td class="muted">${fDate(p.paid_at)}</td><td>${esc(p.description)}${p.test ? ' <span class="pill off">Test</span>' : ''}</td><td><strong>${usd(p.amount)}</strong></td></tr>`).join('')}</tbody></table><button class="btn alt sm" type="button" data-go="payments" style="margin-top:8px">All payments</button></div>` : ''}`; };
+  BIND.dash = () => {
+    if ($('dRef')) $('dRef').onclick = () => run(async () => { await loadTab(true); });
+    $app.querySelectorAll('[data-go]').forEach(b => b.onclick = async () => { st.tab = b.dataset.go; st.msg = st.err = ''; await loadTab(); });
+    $app.querySelectorAll('.cw').forEach(w => { const tip = w.querySelector('.tip');
+      w.querySelectorAll('.bar').forEach(g => { g.onmousemove = e => { const r = w.getBoundingClientRect(); tip.hidden = false; tip.textContent = g.dataset.tip; tip.style.left = Math.min(r.width - 150, Math.max(0, e.clientX - r.left - 60)) + 'px'; tip.style.top = Math.max(0, e.clientY - r.top - 40) + 'px'; g.classList.add('on'); };
+        g.onmouseleave = () => { tip.hidden = true; g.classList.remove('on'); }; g.onclick = g.onmousemove; }); });
+  };
+
   // ---------- season ----------
   VIEWS.season = () => { const s = st.season || {}; return `<h2>Season</h2><p class="sub">Week 1 of the book opens on the start date, and one new week opens every 7 days after.</p>
     <form class="card" id="sf"><div class="row">
@@ -543,6 +626,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
         st.allChurches = Cloud.ok(await c.from('churches').select('id,name,code,city,state,enrollment_policy,status,kind').neq('status', 'pending').order('name'));
       }
       if (st.tab === 'keys') { const [k, c, p] = await Promise.all([Cloud.rpc('admin_book_keys'), Cloud.rpc('admin_key_claims'), Cloud.rpc('admin_print_status')]); st.keys = k || []; st.claims = c || []; st.printStat = p; }
+      if (st.tab === 'dash') st.dash = await Cloud.rpc('admin_dashboard');
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
       if (st.tab === 'challenges') st.challengesAll = await Cloud.rpc('admin_challenges') || [];
       if (st.tab === 'churches') st.churchAdmins = await Cloud.rpc('admin_church_admins') || [];
@@ -574,6 +658,7 @@ header .hlink{color:#fff;font-weight:600;text-decoration:none;margin-right:14px;
     st.church = st.churches[0] || null;
     if (ADMIN_MODE && !st.admin) { $app.innerHTML = `<h2>Admin Panel</h2><p class="sub">This page is for the 144(P) Plan administrator. Church admins and group leaders use the <a href="leader.html">Leader Console</a>.</p>`; return; }
     if (!st.churches.length && !st.admin) { $app.innerHTML = `<h2>Leader Console</h2><p class="sub">This account isn’t a church admin or group leader yet. Ask your church admin to make you a group leader, then sign in again.</p>`; return; }
+    if (st.admin) st.tab = 'dash';
     if (!st.churches.length && st.admin) st.tab = 'churches';
     let paid = null, payErr = '';
     try { paid = await Cloud.settlePayments(); } catch (x) { payErr = 'We couldn’t confirm the payment yet: ' + ((x && x.message) || '') + ' If you were charged, reload this page in a minute.'; }
