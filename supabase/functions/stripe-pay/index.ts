@@ -5,7 +5,7 @@ import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const SITE = 'https://time4god.app';
 const ALLOWED_ORIGINS = ['https://time4god.app', 'https://www.time4god.app', 'https://merchcorphub.github.io'];
-const RETURN_PAGES = ['/read.html', '/leader.html', '/admin.html', '/challenges.html', '/144p/read.html', '/144p/leader.html', '/144p/admin.html'];
+const RETURN_PAGES = ['/', '/index.html', '/access.html', '/read.html', '/leader.html', '/admin.html', '/challenges.html', '/144p/', '/144p/access.html', '/144p/read.html', '/144p/leader.html', '/144p/admin.html'];
 
 const cors = (origin: string | null) => ({
   'Access-Control-Allow-Origin': origin && ALLOWED_ORIGINS.includes(origin) ? origin : SITE,
