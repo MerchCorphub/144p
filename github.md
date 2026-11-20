@@ -40,3 +40,9 @@ date: 2026-11-18T01:30:00Z
 - The printed book carries a book key and the address time4god.app/redeem (`redeem.html`).
 - Each reader gets a different check: a random printed page and a word on it; they type the word that comes next. Correct answer → free 1-year app seat; one claim per account; 3 tries per question, 6 questions an hour.
 - Admin Panel › Book keys: upload the print interior PDF (`print-import.js` reads it in the browser with pdf.js, keyed by the printed page numbers, without running heads/footers), manage keys (on/off, claim limit, end date), and see claims.
+
+## Leader sign-up
+- time4god.app/leaders (`leaders.html`): seat-pack prices (live), how it works, and two paths:
+  - Church leader → registers a church (pending until the platform admin approves in Admin Panel › Churches; requester becomes church admin).
+  - Group leader → inside a church in the app (church code + group name; the church admin approves in Leader Console › Groups) or an independent group (approved like a church).
+- App welcome screen: "I'm joining as: An individual · A group leader · A church leader". Leaders return to the leaders page after creating an account or signing in.
