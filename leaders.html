@@ -130,6 +130,7 @@ select{width:100%;min-height:48px;border:1px solid #9AA8B0;border-radius:10px;pa
 (function () {
   const $app = document.getElementById('app'), $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const nf = n => Number(n).toLocaleString('en-US');
   const money = n => n == null ? '' : '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: Number(n) % 1 ? 2 : 0 });
   const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
   const q = new URLSearchParams(location.search);
@@ -167,7 +168,7 @@ select{width:100%;min-height:48px;border:1px solid #9AA8B0;border-radius:10px;pa
           ${field('ir', 'What kind of group?', { ph: 'Home Bible study, workplace, family…' })}
           <label for="inote">Anything we should know? <span style="font-weight:400;color:#4F5F68">(optional)</span></label><textarea id="inote" maxlength="300" placeholder="About how many people?"></textarea>
           <button class="btn teal" type="submit" ${st.busy ? 'disabled' : ''}>Send for approval</button>
-          <p class="sub" style="font-size:13px;margin-top:8px">Once approved you get your own group code and can buy seats for your members, starting with the Small group pack.</p></form>`}`;
+          <p class="sub" style="font-size:13px;margin-top:8px">Once approved you get your own group code and can buy seats for your members, starting at ${esc(String((st.price || {}).church_min_seats || 5))} seats.</p></form>`}`;
   }
 
   function render() {
@@ -181,10 +182,10 @@ select{width:100%;min-height:48px;border:1px solid #9AA8B0;border-radius:10px;pa
         <li>Buy study book seats for your members (one payment, good for a year).</li>
         <li>Members sign up free and enter your code. You approve them.</li>
         <li>Place people in groups, send messages and challenge other churches.</li></ol></div>
-      <div class="card"><strong>Seat packs</strong><p class="sub" style="margin-top:4px">Each seat gives one member the 12-week study book in the app for a year. Prices include tax.</p>
-        <table class="plans">${(p.church_plans || []).map(x => `<tr><td>${esc(x.name)} · up to ${x.seats} members</td><td>${esc(money(x.price))}</td></tr>`).join('')}
+      <div class="card"><strong>Price per seat</strong><p class="sub" style="margin-top:4px">Buy as many seats as you need. Each seat gives one member the 12-week study book in the app for a year. The more seats you have, the less each one costs. Prices include tax.</p>
+        <table class="plans">${(p.church_plans || []).map((x, i, a) => `<tr><td>${esc(x.name)} · ${i === a.length - 1 ? nf(x.min) + '+' : nf(x.min) + '–' + nf(x.seats)} seats</td><td>${esc(money(x.price))} a seat</td></tr>`).join('')}
         ${p.individual != null ? `<tr><td>One person on their own</td><td>${esc(money(p.individual))}</td></tr>` : ''}</table>
-        <p class="sub" style="font-size:13px;margin-top:8px">You can move up to a larger pack later and pay only the difference.</p></div>
+        <p class="sub" style="font-size:13px;margin-top:8px">The smallest purchase is ${esc(String(p.church_min_seats || 5))} seats${p.church_top_rate != null ? ` (${esc(money((p.church_min_seats || 5) * p.church_top_rate))})` : ''}. Add seats any time: added seats cost the rate for your new total and end on the same date as your others.</p></div>
       <div class="tabs" role="tablist"><button class="tab" role="tab" type="button" data-as="church" aria-selected="${st.as === 'church'}">I lead a church</button><button class="tab" role="tab" type="button" data-as="group" aria-selected="${st.as === 'group'}">I lead a group</button></div>
       ${statusList()}${form()}
       <p class="sub" style="margin-top:16px">Just want the study book for yourself? <a href="access.html">See individual pricing</a>.</p>`;

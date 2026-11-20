@@ -52,3 +52,8 @@ date: 2026-11-18T01:30:00Z
 - Sending a person challenge needs the study book. The first person who accepts gets the study book through the challenge's end date, using the sender's guest seat.
 - Guests can't send person challenges. From the day they accept until 30 days after their challenge ends, they can buy their own year at the current individual price minus $5 (`keep_going` checkout).
 - Admin Panel › Dashboard shows guest seats given, used, reading now, and kept going.
+
+## Per-seat pricing (churches and groups)
+- Church rows in `license_plans` are price levels (migration 0017): `min_seats`–`seat_limit` seats in total, `price` = price per seat. Smallest purchase = lowest `min_seats` (5).
+- Leader Console › Buy seats: the leader types a number; total = seats × the rate for their total. Adding seats later charges the added seats at the rate for the new total, same end date.
+- `stripe_prepare(..., p_seats)`; the stripe-pay function passes `seats` from the page.

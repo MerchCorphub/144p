@@ -52,6 +52,7 @@ Deno.serve(async (req) => {
     if (body.action === 'checkout') {
       const { data: prep, error } = await admin.rpc('stripe_prepare', {
         p_user: who.user.id, p_type: body.type, p_church: body.church_id || null, p_plan: body.plan_id || null,
+        p_seats: body.seats ? parseInt(String(body.seats), 10) || null : null,
       });
       if (error) return json({ error: error.message }, 400, origin);
 

@@ -137,7 +137,7 @@
     if (!res.ok || out.error) throw new Error(out.error || 'Payment could not be started. Please try again.');
     return out;
   }
-  // Start Stripe Checkout and leave the page. type: 'individual' | 'church'
+  // Start Stripe Checkout and leave the page. type: 'individual' | 'keep_going' | 'church' (extra: { church_id, seats })
   async function checkout(type, extra) {
     const out = await pay(Object.assign({ action: 'checkout', type, return_path: location.pathname }, extra || {}));
     location.href = out.url;

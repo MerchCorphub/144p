@@ -163,7 +163,7 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
       if (a && a.guest_seats_left > 0) html += `<div class="card"><strong>You have a seat to give</strong><p class="sub" style="margin:6px 0 0">Challenge a friend to the Time4God Challenge. The first person who accepts gets the study book free for that challenge.</p><a class="btn alt" href="challenges.html">Challenge someone</a></div>`;
       else if (a && a.seat && a.guest_seat_given_to) html += `<p class="sub" style="margin-top:12px">You gave your guest seat to ${esc(a.guest_seat_given_to)}.</p>`;
     }
-    html += `<div class="card"><strong>Do you lead a church or a group?</strong><p class="sub" style="margin:6px 0 0">Register your church or group, get a join code for your members, and buy study book seats for everyone${p.church_from != null ? ` (packs from ${esc(money(p.church_from))})` : ''}.</p>
+    html += `<div class="card"><strong>Do you lead a church or a group?</strong><p class="sub" style="margin:6px 0 0">Register your church or group, get a join code for your members, and buy study book seats for everyone${p.church_top_rate != null ? ` (${esc(money(p.church_top_rate))} a seat, less for larger churches)` : ''}.</p>
       <div class="two" style="margin-top:12px"><a class="btn alt" href="leaders.html?as=church" style="margin-top:0">Church leaders</a><a class="btn alt" href="leaders.html?as=group" style="margin-top:0">Group leaders</a></div></div>`;
     $app.innerHTML = html;
     if ($('keep')) $('keep').onclick = async () => { st.err = ''; st.busy = true; render(); try { await Cloud.checkout('keep_going'); } catch (e) { st.busy = false; st.err = errMsg(e); render(); } };

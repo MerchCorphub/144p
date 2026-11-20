@@ -107,7 +107,7 @@ table.mini td{padding:3px 12px 3px 0}
   const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
   const STATUS = { pending_payment: ['Waiting for payment', 'wait'], active: ['Active', 'ok'], canceled: ['Canceled', 'off'] };
   const pill = s => { const [t, c] = STATUS[s] || [s || 'None', 'off']; return `<span class="pill ${c}">${esc(t)}</span>`; };
-  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], churchAdmins: [], challengesAll: [], dash: null, keys: [], claims: [], printStat: null, printPrev: null, printBusy: '', msgs: [], msgDraft: '', msgTo: '', payments: [], buy: false, buyOpts: null, buyPlan: null, groups: [], roster: [], gAdd: null, gSel: new Set(), gRename: null, seats: [], sections: [], editSlug: null, importSecs: null };
+  const st = { tab: 'approvals', admin: false, churches: [], church: null, members: [], seat: null, sel: new Set(), msg: '', err: '', plans: [], season: null, licenses: [], allChurches: [], churchAdmins: [], challengesAll: [], dash: null, keys: [], claims: [], printStat: null, printPrev: null, printBusy: '', msgs: [], msgDraft: '', msgTo: '', payments: [], buy: false, buyOpts: null, buySeats: "", groups: [], roster: [], gAdd: null, gSel: new Set(), gRename: null, seats: [], sections: [], editSlug: null, importSecs: null };
   let c = null;
 
   const flash = (m, isErr) => { if (isErr) { st.err = m; st.msg = ''; } else { st.msg = m; st.err = ''; } };
@@ -168,21 +168,34 @@ table.mini td{padding:3px 12px 3px 0}
   };
   function buyBox() {
     const o = st.buyOpts;
-    if (!o) return `<div class="addbox"><p class="muted">Loading seat plans…</p></div>`;
+    if (!o) return `<div class="addbox"><p class="muted">Loading prices…</p></div>`;
     const cur = o.current && o.current.status === 'active' ? o.current : null;
-    const rows = o.plans.filter(p => p.due != null);
-    return `<div class="addbox"><div class="row"><strong class="grow">${cur ? `Add seats · you have ${cur.seats} (${esc(cur.plan || '')})` : 'Buy seats for your church'}</strong><button class="btn alt sm" type="button" id="buyClose">Close</button></div>
-      <p class="muted" style="margin:6px 0 10px">${cur ? `Move up to a larger plan and pay only the difference. Your end date stays ${cur.expires_at ? fDate(cur.expires_at) : 'the same'}.` : 'One payment, good for one year from today. Members you approve read free.'} Prices include tax. All sales are final.</p>
-      ${rows.length ? rows.map(p => `<label class="pick"><input type="radio" name="plan" value="${p.id}" ${st.buyPlan === p.id ? 'checked' : ''}> <span class="grow"><strong>${esc(p.name)}</strong> · ${p.seats} seats</span><strong>$${Number(p.due).toFixed(2)}</strong>${cur ? ' <span class="muted">(difference)</span>' : ''}</label>`).join('')
-        : '<p class="empty">You already have the largest plan. Contact the 144(P) Plan team for more seats.</p>'}
-      ${rows.length ? `<button class="btn teal" type="button" id="buyGo" ${st.buyPlan ? '' : 'disabled'} style="margin-top:10px">Continue to secure checkout</button><p class="muted" style="margin-top:6px;font-size:13px">You’ll pay on Stripe’s secure page (card, Apple Pay or Google Pay), then come back here.</p>` : ''}</div>`;
+    const T = o.tiers || [], nf = n => Number(n).toLocaleString('en-US');
+    const min = cur ? 1 : (o.min_seats || 5), have = cur ? cur.seats : 0, room = (o.max_seats || 0) - have;
+    const n = parseInt(st.buySeats, 10), total = have + (n || 0);
+    const tier = n > 0 ? T.find(t => total >= t.min && total <= t.max) : null;
+    let note = '';
+    if (st.buySeats !== '' && st.buySeats != null) {
+      if (!(n >= min)) note = cur ? 'Enter at least 1 seat.' : `The smallest purchase is ${min} seats.`;
+      else if (n > room) note = `For more than ${nf(o.max_seats)} seats in total, contact us and we’ll set it up.`;
+      else if (!tier) note = 'Seats aren’t available for that number right now.';
+    }
+    const ok = tier && !note;
+    return `<div class="addbox"><div class="row"><strong class="grow">${cur ? `Add seats · you have ${nf(cur.seats)}` : 'Buy seats for your church'}</strong><button class="btn alt sm" type="button" id="buyClose">Close</button></div>
+      <p class="muted" style="margin:6px 0 10px">${cur ? `Added seats cost the rate for your new total and end on ${cur.expires_at ? fDate(cur.expires_at) : 'the same date as your others'}.` : 'One payment, good for one year from today. Members you approve read free.'} Prices include tax. All sales are final.</p>
+      <div class="tbl"><table><thead><tr><th>Seats in total</th><th>Price per seat</th></tr></thead><tbody>${T.map((t, i) => `<tr${tier && tier.id === t.id ? ' style="background:#E6F2F2;font-weight:700"' : ''}><td>${esc(t.name)} · ${i === T.length - 1 ? nf(t.min) + '+' : nf(t.min) + '–' + nf(t.max)}</td><td>${money(t.rate)}</td></tr>`).join('')}</tbody></table></div>
+      <label for="buyN" style="margin-top:12px;display:block;font-weight:600">${cur ? 'How many more seats?' : 'How many seats?'}</label>
+      <input id="buyN" type="number" inputmode="numeric" min="${min}" step="1" value="${esc(st.buySeats || '')}" placeholder="${cur ? 'e.g. 10' : 'At least ' + min}" style="max-width:200px">
+      ${note ? `<p class="err" style="margin-top:8px">${esc(note)}</p>` : ''}
+      ${ok ? `<p style="margin:10px 0 0;font-size:17px"><strong>${nf(n)} seat${n === 1 ? '' : 's'} × ${money(tier.rate)} = ${money(n * tier.rate)}</strong>${cur ? ` <span class="muted">· ${nf(total)} seats in total</span>` : ''}</p>` : ''}
+      <button class="btn teal" type="button" id="buyGo" ${ok ? '' : 'disabled'} style="margin-top:10px">Continue to secure checkout</button><p class="muted" style="margin-top:6px;font-size:13px">You’ll pay on Stripe’s secure page (card, Apple Pay or Google Pay), then come back here.</p></div>`;
   }
   BIND.approvals = () => {
     if ($('nsNew')) $('nsNew').onchange = e => { const on = e.target.checked; run(async () => { await Cloud.rpc('set_notification_settings', { p_new_members: on }); st.notify.email_new_members = on; }, on ? 'You’ll get an email when someone new signs up.' : 'New-member emails turned off.'); };
-    if ($('buyOpen')) $('buyOpen').onclick = () => run(async () => { st.buy = true; st.buyPlan = null; st.buyOpts = null; render(); st.buyOpts = await Cloud.rpc('purchase_options', { cid: st.church.church_id }); });
+    if ($('buyOpen')) $('buyOpen').onclick = () => run(async () => { st.buy = true; st.buySeats = ''; st.buyOpts = null; render(); st.buyOpts = await Cloud.rpc('purchase_options', { cid: st.church.church_id }); });
     if ($('buyClose')) $('buyClose').onclick = () => { st.buy = false; render(); };
-    $app.querySelectorAll('input[name=plan]').forEach(r => r.onchange = () => { st.buyPlan = r.value; render(); });
-    if ($('buyGo')) $('buyGo').onclick = () => { const b = $('buyGo'); b.disabled = true; b.textContent = 'Opening secure checkout…'; run(async () => { await Cloud.checkout('church', { church_id: st.church.church_id, plan_id: st.buyPlan }); }); };
+    if ($('buyN')) $('buyN').oninput = e => { if (st.buySeats === e.target.value) return; st.buySeats = e.target.value; const pos = e.target.selectionStart; render(); const i = $('buyN'); if (i) { i.focus(); try { i.setSelectionRange(pos, pos); } catch (x) {} } };
+    if ($('buyGo')) $('buyGo').onclick = () => { const b = $('buyGo'); b.disabled = true; b.textContent = 'Opening secure checkout…'; run(async () => { await Cloud.checkout('church', { church_id: st.church.church_id, seats: parseInt(st.buySeats, 10) }); }); };
     if ($('ch')) $('ch').onchange = e => run(async () => { st.church = st.churches.find(x => x.church_id === e.target.value); await loadChurch(); });
     const pend = st.members.filter(m => m.status === 'pending');
     if ($('all')) $('all').onchange = e => { st.sel = e.target.checked ? new Set(pend.map(m => m.membership_id)) : new Set(); st.msg = st.err = ''; render(); };
@@ -197,26 +210,26 @@ table.mini td{padding:3px 12px 3px 0}
   };
 
   // ---------- prices ----------
-  VIEWS.prices = () => `<h2>Prices</h2><p class="sub">Set what an individual seat and each church license cost for a 12-week season. A price change applies to new licenses; existing licenses keep the price they were given.</p>
-    <div class="card tbl"><table><thead><tr><th>Name</th><th>Type</th><th>Seats</th><th>Price</th><th>Per seat</th><th>Offered</th><th></th></tr></thead><tbody>
+  VIEWS.prices = () => `<h2>Prices</h2><p class="sub">The individual price is for one person for a year. Church rows are price levels: a church whose total seats fall between the From and To numbers pays that price for <strong>each seat</strong>. The lowest From number is the smallest purchase. A price change applies to new purchases; seats already bought keep their price.</p>
+    <div class="card tbl"><table><thead><tr><th>Name</th><th>Type</th><th>From (seats)</th><th>To (seats)</th><th>Price</th><th>Offered</th><th></th></tr></thead><tbody>
     ${st.plans.map(p => `<tr data-plan="${p.id}">
       <td><input type="text" data-f="name" value="${esc(p.name)}" aria-label="Plan name"></td>
       <td><select data-f="kind" aria-label="Type"><option value="individual" ${p.kind === 'individual' ? 'selected' : ''}>Individual</option><option value="church" ${p.kind === 'church' ? 'selected' : ''}>Church</option></select></td>
-      <td><input type="number" min="1" data-f="seat_limit" value="${p.seat_limit}" aria-label="Seats"></td>
-      <td><input type="number" min="0" step="0.01" data-f="price" value="${Number(p.price).toFixed(2)}" aria-label="Price in dollars"></td>
-      <td class="muted">${money(p.price / p.seat_limit)}</td>
+      <td><input type="number" min="1" data-f="min_seats" value="${p.min_seats || 1}" aria-label="From seats" ${p.kind === 'individual' ? 'disabled' : ''}></td>
+      <td><input type="number" min="1" data-f="seat_limit" value="${p.seat_limit}" aria-label="To seats" ${p.kind === 'individual' ? 'disabled' : ''}></td>
+      <td><input type="number" min="0" step="0.01" data-f="price" value="${Number(p.price).toFixed(2)}" aria-label="Price in dollars"><div class="muted" style="font-size:12px">${p.kind === 'church' ? 'per seat' : 'per person'}</div></td>
       <td><input type="checkbox" class="check" data-f="active" ${p.active ? 'checked' : ''} aria-label="Offered"></td>
       <td><button class="btn sm" type="button" data-save="${p.id}">Save</button></td></tr>`).join('')}
     </tbody></table>
     <div class="row" style="margin-top:12px"><button class="btn alt" type="button" id="addPlan">Add a price option</button></div></div>
-    <p class="muted">Card payments through Stripe come later. For now, mark licenses as active in the Licenses tab once a church has paid.</p>`;
+    <p class="muted">Keep the church levels from overlapping, with no gaps between them. Example: 5–999, 1,000–4,999, 5,000–19,999.</p>`;
   BIND.prices = () => {
-    const read = tr => { const g = f => tr.querySelector(`[data-f="${f}"]`); return { name: g('name').value.trim(), kind: g('kind').value, seat_limit: parseInt(g('seat_limit').value, 10), price: parseFloat(g('price').value), active: g('active').checked, updated_at: new Date().toISOString() }; };
+    const read = tr => { const g = f => tr.querySelector(`[data-f="${f}"]`); const ind = g('kind').value === 'individual'; return { name: g('name').value.trim(), kind: g('kind').value, min_seats: ind ? 1 : parseInt(g('min_seats').value, 10), seat_limit: ind ? 1 : parseInt(g('seat_limit').value, 10), price: parseFloat(g('price').value), active: g('active').checked, updated_at: new Date().toISOString() }; };
     $app.querySelectorAll('[data-save]').forEach(b => b.onclick = () => run(async () => {
-      const v = read(b.closest('tr')); if (!v.name || !(v.seat_limit > 0) || !(v.price >= 0)) throw new Error('Each option needs a name, seats above zero, and a price.');
+      const v = read(b.closest('tr')); if (!v.name || !(v.min_seats > 0) || !(v.seat_limit >= v.min_seats) || !(v.price >= 0)) throw new Error('Each row needs a name, a From number above zero, a To number at least as big, and a price.');
       Cloud.ok(await c.from('license_plans').update(v).eq('id', b.dataset.save)); await loadTab(true);
     }, 'Price saved.'));
-    $('addPlan').onclick = () => run(async () => { Cloud.ok(await c.from('license_plans').insert({ name: 'New option', kind: 'church', seat_limit: 50, price: 400, active: false, sort_order: st.plans.length + 1 })); await loadTab(true); }, 'Added. Set it up and check Offered when it’s ready.');
+    $('addPlan').onclick = () => run(async () => { Cloud.ok(await c.from('license_plans').insert({ name: 'New level', kind: 'church', min_seats: 100001, seat_limit: 200000, price: 7, active: false, sort_order: st.plans.length + 1 })); await loadTab(true); }, 'Added. Set it up and check Offered when it’s ready.');
   };
 
   // ---------- licenses ----------
@@ -224,10 +237,10 @@ table.mini td{padding:3px 12px 3px 0}
     const churchPlans = st.plans.filter(p => p.kind === 'church' && p.active);
     const lic = id => st.licenses.find(l => l.church_id === id);
     return `<h2>Licenses · ${esc(st.season ? st.season.name : 'No active season')}</h2><p class="sub">Give each church a license for the season. The book opens for its approved members when the license is Active.</p>
-    <div class="card tbl">${st.allChurches.length ? `<table><thead><tr><th>Church</th><th>Option</th><th>Seats</th><th>Price</th><th>Status</th><th></th></tr></thead><tbody>
+    <div class="card tbl">${st.allChurches.length ? `<table><thead><tr><th>Church</th><th>Price level</th><th>Seats</th><th>Price</th><th>Status</th><th></th></tr></thead><tbody>
       ${st.allChurches.map(ch => { const l = lic(ch.id) || {}; return `<tr data-ch="${ch.id}">
         <td><strong>${esc(ch.name)}</strong><br><span class="muted">Code ${esc(ch.code)}</span></td>
-        <td><select data-f="plan_id" aria-label="License option"><option value="">Choose…</option>${churchPlans.map(p => `<option value="${p.id}" data-seats="${p.seat_limit}" data-price="${p.price}" ${l.plan_id === p.id ? 'selected' : ''}>${esc(p.name)} · ${p.seat_limit} seats</option>`).join('')}</select></td>
+        <td><select data-f="plan_id" aria-label="License option"><option value="">Choose…</option>${churchPlans.map(p => `<option value="${p.id}" data-min="${p.min_seats || 1}" data-price="${p.price}" ${l.plan_id === p.id ? 'selected' : ''}>${esc(p.name)} · ${money(p.price)} a seat</option>`).join('')}</select></td>
         <td><input type="number" min="1" data-f="seats" value="${l.seats || ''}" aria-label="Seats"></td>
         <td><input type="number" min="0" step="0.01" data-f="price" value="${l.price != null ? Number(l.price).toFixed(2) : ''}" aria-label="Price"></td>
         <td><select data-f="status" aria-label="Status">${Object.entries(STATUS).map(([k, [t]]) => `<option value="${k}" ${(l.status || 'pending_payment') === k ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
@@ -241,8 +254,13 @@ table.mini td{padding:3px 12px 3px 0}
   };
   BIND.licenses = () => {
     $app.querySelectorAll('[data-ch] select[data-f="plan_id"]').forEach(sel => sel.onchange = () => {
-      const o = sel.selectedOptions[0], tr = sel.closest('tr'); if (!o || !o.dataset.seats) return;
-      tr.querySelector('[data-f="seats"]').value = o.dataset.seats; tr.querySelector('[data-f="price"]').value = Number(o.dataset.price).toFixed(2);
+      const o = sel.selectedOptions[0], tr = sel.closest('tr'); if (!o || !o.dataset.price) return;
+      const n = tr.querySelector('[data-f="seats"]'); if (!(parseInt(n.value, 10) > 0)) n.value = o.dataset.min;
+      tr.querySelector('[data-f="price"]').value = (parseInt(n.value, 10) * Number(o.dataset.price)).toFixed(2);
+    });
+    $app.querySelectorAll('[data-ch] input[data-f="seats"]').forEach(inp => inp.oninput = () => {
+      const tr = inp.closest('tr'), o = tr.querySelector('[data-f="plan_id"]').selectedOptions[0];
+      if (o && o.dataset.price && parseInt(inp.value, 10) > 0) tr.querySelector('[data-f="price"]').value = (parseInt(inp.value, 10) * Number(o.dataset.price)).toFixed(2);
     });
     $app.querySelectorAll('[data-savelic]').forEach(b => b.onclick = () => run(async () => {
       if (!st.season) throw new Error('Set up an active season first.');
@@ -447,7 +465,7 @@ table.mini td{padding:3px 12px 3px 0}
 
   // ---------- payments ----------
   VIEWS.payments = () => { const P = st.payments, paid = P.filter(p => p.status === 'paid'), tot = paid.reduce((a, p) => a + Number(p.amount), 0);
-    return `<h2>Payments</h2><p class="sub">Every payment made through Stripe: individual seats, church seat packs and seat upgrades. Prices include tax. All sales are final. Payouts and receipts are in your Stripe dashboard.</p>
+    return `<h2>Payments</h2><p class="sub">Every payment made through Stripe: individual seats, church seats and added seats. Prices include tax. All sales are final. Payouts and receipts are in your Stripe dashboard.</p>
     <div class="card"><div class="row"><span><strong>${money(tot)}</strong> collected</span><span><strong>${paid.length}</strong> payments</span><span><strong>${paid.filter(p => p.kind === 'individual').length}</strong> individual seats</span><span><strong>${paid.filter(p => p.kind !== 'individual').length}</strong> church purchases</span></div></div>
     <div class="card tbl">${P.length ? `<table><thead><tr><th>Date</th><th>What</th><th>Buyer</th><th>Amount</th><th>Status</th></tr></thead><tbody>
       ${P.map(p => `<tr><td class="muted">${fDate(p.paid_at || p.created_at)}</td><td>${esc(p.description)}</td><td>${esc(p.buyer || '')}<br><span class="muted">${esc(p.buyer_email || '')}</span></td><td><strong>${money(p.amount)}</strong></td><td>${p.status === 'paid' ? '<span class="pill ok">Paid</span>' : '<span class="pill off">Not completed</span>'}</td></tr>`).join('')}
@@ -541,7 +559,7 @@ table.mini td{padding:3px 12px 3px 0}
       <h3 class="dh">Revenue</h3><p class="sub" style="margin-top:-6px">Real (live) Stripe payments only, before Stripe fees. Prices include tax. Licenses you enter by hand in the Licenses tab aren’t counted.</p><div class="tiles">
         ${tile('Total revenue', usd(R.total), `${n0(R.payments)} payment${R.payments === 1 ? '' : 's'}`)}
         ${tile('This month', usd(R.month), `${usd(R.last_30)} in the last 30 days`)}
-        ${tile('Where it came from', usd(R.individual + R.church + R.upgrades), `Individuals ${usd(R.individual)} · Church packs ${usd(R.church)} · Upgrades ${usd(R.upgrades)}`)}
+        ${tile('Where it came from', usd(R.individual + R.church + R.upgrades), `Individuals ${usd(R.individual)} · Church seats ${usd(R.church)} · Added seats ${usd(R.upgrades)}`)}
         ${tile('Renewals in 60 days', n0(R.renewals_60), `${n0(R.abandoned_30)} unfinished checkout${R.abandoned_30 === 1 ? '' : 's'} in 30 days`)}</div>
       ${bars('cRev', 'Revenue per month (last 12 months)', R.by_month.map(r => ({ k: r.month, v: Number(r.amount) })), usd, (k, full) => new Date(k).toLocaleDateString('en-US', full ? { month: 'long', year: 'numeric', timeZone: 'UTC' } : { month: 'short', timeZone: 'UTC' }))}
       ${R.test_payments ? `<p class="muted" style="font-size:13px">Stripe test mode: ${n0(R.test_payments)} practice payment${R.test_payments === 1 ? '' : 's'} (${usd(R.test_total)}) are left out of these totals.</p>` : ''}
