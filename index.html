@@ -37,6 +37,7 @@ html,body{width:100%;min-height:100%}
 .phone-content{height:auto;overflow:visible;container-type:normal;--app-h:100dvh}
 }
 @media print{[data-noprint]{display:none!important}body{background:#FFFFFF}.desktop-preview{display:block;padding:0;background:#FFFFFF}.phone-frame{width:auto;height:auto;max-height:none;border-radius:0;box-shadow:none;overflow:visible;transform:none}.phone-content{height:auto;overflow:visible;container-type:normal}}
+.tour-track::-webkit-scrollbar{display:none}
 </style>
 </helmet>
 <div class="desktop-preview">
@@ -120,12 +121,13 @@ html,body{width:100%;min-height:100%}
     <div style="height:56px;display:flex;align-items:center;gap:4px">
       <sc-if value="{{ hdrHome }}" hint-placeholder-val="{{ true }}">
         <div style="flex:1;padding-left:10px;font-family:'Source Serif 4',serif;font-size:21px;font-weight:600">The 144(P) Plan</div>
+        <button onClick="{{ openHelp }}" aria-label="How this page works" style="width:44px;height:44px;border:none;background:transparent;color:#FFFFFF;font-size:21px;cursor:pointer;display:flex;align-items:center;justify-content:center"><span aria-hidden="true" style="width:26px;height:26px;border:2px solid #FFFFFF;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;line-height:1">?</span></button>
         <button onClick="{{ toMore }}" aria-label="Profile" style="width:44px;height:44px;border:none;background:transparent;color:#FFFFFF;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="icon-circle-user-round"></i></button>
       </sc-if>
       <sc-if value="{{ hdrInner }}" hint-placeholder-val="{{ false }}">
         <button onClick="{{ hdrBack }}" aria-label="Back" style="width:44px;height:44px;border:none;background:transparent;color:#FFFFFF;font-size:22px;cursor:pointer;display:flex;align-items:center;justify-content:center"><i class="icon-chevron-left"></i></button>
         <div style="flex:1;text-align:center;font-size:17px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ hdrTitle }}</div>
-        <div style="width:44px"></div>
+        <button onClick="{{ openHelp }}" aria-label="How this page works" style="width:44px;height:44px;border:none;background:transparent;color:#FFFFFF;font-size:21px;cursor:pointer;display:flex;align-items:center;justify-content:center"><span aria-hidden="true" style="width:26px;height:26px;border:2px solid #FFFFFF;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;line-height:1">?</span></button>
       </sc-if>
     </div>
   </header>
@@ -141,6 +143,21 @@ html,body{width:100%;min-height:100%}
         <div style="font-size:22px;font-weight:700">{{ greeting }}</div>
         <div style="font-size:14px;color:#6A7A84">{{ phaseLine }}</div>
       </div>
+      <sc-if value="{{ showTour }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#123C56;color:#FFFFFF;border-radius:18px;padding:16px 0 14px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px"><span style="font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#F2C94C">How the app works</span><span style="font-size:12px;color:#C9D6DE">Swipe ›</span></div>
+          <div class="tour-track" style="display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 16px;scrollbar-width:none;-webkit-overflow-scrolling:touch">
+            <sc-for list="{{ tourSlides }}" as="t" hint-placeholder-count="5">
+              <div style="flex:0 0 86%;scroll-snap-align:center;background:#FFFFFF;color:#173344;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:8px;min-height:170px">
+                <div style="display:flex;align-items:center;gap:10px"><span style="flex:none;width:40px;height:40px;border-radius:50%;background:{{ t.tint }};color:{{ t.color }};display:flex;align-items:center;justify-content:center;font-size:20px"><i class="{{ t.icon }}"></i></span><span style="font-size:12px;color:#6A7A84;font-weight:600">{{ t.step }}</span></div>
+                <div style="font-size:17px;font-weight:700;line-height:1.3">{{ t.title }}</div>
+                <div style="font-size:14px;line-height:1.5;color:#3F5260">{{ t.text }}</div>
+              </div>
+            </sc-for>
+          </div>
+          <div style="display:flex;gap:8px;padding:0 16px"><button onClick="{{ tourGo }}" style="flex:1;border:none;border-radius:10px;min-height:42px;background:#F2C94C;color:#0B2257;font-size:15px;font-weight:700;cursor:pointer">Make my first deposit</button><button onClick="{{ hideTour }}" style="border:1px solid #6F8798;border-radius:10px;min-height:42px;padding:0 14px;background:transparent;color:#FFFFFF;font-size:14px;font-weight:600;cursor:pointer">Got it</button></div>
+        </div>
+      </sc-if>
       <sc-if value="{{ joinOffer }}" hint-placeholder-val="{{ false }}">
         <div style="background:#FFFFFF;border:1px solid #BFE2DC;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
           <div style="display:flex;gap:10px;align-items:flex-start"><i class="icon-church" style="font-size:22px;color:#075D61"></i><div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:700">Join {{ joinName }}?</span><span style="font-size:14px;line-height:1.45;color:#173344">Your lifetime deposits, statements and notes stay yours and move with you. The church sees aggregate totals only.</span></div></div>
@@ -154,7 +171,8 @@ html,body{width:100%;min-height:100%}
           <span style="font-variant-numeric:tabular-nums;font-size:16px;font-weight:600">{{ timerClock }}</span>
         </button>
       </sc-if>
-      <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:18px;padding:18px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center">
+      <div style="position:relative;background:#FFFFFF;border:1px solid #E1E7EA;border-radius:18px;padding:18px;display:grid;grid-template-columns:auto minmax(0,1fr);gap:18px;align-items:center">
+        <div style="position:absolute;top:8px;right:8px"><button onClick="{{ helpWeek }}" aria-label="What these numbers mean" style="flex:none;width:32px;height:32px;border:none;border-radius:50%;background:#EEF4F6;color:#123C56;font-size:16px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center"><span aria-hidden="true">?</span></button></div>
         <div style="position:relative;width:136px;height:136px">
           <svg width="136" height="136" viewBox="0 0 136 136" aria-hidden="true"><circle cx="68" cy="68" r="58" fill="none" style="stroke:#E8F5F3;stroke-width:12"></circle><circle cx="68" cy="68" r="58" fill="none" transform="rotate(-90 68 68)" style="stroke:#0E8A7E;stroke-width:12;stroke-linecap:round;stroke-dasharray:364.42;stroke-dashoffset:{{ ringOffset }}"></circle></svg>
           <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center">
@@ -178,7 +196,7 @@ html,body{width:100%;min-height:100%}
       </button>
       <button onClick="{{ newDeposit }}" style="border:none;border-radius:14px;min-height:56px;background:#123C56;color:#FFFFFF;font-size:17px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px" style-hover="background:#0D2E43"><i class="icon-plus" style="font-size:20px"></i>Deposit</button>
       <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="font-size:17px;font-weight:700">Today's activity</div>
+        <div style="display:flex;align-items:center;gap:6px"><div style="font-size:17px;font-weight:700">Today's activity</div><button onClick="{{ helpBalance }}" aria-label="About deposits and your balance" style="flex:none;width:32px;height:32px;border:none;border-radius:50%;background:#EEF4F6;color:#123C56;font-size:16px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;justify-content:center"><span aria-hidden="true">?</span></button></div>
         <button onClick="{{ toHistory }}" style="border:none;background:transparent;color:#075D61;font-size:14px;font-weight:600;cursor:pointer;min-height:44px">All deposits</button>
       </div>
       <sc-if value="{{ todayEmpty }}" hint-placeholder-val="{{ false }}">
@@ -767,6 +785,18 @@ html,body{width:100%;min-height:100%}
     </div>
   </sc-if>
   </main>
+  <sc-if value="{{ helpOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeHelp }}" style="position:fixed;inset:0;z-index:50;background:rgba(11,34,87,.45);display:flex;align-items:flex-end;justify-content:center">
+      <div role="dialog" aria-modal="true" aria-label="{{ helpTitle }}" onClick="{{ stopClick }}" style="width:100%;max-width:560px;max-height:82dvh;overflow:auto;background:#FFFFFF;border-radius:20px 20px 0 0;padding:20px 20px calc(24px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:12px;box-shadow:0 -8px 30px rgba(0,0,0,.2)">
+        <div style="display:flex;align-items:center;gap:10px"><i class="icon-circle-help" style="font-size:24px;color:#075D61"></i><div style="flex:1;font-size:19px;font-weight:700;color:#123C56">{{ helpTitle }}</div><button onClick="{{ closeHelp }}" aria-label="Close" style="width:40px;height:40px;border:none;border-radius:50%;background:#EEF4F6;color:#123C56;font-size:20px;cursor:pointer">×</button></div>
+        <sc-for list="{{ helpItems }}" as="h" hint-placeholder-count="3">
+          <div style="display:flex;gap:10px;align-items:flex-start"><span style="flex:none;width:8px;height:8px;border-radius:50%;background:#D9A62B;margin-top:8px"></span><div style="font-size:15px;line-height:1.55;color:#173344"><strong>{{ h.lead }}</strong> {{ h.text }}</div></div>
+        </sc-for>
+        <sc-if value="{{ helpShowTour }}" hint-placeholder-val="{{ false }}"><button onClick="{{ showTourAgain }}" style="border:1px solid #123C56;border-radius:12px;min-height:46px;background:transparent;color:#123C56;font-size:15px;font-weight:600;cursor:pointer">Show the 5-step tour again</button></sc-if>
+        <button onClick="{{ closeHelp }}" style="border:none;border-radius:12px;min-height:48px;background:#123C56;color:#FFFFFF;font-size:16px;font-weight:600;cursor:pointer">Got it</button>
+      </div>
+    </div>
+  </sc-if>
 
   <sc-if value="{{ showNav }}" hint-placeholder-val="{{ true }}">
     <nav data-noprint="" aria-label="Main" style="position:sticky;bottom:0;z-index:5;background:#FFFFFF;border-top:1px solid #E1E7EA;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));padding-left:env(safe-area-inset-left);padding-right:env(safe-area-inset-right);padding-bottom:env(safe-area-inset-bottom)">
@@ -903,6 +933,42 @@ function mergeCloud(db, data) {
 }
 const authMsg = e => { const m = (e && e.message) || ''; if (/already registered|already exists/i.test(m)) return 'An account with this email already exists. Try signing in.'; if (/invalid login/i.test(m)) return "That email and password don't match an account."; if (/not confirmed/i.test(m)) return 'Confirm your email first. Check your inbox for the link.'; if (/fetch|network/i.test(m) || !navigator.onLine) return 'You need a connection to do this. Try again when you are back online.'; return m || 'Something went wrong. Try again.'; };
 function persist(db) { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} }
+
+
+// ---------- in-app help ("?" on each page) and the home tour ----------
+const H = (lead, text) => ({ lead, text });
+const HELP = {
+  home: ['Your home page', [H('The goal:', 'give God 144 minutes a day, a tithe (10%) of the 1,440 minutes in every day.'), H('This week:', 'the ring fills as you log time. A full ring is 1,008 minutes (144 × 7).'), H('Make a Deposit:', 'tap it whenever you pray, read, listen or simply spend time present with God and others.'), H('Today’s activity:', 'everything you logged today. Tap one to change or remove it.'), H('Menu at the bottom:', 'Home, Deposit, Statement, Redeem and More. Tap the ? at the top of any page for help with that page.')]],
+  week: ['What these numbers mean', [H('This week:', 'the minutes you have given since your week began. Your weeks start on the weekday you joined.'), H('of 1,008 min:', 'the weekly goal, 144 minutes a day for 7 days.'), H('Days at 144:', 'how many days so far this week you reached the full 144 minutes. “2 of 3” means 2 of the first 3 days.'), H('Goal reached:', 'this week’s minutes as a percent of 1,008.')]],
+  balance: ['Deposits and your balance', [H('A deposit', 'is time you gave to God, logged in minutes, the way you would record money in a savings account.'), H('Opening balance:', 'your total before this week.'), H('Deposits this week:', 'what you added since the week began.'), H('Closing balance:', 'opening balance plus this week’s deposits. Tap the card for your full statement.')]],
+  deposit: ['Making a deposit', [H('Step 1:', 'choose how you gave the time: Praying, Reading, Listening or Being Present.'), H('Step 2:', 'type the minutes, or start the timer and stop it when you finish. You can pause and come back.'), H('Step 3:', 'add a private note if you like, then save.'), H('Forgot one?', 'You can log time for an earlier day, and edit or remove any deposit later.')]],
+  statement: ['Your statement', [H('Like a bank statement', 'for your time: opening balance, each deposit, and closing balance.'), H('Week, month or year:', 'switch the period at the top.'), H('Print or save:', 'use the print button to keep a copy. Only you can see your statement.')]],
+  history: ['Deposit history', [H('Every deposit', 'you have made, newest first.'), H('Tap a deposit', 'to see its details, change the minutes or category, or remove it.')]],
+  detail: ['Deposit details', [H('Change it:', 'fix the minutes, date or category if something was logged wrong.'), H('Remove it:', 'deletes the deposit and takes the minutes off your balance.')]],
+  journey: ['From Starter to Standard', [H('Weeks 1–12 are your Starter phase.', 'Read one chapter of the study book each week and build the habit.'), H('After week 12', 'you move to a Standard account and set your own ongoing plan.'), H('Nothing resets.', 'Like a retirement account, the value is in years of steady deposits.')]],
+  milestones: ['Progress and milestones', [H('Your progress', 'over time: weeks completed, days at 144 and totals.'), H('Levels:', 'Starter, Builder, Faithful and Achiever follow the four parts of the book.'), H('No comparisons.', 'This page is yours alone. There are no rankings here.')]],
+  balance_screen: ['My balance', [H('Lifetime deposits', 'never go down. It is your permanent record of time given.'), H('Available to give', 'is the part you can use for redemptions, like serving opportunities your church offers.'), H('Ways to spend:', 'each church sets its own list and prices.')]],
+  redeem: ['Redemption options', [H('Turn time into service.', 'Use your available minutes for things like a serving slot, a study book or hosting the Table meal.'), H('Costs', 'are set by your church and shown in minutes.'), H('Your lifetime total', 'stays the same when you redeem. Only “available” goes down.')]],
+  redeemDetail: ['Redemption detail', [H('Check the cost', 'in minutes and what it includes, then confirm.'), H('Serving slots', 'show the day and time. Your church leader will see that you signed up.')]],
+  redemptions: ['My redemptions', [H('Everything you have redeemed,', 'with the date and minutes used.')]],
+  notes: ['My notes', [H('Two short reflections each week:', 'the time that mattered most, and what you plan to give next week.'), H('Private.', 'Your Table leader and church never see your notes.')]],
+  more: ['More', [H('Your account,', 'giving plan, reminders and privacy settings live here.'), H('The Book:', 'get the study book, read it, join your church, the Time4God Challenge, and the Leader Console for leaders.'), H('Help:', 'replay the 5-step tour from the ? on the home page.')]],
+  account: ['My account', [H('Your name and email', 'are how your church leaders recognize you. Tap Save changes after editing.'), H('Church:', 'enter the code from your church leader and tap Join my church. A leader approves you, and you’ll see “Approved member.”'), H('Group:', 'your church leader places you in a group.')]],
+  plan: ['My giving plan', [H('During weeks 1–12', 'the study book is your guide, one chapter a week.'), H('From week 13', 'write down how you intend to keep giving your 144 minutes, and save it here.')]],
+  notifications: ['Reminders', [H('Daily reminder:', 'a phone or computer notification at the time you pick, even when the app is closed. On iPhone, add the app to your Home Screen first.'), H('Email reminder:', 'the same reminder by email.'), H('Each reminder shows', 'yesterday’s minutes, your streak, this week’s chapter and how your challenge is going.'), H('Messages', 'from your church leaders arrive the same way.')]],
+  privacy: ['Privacy and church view', [H('Your statement is yours.', 'Only you see your deposits, notes and balances.'), H('What leaders see:', 'your name, approval status, group, and minutes in challenges. Never your notes or reflections.')]],
+  about: ['About The 144(P) Plan', [H('144 minutes a day', 'is a tithe of your time, 10% of each day, given to God.'), H('The plan', 'goes with the book What Will You Give Today? by C.P. Parker.')]],
+  help: ['Help and support', [H('Questions?', 'Start with the ? at the top of any page. For anything else, contact the 144(P) Plan team here.')]],
+  install: ['Install the app', [H('Add it to your Home Screen', 'so it opens like a regular app and can send reminders.'), H('iPhone:', 'tap Share, then Add to Home Screen.'), H('Android or computer:', 'tap Install when your browser offers it.')]],
+};
+const TOUR = [
+  { icon: 'icon-hand-heart', color: '#B4601A', tint: '#FBEBDC', title: 'Give God 144 minutes a day', text: 'That’s a tithe of your time, 10% of the 1,440 minutes in every day. Any time you give counts.' },
+  { icon: 'icon-circle-plus', color: '#075D61', tint: '#E8F5F3', title: 'Log it as a deposit', text: 'Tap Make a Deposit when you pray, read, listen or are present. Type the minutes or use the timer.' },
+  { icon: 'icon-target', color: '#2A62A6', tint: '#E2ECF8', title: 'Watch your week fill up', text: 'The ring on Home fills toward 1,008 minutes a week. Your statement keeps every deposit, like a savings account.' },
+  { icon: 'icon-book-open', color: '#6E4699', tint: '#EEE6F6', title: 'Read one chapter a week', text: 'The 12-week study book opens a new chapter each week. Get it in More › The Book, through your church, or with your printed book.' },
+  { icon: 'icon-flag', color: '#2B7A4B', tint: '#E0F1E6', title: 'Join your church and the challenge', text: 'Enter your church code in My Account, then challenge a friend, your group or another church in the Time4God Challenge.' }];
+const TOUR_KEY = '144p-tour-off';
+const tourOff = () => { try { return localStorage.getItem(TOUR_KEY) === '1'; } catch (e) { return false; } };
 
 class Component extends DCLogic {
   state = (() => {
@@ -1299,6 +1365,16 @@ class Component extends DCLogic {
       isRedemptions: scr === 'redemptions', isNotes: scr === 'notes', isMore: scr === 'more', isAccount: scr === 'account', isPlan: scr === 'plan',
       isNotifications: scr === 'notifications', isPrivacy: scr === 'privacy', isAbout: scr === 'about', isHelp: scr === 'help',
       hdrHome: scr === 'home', hdrInner: scr !== 'home', hdrTitle: titles[scr] || '',
+      openHelp: () => this.setState({ help: scr === 'balance' ? 'balance_screen' : HELP[scr] ? scr : 'home' }),
+      helpWeek: () => this.setState({ help: 'week' }), helpBalance: () => this.setState({ help: 'balance' }),
+      helpOpen: !!(s.help && HELP[s.help]), helpTitle: s.help && HELP[s.help] ? HELP[s.help][0] : '',
+      helpItems: s.help && HELP[s.help] ? HELP[s.help][1] : [], helpShowTour: s.help === 'home' || s.help === 'more',
+      closeHelp: () => this.setState({ help: null }), stopClick: e => { if (e && e.stopPropagation) e.stopPropagation(); },
+      showTour: scr === 'home' && !s.tourHidden && !tourOff(),
+      tourSlides: TOUR.map((t, i) => ({ ...t, step: `Step ${i + 1} of ${TOUR.length}` })),
+      hideTour: () => { try { localStorage.setItem(TOUR_KEY, '1'); } catch (e) {} this.setState({ tourHidden: true }); },
+      tourGo: () => { try { localStorage.setItem(TOUR_KEY, '1'); } catch (e) {} this.setState({ tourHidden: true }); this.openDeposit(); },
+      showTourAgain: () => { try { localStorage.removeItem(TOUR_KEY); } catch (e) {} this.setState({ help: null, tourHidden: false }); if (scr !== 'home') this.tab('home'); },
       hdrBack: () => { if (scr === 'deposit' && d.step > 1) return this.setDep({ step: d.step - 1 }); this.back(); },
       toMore: () => this.tab('more'), isDemo: !!u.demo, showNav: scr !== 'deposit' && !s.kb, navItems,
       fullName: `${u.first} ${u.last}`, initials: (u.first[0] + u.last[0]).toUpperCase(), phaseLine, phaseShort, levelSuffix: level ? ` · Level: ${level}` : '',
@@ -1404,7 +1480,7 @@ class Component extends DCLogic {
         { title: 'Account', items: [['My Account', 'icon-user-round', () => this.go('account', { acct: null })], ['My Giving Plan', 'icon-sprout', () => this.go('plan', { planDraft: u.plan || '' })], ['Notifications', 'icon-bell', () => this.go('notifications')]] },
         { title: 'My records', items: [['My Statements', 'icon-file-text', () => this.tab('statement', { stWeek: null })], ['Deposit History', 'icon-history', () => this.go('history')], ['My Notes', 'icon-notebook-pen', () => openNotes(curWeek)], ['My Balance', 'icon-infinity', () => this.go('balance')], ['My Redemptions', 'icon-coins', () => this.go('redemptions')], ['Progress & Milestones', 'icon-flag', () => this.go('milestones')], ['Starter to Standard', 'icon-map', () => this.go('journey')]] },
         { title: 'The Book', items: [['Get the Study Book', 'icon-tag', () => { location.href = 'access.html'; }], ['Read the Book', 'icon-book-open', () => { location.href = 'read.html'; }], ['Join My Church', 'icon-church', () => this.go('account', { acct: null })], ['Time4God Challenge', 'icon-flag', () => { location.href = 'challenges.html'; }], ['Leader Console', 'icon-users', () => { location.href = 'leader.html'; }]] },
-        { title: 'About', items: [['Privacy & Church View', 'icon-shield-check', () => this.go('privacy')], ['About The 144(P) Plan', 'icon-info', () => this.go('about')], ['Help & Support', 'icon-circle-help', () => this.go('help')], ['Install the App', 'icon-download', () => this.go('install')]] },
+        { title: 'About', items: [['Privacy & Church View', 'icon-shield-check', () => this.go('privacy')], ['About The 144(P) Plan', 'icon-info', () => this.go('about')], ['How the App Works', 'icon-sprout', () => { try { localStorage.removeItem(TOUR_KEY); } catch (e) {} this.setState({ tourHidden: false }); this.tab('home'); }], ['Help & Support', 'icon-circle-help', () => this.go('help')], ['Install the App', 'icon-download', () => this.go('install')]] },
       ].map(g => ({ title: g.title, items: g.items.map(([label, icon, open]) => ({ label, icon, open })) })),
       openAccount: () => this.go('account', { acct: null }), signOut: () => this.signOut(),
 
