@@ -72,6 +72,7 @@ html,body{width:100%;min-height:100%}
         <div style="display:flex;flex-direction:column;gap:6px">
           <div style="font-size:24px;font-weight:700">Create your Partner account</div>
           <div style="font-size:15px;color:#6A7A84;line-height:1.45">Week 1 of your 12-week starter phase begins the day you join.</div>
+          <div style="background:#FFF8E6;border:1px solid #F1D8A0;color:#6B4E12;border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.5;margin-top:6px"><strong>Signing up is free.</strong> {{ priceNote }} <a href="access.html" style="color:#075D61;font-weight:600">See what’s included</a></div>
           <sc-if value="{{ hasJoin }}" hint-placeholder-val="{{ false }}"><div style="background:#E8F5F3;color:#075D61;border-radius:12px;padding:12px 14px;font-size:14px;line-height:1.45;margin-top:6px">Joining <strong>{{ joinName }}</strong>. Your church sees totals only; your statement, deposits and notes stay private.</div></sc-if>
         </div>
         <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px">
@@ -81,7 +82,6 @@ html,body{width:100%;min-height:100%}
         <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Email address<input type="email" value="{{ f.email }}" onChange="{{ on.email }}" autocomplete="email" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none" style-focus="border-color:#075D61;box-shadow:0 0 0 3px #CFEAE6"></label>
         <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Password<input type="password" value="{{ f.password }}" onChange="{{ on.password }}" autocomplete="new-password" placeholder="At least 8 characters" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none" style-focus="border-color:#075D61;box-shadow:0 0 0 3px #CFEAE6"></label>
         <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Church code <span style="font-weight:400;color:#6A7A84">(optional, from your church leader)</span><input value="{{ f.church }}" onChange="{{ on.church }}" autocapitalize="characters" autocomplete="off" placeholder="e.g. F7Q8D9" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none" style-focus="border-color:#075D61;box-shadow:0 0 0 3px #CFEAE6"></label>
-        <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Table <span style="font-weight:400;color:#6A7A84">(optional)</span><input value="{{ f.table }}" onChange="{{ on.table }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none" style-focus="border-color:#075D61;box-shadow:0 0 0 3px #CFEAE6"></label>
         <button onClick="{{ on.consent }}" role="checkbox" aria-checked="{{ f.consent }}" style="display:flex;gap:12px;align-items:flex-start;text-align:left;border:none;background:transparent;padding:4px 0;cursor:pointer;color:#173344;font-size:14px;line-height:1.45">
           <span style="flex:none;width:24px;height:24px;border-radius:6px;border:2px solid #075D61;background:{{ consentBg }};color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:15px"><i class="icon-check"></i></span>
           <span>I agree to the <a href="#terms">Terms</a> and <a href="#privacy">Privacy Policy</a>. My statement, deposits and notes stay private to me.</span>
@@ -914,6 +914,7 @@ class Component extends DCLogic {
     { const u0 = this.me(); if (u0) touchActivity(u0); }
     this.cloudRefresh();
     if (!this.state.join) joinChurchCloud().then(j => { if (j) this.setState({ join: j }); });
+    try { if (window.Cloud && Cloud.rpc) Cloud.rpc('public_pricing').then(p => this.setState({ pricing: p })).catch(() => {}); } catch (e) {}
     this.onOnline = () => this.cloudRefresh(); window.addEventListener('online', this.onOnline);
     this.iv = setInterval(() => { const u = this.me(); if (!u) return; const t = this.state.db.timers[u.id]; if (t && t.running) this.forceUpdate(); this.checkReminder(u); if (u.cloud && document.visibilityState === 'visible' && Date.now() - (this.lastPull || 0) > 60000) { this.lastPull = Date.now(); this.cloudRefresh(); } }, 1000);
     try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
@@ -1143,6 +1144,7 @@ class Component extends DCLogic {
     const base = {
       isWelcome: !u && scr === 'welcome', isAuthForm: !u && (scr === 'register' || scr === 'signin'), isApp: !!u,
       isRegister: scr === 'register', isSignin: scr === 'signin',
+      priceNote: this.state.pricing && this.state.pricing.individual != null ? `The 12-week study book in the app is $${Number(this.state.pricing.individual).toFixed(Number(this.state.pricing.individual) % 1 ? 2 : 0)} for one year, or included if your church has seats or you have the printed book.` : 'The 12-week study book in the app is a separate one-year purchase, or included if your church has seats or you have the printed book.',
       authTitle: scr === 'register' ? 'Create Account' : 'Sign In',
       authCta: s.busy ? 'Please wait…' : scr === 'register' ? 'Create account' : 'Sign in',
       authSwapLabel: scr === 'register' ? 'I already have an account' : 'New here? Create an account',
@@ -1401,7 +1403,7 @@ class Component extends DCLogic {
       menuGroups: [
         { title: 'Account', items: [['My Account', 'icon-user-round', () => this.go('account', { acct: null })], ['My Giving Plan', 'icon-sprout', () => this.go('plan', { planDraft: u.plan || '' })], ['Notifications', 'icon-bell', () => this.go('notifications')]] },
         { title: 'My records', items: [['My Statements', 'icon-file-text', () => this.tab('statement', { stWeek: null })], ['Deposit History', 'icon-history', () => this.go('history')], ['My Notes', 'icon-notebook-pen', () => openNotes(curWeek)], ['My Balance', 'icon-infinity', () => this.go('balance')], ['My Redemptions', 'icon-coins', () => this.go('redemptions')], ['Progress & Milestones', 'icon-flag', () => this.go('milestones')], ['Starter to Standard', 'icon-map', () => this.go('journey')]] },
-        { title: 'The Book', items: [['Read the Book', 'icon-book-open', () => { location.href = 'read.html'; }], ['Join My Church', 'icon-church', () => this.go('account', { acct: null })], ['Time4God Challenge', 'icon-flag', () => { location.href = 'challenges.html'; }], ['Leader Console', 'icon-users', () => { location.href = 'leader.html'; }]] },
+        { title: 'The Book', items: [['Get the Study Book', 'icon-tag', () => { location.href = 'access.html'; }], ['Read the Book', 'icon-book-open', () => { location.href = 'read.html'; }], ['Join My Church', 'icon-church', () => this.go('account', { acct: null })], ['Time4God Challenge', 'icon-flag', () => { location.href = 'challenges.html'; }], ['Leader Console', 'icon-users', () => { location.href = 'leader.html'; }]] },
         { title: 'About', items: [['Privacy & Church View', 'icon-shield-check', () => this.go('privacy')], ['About The 144(P) Plan', 'icon-info', () => this.go('about')], ['Help & Support', 'icon-circle-help', () => this.go('help')], ['Install the App', 'icon-download', () => this.go('install')]] },
       ].map(g => ({ title: g.title, items: g.items.map(([label, icon, open]) => ({ label, icon, open })) })),
       openAccount: () => this.go('account', { acct: null }), signOut: () => this.signOut(),
