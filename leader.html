@@ -676,7 +676,19 @@ table.mini td{padding:3px 12px 3px 0}
       <input id="sSupport" type="email" autocomplete="off" value="${esc(S.support_email || '')}" placeholder="name@example.com">
       <div class="row" style="margin-top:16px"><button class="btn teal" type="submit">Save settings</button><button class="btn alt" type="button" id="sTest">Send a test email</button></div>
       <p class="muted" style="margin-top:8px;font-size:13px">The test goes to the admin notification email. Reply to it to check the reply-to address.${S.updated_at ? ` Last changed ${fDate(S.updated_at)}.` : ''}</p>
-    </form>`; };
+    </form>
+    ${stripeCard()}`; };
+  function stripeCard() { const S = st.stripe;
+    if (!S) return '<div class="card"><strong>Stripe</strong><p class="muted" style="margin:6px 0 0">Checking your Stripe connection…</p></div>';
+    const wrongKey = /^pk_/.test(S.key_kind || '');
+    const ready = !S.error && S.charges_enabled && S.mode === 'live';
+    const row = (label, ok, text) => `<div class="row" style="padding:6px 0;border-bottom:1px solid #EEF2F4"><span class="grow">${label}</span>${ok === true ? '<span class="pill ok">Yes</span>' : ok === false ? '<span class="pill off">No</span>' : ''} <span class="muted">${text || ''}</span></div>`;
+    return `<div class="card"><div class="row"><strong class="grow">Stripe</strong>${ready ? '<span class="pill ok">Ready for real payments</span>' : S.mode === 'test' && !S.error ? '<span class="pill wait">Test mode (sandbox)</span>' : '<span class="pill off">Not ready</span>'}</div>
+      ${wrongKey ? `<p class="err" style="margin:10px 0">The key saved as <strong>STRIPE_SECRET_KEY</strong> is your <strong>publishable</strong> key (it starts with pk_). Payments need the <strong>secret</strong> key (it starts with sk_live_). In Stripe, open Developers › API keys, reveal the Secret key, and paste it into Supabase › Edge Functions › Secrets as STRIPE_SECRET_KEY, replacing the old value. Never paste it in a chat or email.</p>` : S.error ? `<p class="err" style="margin:10px 0">${esc(S.error)}</p>` : ''}
+      ${row('Mode', null, S.mode === 'live' ? 'Live (real money)' : S.mode === 'test' ? 'Test (sandbox, no real money)' : 'Unknown')}
+      ${S.error ? '' : row('Account', null, esc(S.name || '')) + row('Can take payments', !!S.charges_enabled) + row('Can send payouts to your bank', !!S.payouts_enabled) + row('Business details complete', !!S.details_submitted)
+        + ((S.requirements_due || []).length ? `<p class="muted" style="margin-top:8px">Stripe still needs: ${esc(S.requirements_due.join(', '))}. Finish these in your Stripe dashboard.</p>` : '')}
+    </div>`; }
   BIND.settings = () => {
     if (!$('setF')) return;
     $('setF').onsubmit = e => { e.preventDefault(); const a = { p_admin_emails: $('sAdmin').value, p_reply_to: $('sReply').value, p_support: $('sSupport').value };
@@ -873,7 +885,7 @@ table.mini td{padding:3px 12px 3px 0}
       if (st.tab === 'keys') { const [k, c, p, q] = await Promise.all([Cloud.rpc('admin_book_keys'), Cloud.rpc('admin_key_claims'), Cloud.rpc('admin_print_status'), Cloud.rpc('admin_key_questions')]); st.keys = k || []; st.claims = c || []; st.printStat = p; st.kq = q || []; }
       if (st.tab === 'dash') st.dash = await Cloud.rpc('admin_dashboard');
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
-      if (st.tab === 'settings') st.settings = await Cloud.rpc('admin_settings');
+      if (st.tab === 'settings') { st.settings = await Cloud.rpc('admin_settings'); st.stripe = null; Cloud.pay({ action: 'stripe_mode' }).then(r => { st.stripe = r || {}; if (st.tab === 'settings') render(); }).catch(e => { st.stripe = { error: errMsg(e) }; if (st.tab === 'settings') render(); }); }
       if (st.tab === 'nochurch') { const [a, b] = await Promise.all([Cloud.rpc('admin_no_church'), Cloud.rpc('admin_pending_members')]); st.nc = a || []; st.pend = b || []; st.ncSel = new Set(); st.pSel = new Set(); }
       if (st.tab === 'members') st.all = await Cloud.rpc('admin_all_members') || [];
       if (st.tab === 'amdash') st.amo = await Cloud.rpc('am_overview') || [];
