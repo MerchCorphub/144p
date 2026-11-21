@@ -104,18 +104,6 @@ html,body{width:100%;min-height:100%}
       </sc-if>
       <button onClick="{{ authSubmit }}" style="border:none;border-radius:12px;min-height:54px;background:#123C56;color:#FFFFFF;font-size:17px;font-weight:600;cursor:pointer">{{ authCta }}</button>
       <button onClick="{{ authSwap }}" style="border:none;background:transparent;min-height:44px;color:#075D61;font-size:15px;font-weight:600;cursor:pointer">{{ authSwapLabel }}</button>
-      <sc-if value="{{ isSignin }}" hint-placeholder-val="{{ false }}">
-        <div style="border-top:1px solid #E1E7EA;padding-top:18px;display:flex;flex-direction:column;gap:10px">
-          <div style="font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:#6A7A84">Try a sample account · demonstration data</div>
-          <sc-for list="{{ demoAccounts }}" as="d" hint-placeholder-count="2">
-            <button onClick="{{ d.pick }}" style="display:flex;align-items:center;gap:12px;text-align:left;background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:14px;cursor:pointer;color:#173344">
-              <span style="width:40px;height:40px;border-radius:50%;background:#E8F5F3;color:#075D61;display:flex;align-items:center;justify-content:center;font-size:19px"><i class="icon-user-round"></i></span>
-              <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">{{ d.name }}</span><span style="font-size:13px;color:#6A7A84">{{ d.sub }}</span></span>
-              <i class="icon-chevron-right" style="color:#6A7A84"></i>
-            </button>
-          </sc-for>
-        </div>
-      </sc-if>
     </div>
   </div>
 </sc-if>
@@ -590,7 +578,8 @@ html,body{width:100%;min-height:100%}
       </div>
       <sc-if value="{{ rd.isServe }}" hint-placeholder-val="{{ false }}">
         <div style="display:flex;flex-direction:column;gap:8px">
-          <div style="font-size:15px;font-weight:700">Mission board <span style="font-weight:400;color:#6A7A84">· sample openings</span></div>
+          <div style="font-size:15px;font-weight:700">Mission board</div>
+          <sc-if value="{{ rd.noSlots }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;color:#6A7A84;line-height:1.45;background:#FFFFFF;border:1px solid #E1E7EA;border-radius:14px;padding:12px 14px">Your church hasn’t posted serving opportunities here yet. Ask your church leader where help is needed this week.</div></sc-if>
           <sc-for list="{{ rd.slots }}" as="sl" hint-placeholder-count="3">
             <button onClick="{{ sl.pick }}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;border:2px solid {{ sl.border }};background:#FFFFFF;cursor:pointer;color:#173344;text-align:left">
               <span style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font-size:15px;font-weight:600">{{ sl.title }}</span><span style="font-size:13px;color:#6A7A84">{{ sl.when }}</span></span>
@@ -863,10 +852,8 @@ const CATALOG = [
   { id: 'tools', title: 'Tools for time with God', cost: 500, costLabel: '500 min', icon: 'icon-notebook-pen', desc: 'A journal, a study Bible, an audio Bible subscription.', help: 'Builds daily habits, deeper Bible study and a stronger walk with God.' },
   { id: 'seat', title: 'Sponsor a seat', cost: 1008, costLabel: '1,008 min', icon: 'icon-armchair', desc: "A newcomer's book for the next Table.", help: 'Opens the plan to someone new.' },
   { id: 'meal', title: 'Host the Table meal', cost: 500, costLabel: '500 min', icon: 'icon-utensils', desc: "Choose and host one week's meal for your Table.", help: 'Time given as hospitality to your Table.' }];
-const SLOTS = [
-  { id: 's1', title: 'Food pantry', when: 'Saturday · 9–11 AM', hours: 2 },
-  { id: 's2', title: 'Senior visits', when: 'Tuesday · 2–3 PM', hours: 1 },
-  { id: 's3', title: 'Church repair day', when: 'Saturday · 8 AM–12 PM', hours: 4 }];
+// Serving openings come from your church; none are posted in the app yet (the sample openings were removed)
+const SLOTS = [];
 
 const pad = n => String(n).padStart(2, '0');
 const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
@@ -912,7 +899,17 @@ function emptyDB() { return { partners: [], deposits: [], reflections: {}, redem
 function loadDB() {
   let db = null; try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
   if (!db || !db.partners) db = emptyDB();
-  if (!db.partners.some(p => p.demo)) { seedDemos(db); persist(db); }
+  // Sample accounts were removed: clear any left on this device from older versions
+  if (db.partners.some(p => p.demo)) {
+    const gone = new Set(db.partners.filter(p => p.demo).map(p => p.id));
+    db.partners = db.partners.filter(p => !gone.has(p.id));
+    db.deposits = (db.deposits || []).filter(d => !gone.has(d.pid || d.partnerId));
+    db.redemptions = (db.redemptions || []).filter(r => !gone.has(r.pid || r.partnerId));
+    Object.keys(db.reflections || {}).forEach(k => { if (gone.has(k.split('|')[0])) delete db.reflections[k]; });
+    ['prefs', 'timers'].forEach(t => Object.keys(db[t] || {}).forEach(k => { if (gone.has(k)) delete db[t][k]; }));
+    if (gone.has(db.session)) db.session = null;
+    persist(db);
+  }
   return db;
 }
 const isIOS = () => /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
@@ -1365,7 +1362,7 @@ class Component extends DCLogic {
     else if (available < rdCost) rdLabel = 'Not enough available minutes';
     else { rdLabel = `Redeem ${fmt(rdCost)} min`; rdOk = true; }
     const rd = {
-      ...item, isServe: item.id === 'serve', btnLabel: rdLabel, btnBg: rdOk ? '#123C56' : '#9AA8B0',
+      ...item, isServe: item.id === 'serve', noSlots: item.id === 'serve' && !SLOTS.length, btnLabel: rdLabel, btnBg: rdOk ? '#123C56' : '#9AA8B0',
       slots: SLOTS.map(x => { const taken = claimed.has(x.id); return { ...x, when: taken ? x.when + ' · Claimed' : x.when, costLabel: fmt(x.hours * 60) + ' min', border: s.slotId === x.id ? '#075D61' : '#E1E7EA', pick: () => (taken ? null : this.setState({ slotId: x.id })) }; }),
       redeem: () => { if (rdOk) this.doRedeem(item, rdCost, item.id === 'serve' ? `${slot.title}, ${slot.when}` : item.title, slot && slot.id); },
     };
