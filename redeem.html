@@ -148,7 +148,12 @@ input.key{text-transform:uppercase;letter-spacing:.08em;font-weight:700;text-ali
 
   async function start(key) {
     st.err = st.msg = ''; st.busy = true; render();
-    try { st.q = await Cloud.rpc('redeem_start', { p_code: key }); st.left = null; try { localStorage.setItem(KEY, key.trim().toUpperCase()); } catch (e) {} }
+    try {
+      const r = await Cloud.rpc('redeem_start', { p_code: key }); st.left = null;
+      // Some keys don't ask the page question: the app edition is turned on right away
+      if (r && r.status === 'ok') { st.q = null; st.done = true; try { localStorage.removeItem(KEY); } catch (e) {} }
+      else { st.q = r; try { localStorage.setItem(KEY, key.trim().toUpperCase()); } catch (e) {} }
+    }
     catch (e) { st.err = errMsg(e); }
     st.busy = false; render();
     if ($('ans')) $('ans').focus();
