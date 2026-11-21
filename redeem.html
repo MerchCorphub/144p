@@ -98,7 +98,7 @@ input.key{text-transform:uppercase;letter-spacing:.08em;font-weight:700;text-ali
 </head>
 <body>
 <header><div class="in">
-  <a href="./">‹ App</a>
+  <a href="./" id="backApp">‹ Back</a>
   <h1><img src="t4g/t4g-icon-48.png" alt="" width="34" height="34"><span class="tx">App edition<small>The 144(P) Plan</small></span></h1>
   <button class="link" id="signOut" hidden type="button">Sign out</button>
 </div></header>
@@ -114,6 +114,9 @@ input.key{text-transform:uppercase;letter-spacing:.08em;font-weight:700;text-ali
   const notes = () => (st.err ? `<div class="err" role="alert">${esc(st.err)}</div>` : '') + (st.msg ? `<div class="ok">${esc(st.msg)}</div>` : '');
   const hero = `<div class="hero small"><picture><source srcset="t4g/t4g-logo.webp" type="image/webp"><img src="t4g/t4g-logo.png" alt="Time4God Challenge" width="150" height="150"></picture><h2>Time4God Challenge</h2><div class="s2">The 144(P) Plan</div><p>Your printed copy of <em>What Will You Give Today?</em> includes the app edition for one year.</p></div>`;
 
+  // ‹ Back: one step back. Inside this page it steps back a view; otherwise it returns to where you came from in the app.
+  function toApp() { try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) return history.back(); } catch (e) {} location.href = './'; }
+  document.getElementById('backApp').onclick = e => { e.preventDefault(); if (st.q && !st.done) { st.q = null; st.err = ''; render(); } else toApp(); };
   function render() {
     $('signOut').hidden = !st.me;
     let html = hero;
