@@ -72,7 +72,7 @@ input[type=text],input[type=email],input[type=password]{width:100%;min-height:48
 </head>
 <body>
 <header><div class="in">
-  <a href="./" id="backApp">‹ App</a>
+  <a href="./" id="backApp">‹ Back</a>
   <h1 id="hdr">The Book</h1>
   <button class="link" id="signOut" hidden type="button">Sign out</button>
 </div></header>
@@ -204,6 +204,12 @@ input[type=text],input[type=email],input[type=password]{width:100%;min-height:48
       <p class="foot">© 2026 C. P. Parker. For your personal reading in The 144(P) Plan app.</p>`,
       after: () => $app.querySelectorAll('[data-slug]').forEach(b => b.onclick = () => openSection(b.dataset.slug)) };
   }
+  // ‹ Back: one step back. Inside this page it steps back a view; otherwise it returns to where you came from in the app.
+  function toApp() { try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) return history.back(); } catch (e) {} location.href = './'; }
+  // Opening a chapter from the contents adds a history step, so Back (or the phone's back gesture) returns to the contents
+  function closeChapter() { Speech.stop(); st.open = null; render(); }
+  window.addEventListener('popstate', () => { if (st.open) closeChapter(); });
+  document.getElementById('backApp').onclick = e => { e.preventDefault(); if (st.open) { if (history.state && history.state.chapter) history.back(); else closeChapter(); } else toApp(); };
   async function openSection(slug, keepListening) {
     st.err = '';
     try {
@@ -211,6 +217,7 @@ input[type=text],input[type=email],input[type=password]{width:100%;min-height:48
       const row = Cloud.ok(await c.from('book_sections').select('slug,title,content_html,unlock_week').eq('slug', slug).maybeSingle());
       if (!row) { st.err = 'That section isn’t open yet.'; return render(); }
       if (keepListening) Speech.queueNext();
+      if (!st.open) { try { history.pushState({ chapter: true }, ''); } catch (e) {} }
       st.open = row; render();
     } catch (x) { st.err = errMsg(x); render(); }
   }
@@ -238,7 +245,7 @@ input[type=text],input[type=email],input[type=password]{width:100%;min-height:48
       <p class="foot">© 2026 C. P. Parker. All rights reserved. Shared with ${esc(who)} for personal reading.</p>`,
       after: () => {
         document.getElementById('txt').appendChild(safeHTML(r.content_html));
-        document.getElementById('toToc').onclick = () => { Speech.stop(); st.open = null; render(); };
+        document.getElementById('toToc').onclick = () => { if (history.state && history.state.chapter) history.back(); else closeChapter(); };
         if (prev) document.getElementById('pv').onclick = () => { Speech.stop(); openSection(prev.slug); };
         if (next) document.getElementById('nx').onclick = () => { Speech.stop(); openSection(next.slug); };
         Speech.bind(next ? () => openSection(next.slug, true) : null);

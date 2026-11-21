@@ -837,6 +837,7 @@ html,body{width:100%;min-height:100%}
 </x-dc>
 <script type="text/x-dc" data-dc-script data-props="{&quot;servingEnabled&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Redemption&quot;},&quot;catalogEnabled&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Redemption&quot;}}">
 const KEY = '144p-app-v2';
+const NAV_KEY = '144p-nav';
 const CATS = [
   { k: 'praying', name: 'Praying', icon: 'icon-hand-heart', color: '#B4601A', tint: '#FBEBDC' },
   { k: 'reading', name: 'Reading', icon: 'icon-book-open', color: '#2A62A6', tint: '#E2ECF8' },
@@ -998,6 +999,19 @@ class Component extends DCLogic {
     try { if (window.Cloud && Cloud.rpc) Cloud.rpc('public_pricing').then(p => this.setState({ pricing: p })).catch(() => {}); } catch (e) {}
     try { if (window.Cloud && Cloud.rpc) Cloud.rpc('public_contact').then(c => this.setState({ supportEmail: (c && c.support_email) || '' })).catch(() => {}); } catch (e) {}
     this.onOnline = () => this.cloudRefresh(); window.addEventListener('online', this.onOnline);
+    // Back navigation: coming back from another page (the book, challenges, study book page)
+    // returns to the screen you left, not the home page.
+    try {
+      const nav = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || {};
+      const saved = JSON.parse(sessionStorage.getItem(NAV_KEY) || 'null');
+      if (saved && this.me() && (nav.type === 'back_forward' || sessionStorage.getItem(NAV_KEY + '-leave'))) {
+        sessionStorage.removeItem(NAV_KEY + '-leave');
+        if (saved.screen && !['welcome', 'signin', 'register', 'deposit'].includes(saved.screen)) this.setState({ screen: saved.screen, stack: (saved.stack || []).filter(x => x !== 'deposit') });
+      }
+    } catch (e) {}
+    // The phone's back gesture and the browser back button step back one screen inside the app
+    this.onPop = () => { if (this.state.stack.length) this.back(); };
+    window.addEventListener('popstate', this.onPop);
     this.iv = setInterval(() => { const u = this.me(); if (!u) return; const t = this.state.db.timers[u.id]; if (t && t.running) this.forceUpdate(); this.checkReminder(u); if (u.cloud && document.visibilityState === 'visible' && Date.now() - (this.lastPull || 0) > 60000) { this.lastPull = Date.now(); this.cloudRefresh(); } }, 1000);
     try { if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {}); } catch (e) {}
     this.onStore = e => { if (e.key === KEY) this.setState({ db: loadDB() }); };
@@ -1014,6 +1028,7 @@ class Component extends DCLogic {
     window.addEventListener('appinstalled', this.onInstalled);
   }
   componentDidUpdate() {
+    try { sessionStorage.setItem(NAV_KEY, JSON.stringify({ screen: this.state.screen, stack: this.state.stack })); } catch (e) {}
     const u = this.me(), t = u && this.state.db.timers[u.id], running = !!(t && t.running);
     const want = running && this.state.screen === 'deposit' && document.visibilityState === 'visible';
     if (want && !this.wake && navigator.wakeLock && !this.wakeReq) { this.wakeReq = true; navigator.wakeLock.request('screen').then(l => { this.wake = l; this.wakeReq = false; l.addEventListener('release', () => { this.wake = null; }); }).catch(() => { this.wakeReq = false; }); }
@@ -1053,7 +1068,11 @@ class Component extends DCLogic {
   flash(m) { this.setState({ toast: m }); clearTimeout(this.tt); this.tt = setTimeout(() => this.setState({ toast: '' }), 2800); }
   fail(m) { this.setState({ err: m }); }
   toTop() { window.scrollTo(0, 0); const sc = document.querySelector('[data-app-scroller]'); if (sc) sc.scrollTop = 0; }
-  go(screen, extra) { this.setState(s => ({ stack: [...s.stack, s.screen], screen, err: '', ...(extra || {}) })); this.toTop(); }
+  go(screen, extra) { this.setState(s => ({ stack: [...s.stack, s.screen], screen, err: '', ...(extra || {}) })); this.toTop(); try { history.pushState({ t4g: true }, ''); } catch (e) {} }
+  // One step back: through the browser history when this screen added a step, so the phone's back gesture stays in step
+  navBack() { try { if (history.state && history.state.t4g && this.state.stack.length) return history.back(); } catch (e) {} this.back(); }
+  // Leaving for another page of the app (book, challenges, study book): remember where you were
+  leave(url) { try { sessionStorage.setItem(NAV_KEY + '-leave', '1'); } catch (e) {} location.href = url; }
   tab(screen, extra) { this.setState({ stack: [], screen, err: '', dep: null, ...(extra || {}) }); this.toTop(); }
   back() { this.setState(s => { const st = [...s.stack]; let prev = st.pop() || 'home'; if (prev === 'deposit') prev = st.pop() || 'home'; return { stack: st, screen: prev, err: '', dep: null }; }); this.toTop(); }
   ask(title, body, ok, action, danger) { this.setState({ confirm: { title, body, ok, action, danger } }); }
@@ -1166,7 +1185,7 @@ class Component extends DCLogic {
         Object.assign(x, { category: d.category, minutes: m, date: d.date, time: d.time, note, updatedAt: Date.now() });
         this.audit(db, 'deposit.revised', 'deposit', x.id, { before, after: { category: x.category, minutes: m, date: x.date, time: x.time }, noteChanged });
       });
-      this.setState({ busy: false }); this.back(); this.flash('Deposit updated. Statements recalculated.');
+      this.setState({ busy: false }); this.navBack(); this.flash('Deposit updated. Statements recalculated.');
       return;
     }
     if (s.db.deposits.some(x => x.clientKey === d.clientKey)) { this.setState({ busy: false }); return; }
@@ -1180,7 +1199,7 @@ class Component extends DCLogic {
     this.ask('Void this deposit?', 'It will be removed from your balances and statements. A record of the change stays in your private history.', 'Void deposit', () => {
       const u = this.me();
       this.commit(db => { const x = db.deposits.find(y => y.id === id && y.partnerId === u.id); if (!x || x.voidedAt) return; x.voidedAt = Date.now(); this.audit(db, 'deposit.voided', 'deposit', id); });
-      this.back(); this.flash('Deposit voided. Statements recalculated.');
+      this.navBack(); this.flash('Deposit voided. Statements recalculated.');
     }, true);
   }
 
@@ -1396,7 +1415,7 @@ class Component extends DCLogic {
       hideTour: () => { try { localStorage.setItem(TOUR_KEY, '1'); } catch (e) {} this.setState({ tourHidden: true }); },
       tourGo: () => { try { localStorage.setItem(TOUR_KEY, '1'); } catch (e) {} this.setState({ tourHidden: true }); this.openDeposit(); },
       showTourAgain: () => { try { localStorage.removeItem(TOUR_KEY); } catch (e) {} this.setState({ help: null, tourHidden: false }); if (scr !== 'home') this.tab('home'); },
-      hdrBack: () => { if (scr === 'deposit' && d.step > 1) return this.setDep({ step: d.step - 1 }); this.back(); },
+      hdrBack: () => { if (scr === 'deposit' && d.step > 1) return this.setDep({ step: d.step - 1 }); this.navBack(); },
       toMore: () => this.tab('more'), isDemo: !!u.demo, showNav: scr !== 'deposit' && !s.kb, navItems,
       fullName: `${u.first} ${u.last}`, initials: (u.first[0] + u.last[0]).toUpperCase(), phaseLine, phaseShort, levelSuffix: level ? ` · Level: ${level}` : '',
 
@@ -1499,8 +1518,8 @@ class Component extends DCLogic {
 
       menuGroups: [
         { title: 'Account', items: [['My Account', 'icon-user-round', () => this.go('account', { acct: null })], ['My Giving Plan', 'icon-sprout', () => this.go('plan', { planDraft: u.plan || '' })], ['Notifications', 'icon-bell', () => this.go('notifications')]] },
-        { title: 'My records', items: [['My Statements', 'icon-file-text', () => this.tab('statement', { stWeek: null })], ['Deposit History', 'icon-history', () => this.go('history')], ['My Notes', 'icon-notebook-pen', () => openNotes(curWeek)], ['My Balance', 'icon-infinity', () => this.go('balance')], ['My Redemptions', 'icon-coins', () => this.go('redemptions')], ['Progress & Milestones', 'icon-flag', () => this.go('milestones')], ['Starter to Standard', 'icon-map', () => this.go('journey')]] },
-        { title: 'The Book', items: [['Get the Study Book', 'icon-tag', () => { location.href = 'access.html'; }], ['Read the Book', 'icon-book-open', () => { location.href = 'read.html'; }], ['Join My Church', 'icon-church', () => this.go('account', { acct: null })], ['Time4God Challenge', 'icon-flag', () => { location.href = 'challenges.html'; }], ['Leader Console', 'icon-users', () => { location.href = 'leader.html'; }]] },
+        { title: 'My records', items: [['My Statements', 'icon-file-text', () => this.go('statement', { stWeek: null })], ['Deposit History', 'icon-history', () => this.go('history')], ['My Notes', 'icon-notebook-pen', () => openNotes(curWeek)], ['My Balance', 'icon-infinity', () => this.go('balance')], ['My Redemptions', 'icon-coins', () => this.go('redemptions')], ['Progress & Milestones', 'icon-flag', () => this.go('milestones')], ['Starter to Standard', 'icon-map', () => this.go('journey')]] },
+        { title: 'The Book', items: [['Get the Study Book', 'icon-tag', () => this.leave('access.html')], ['Read the Book', 'icon-book-open', () => this.leave('read.html')], ['Join My Church', 'icon-church', () => this.go('account', { acct: null })], ['Time4God Challenge', 'icon-flag', () => this.leave('challenges.html')], ['Leader Console', 'icon-users', () => this.leave('leader.html')]] },
         { title: 'About', items: [['Privacy & Church View', 'icon-shield-check', () => this.go('privacy')], ['About The 144(P) Plan', 'icon-info', () => this.go('about')], ['How the App Works', 'icon-sprout', () => { try { localStorage.removeItem(TOUR_KEY); } catch (e) {} this.setState({ tourHidden: false }); this.tab('home'); }], ['Help & Support', 'icon-circle-help', () => this.go('help')], ['Install the App', 'icon-download', () => this.go('install')]] },
       ].map(g => ({ title: g.title, items: g.items.map(([label, icon, open]) => ({ label, icon, open })) })),
       openAccount: () => this.go('account', { acct: null }), signOut: () => this.signOut(),

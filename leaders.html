@@ -121,7 +121,7 @@ select{width:100%;min-height:48px;border:1px solid #9AA8B0;border-radius:10px;pa
 </head>
 <body>
 <header><div class="in">
-  <a href="./">‹ App</a>
+  <a href="./" id="backApp">‹ Back</a>
   <h1><img src="t4g/t4g-icon-48.png" alt="" width="34" height="34"><span class="tx">For leaders<small>The 144(P) Plan</small></span></h1>
   <button class="link" id="signOut" hidden type="button">Sign out</button>
 </div></header>
@@ -171,6 +171,9 @@ const nf = n => Number(n).toLocaleString('en-US');
           <p class="sub" style="font-size:13px;margin-top:8px">Once approved you get your own group code and can buy seats for your members, starting at ${esc(String((st.price || {}).church_min_seats || 5))} seats.</p></form>`}`;
   }
 
+  // ‹ Back: one step back. Inside this page it steps back a view; otherwise it returns to where you came from in the app.
+  function toApp() { try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) return history.back(); } catch (e) {} location.href = './'; }
+  document.getElementById('backApp').onclick = e => { e.preventDefault(); toApp(); };
   function render() {
     $('signOut').hidden = !st.me;
     const p = st.price || {};

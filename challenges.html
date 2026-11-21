@@ -93,7 +93,7 @@ ol.board li.me{background:#F2FAF8;font-weight:700}
 </head>
 <body>
 <header><div class="in">
-  <a href="./" id="back">‹ App</a>
+  <a href="./" id="back">‹ Back</a>
   <h1 id="hdr"><img src="t4g/t4g-icon-48.png" alt="" width="34" height="34"><span class="tx">Time4God Challenge<small>The 144(P) Plan</small></span></h1>
   <button class="link" id="signOut" hidden type="button">Sign out</button>
 </div></header>
@@ -164,7 +164,18 @@ ol.board li.me{background:#F2FAF8;font-weight:700}
   }
 
   // ---------- views ----------
+  // ‹ Back: one step back. Inside this page it steps back a view; otherwise it returns to where you came from in the app.
+  function toApp() { try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) return history.back(); } catch (e) {} location.href = './'; }
+  // Leaving the main Challenges view adds a history step; Back (or the phone's back gesture) returns to it
+  let shownView = 'home';
+  window.addEventListener('popstate', () => { if (st.view !== 'home') { clearCode(); st.invite = null; st.view = 'home'; st.err = st.msg = ''; render(); } });
+  document.getElementById('back').onclick = e => { e.preventDefault();
+    if (st.me && st.view !== 'home') { if (history.state && history.state.sub) history.back(); else { st.invite = null; st.view = 'home'; st.err = st.msg = ''; render(); } }
+    else toApp(); };
   function render() {
+    if (st.view !== shownView) { if (shownView === 'home' && st.view !== 'home' && st.me) { try { history.pushState({ sub: true }, ''); } catch (e) {} }
+      else if (st.view === 'home' && history.state && history.state.sub) { try { history.replaceState(null, ''); } catch (e) {} }
+      shownView = st.view; }
     $('signOut').hidden = !st.me;
     const v = (st.me ? VIEWS[st.view] || VIEWS.home : VIEWS.signedOut)();
     $app.innerHTML = v.html; (v.after || (() => {}))();
