@@ -27,6 +27,20 @@ nav .in{max-width:1080px;margin:0 auto;display:flex;gap:4px;overflow-x:auto;padd
 nav button{background:none;border:0;border-bottom:3px solid transparent;padding:14px 12px;font-weight:600;color:#4F5F68;cursor:pointer;white-space:nowrap}
 nav button[aria-current=page]{color:#123C56;border-bottom-color:#075D61}
 main{max-width:1080px;margin:0 auto;padding:20px 20px 60px}
+nav .grp{display:none}
+/* Admin Panel: tabs down the left side on wider screens */
+@media (min-width:800px){
+  body.side .shell{display:flex;align-items:flex-start}
+  body.side nav{position:sticky;top:0;flex:0 0 220px;height:100vh;overflow-y:auto;border-bottom:0;border-right:1px solid #E1E7EA}
+  body.side nav .in{flex-direction:column;gap:2px;padding:14px 10px 40px;max-width:none;overflow:visible}
+  body.side nav button{text-align:left;border-bottom:0;border-left:3px solid transparent;border-radius:0 8px 8px 0;padding:10px 12px;width:100%}
+  body.side nav button:hover{background:#F1F5F7;color:#123C56}
+  body.side nav button[aria-current=page]{background:#E6F2F2;border-left-color:#075D61;color:#123C56}
+  body.side nav .grp{display:block;font-size:11.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#6A7A84;padding:14px 12px 6px}
+  body.side nav .grp:first-child{padding-top:4px}
+  body.side main{flex:1;min-width:0;max-width:1100px;margin:0}
+  body.side header .in{max-width:none}
+}
 h2{font-family:'Source Serif 4',Georgia,serif;font-weight:600;color:#123C56;font-size:24px;margin:6px 0 4px}
 p.sub{margin:4px 0 14px;color:#4F5F68;line-height:1.5}
 .card{background:#fff;border:1px solid #E1E7EA;border-radius:12px;padding:16px;margin-bottom:16px}
@@ -96,8 +110,10 @@ table.mini td{padding:3px 12px 3px 0}
 </head>
 <body>
 <header><div class="in"><h1 id="ttl">The 144(P) Plan · Leader Console</h1><a class="hlink" href="challenges.html">Challenges</a><span class="who" id="who"></span><button id="out" type="button" hidden>Sign out</button></div></header>
-<nav id="nav" hidden><div class="in" id="tabs"></div></nav>
+<div class="shell">
+<nav id="nav" hidden aria-label="Sections"><div class="in" id="tabs"></div></nav>
 <main id="app" aria-live="polite"><p class="sub">Loading…</p></main>
+</div>
 <script>
 (function () {
   const $ = id => document.getElementById(id), $app = $('app');
@@ -118,7 +134,14 @@ table.mini td{padding:3px 12px 3px 0}
   const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'], ...(st.admin ? [['dash', 'Dashboard'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['settings', 'Settings']] : [])];
   function renderNav() {
     $('nav').hidden = false;
-    $('tabs').innerHTML = TABS().map(([k, t]) => `<button type="button" data-tab="${k}" ${st.tab === k ? 'aria-current="page"' : ''}>${t}</button>`).join('');
+    document.body.classList.toggle('side', !!st.admin);
+    const btn = ([k, t]) => `<button type="button" data-tab="${k}" ${st.tab === k ? 'aria-current="page"' : ''}>${t}</button>`;
+    const T = TABS();
+    if (st.admin) {
+      // Admin Panel: admin sections first, then the church tools
+      const mine = ['approvals', 'groups', 'messages'];
+      $('tabs').innerHTML = `<div class="grp">Admin</div>${T.filter(x => !mine.includes(x[0])).map(btn).join('')}<div class="grp">Church tools</div>${T.filter(x => mine.includes(x[0])).map(btn).join('')}`;
+    } else $('tabs').innerHTML = T.map(btn).join('');
     $('tabs').querySelectorAll('[data-tab]').forEach(b => b.onclick = async () => { st.tab = b.dataset.tab; st.msg = st.err = ''; await loadTab(); });
   }
   function render() { renderNav(); $app.innerHTML = notes() + (VIEWS[st.tab] || VIEWS.approvals)(); (BIND[st.tab] || (() => {}))(); }
@@ -740,7 +763,7 @@ table.mini td{padding:3px 12px 3px 0}
     else if (payErr) { flash(payErr, true); render(); }
   }
   function signin() {
-    $('nav').hidden = true;
+    $('nav').hidden = true; document.body.classList.remove('side');
     $app.innerHTML = `<form class="card signin" id="si"><h2>Sign in</h2><p class="sub">Use your 144(P) Plan account.</p>${notes()}
       <label for="em">Email</label><input id="em" type="email" autocomplete="email" required>
       <label for="pw" style="margin-top:10px">Password</label><input id="pw" type="password" autocomplete="current-password" required>
