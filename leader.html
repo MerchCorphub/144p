@@ -47,7 +47,7 @@ p.sub{margin:4px 0 14px;color:#4F5F68;line-height:1.5}
 .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
 .grow{flex:1}
 label{font-size:13px;font-weight:600;color:#4F5F68;display:block;margin-bottom:4px}
-input[type=text],input[type=email],input[type=password],input[type=number],input[type=date],select,textarea{min-height:42px;border:1px solid #9AA8B0;border-radius:8px;padding:8px 10px;background:#fff;color:#173344;font-size:15px}
+input[type=text],input[type=search],input[type=email],input[type=password],input[type=number],input[type=date],select,textarea{min-height:42px;border:1px solid #9AA8B0;border-radius:8px;padding:8px 10px;background:#fff;color:#173344;font-size:15px}
 textarea{width:100%;min-height:320px;font-family:ui-monospace,Menlo,monospace;font-size:13px;line-height:1.5}
 .btn{min-height:42px;border:0;border-radius:8px;background:#123C56;color:#fff;font-weight:600;padding:0 16px;cursor:pointer}
 .btn.teal{background:#075D61}
@@ -132,7 +132,7 @@ table.mini td{padding:3px 12px 3px 0}
 
   // ---------- tabs ----------
   const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'],
-    ...(st.admin ? [['dash', 'Dashboard'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['settings', 'Settings'], ...(st.owner ? [['roles', 'Roles']] : [])]
+    ...(st.admin ? [['dash', 'Dashboard'], ['nochurch', 'No church'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['settings', 'Settings'], ...(st.owner ? [['roles', 'Roles']] : [])]
       : st.am ? [['amdash', 'My churches'], ['churches', 'Churches'], ['licenses', 'Licenses']] : [])];
   function renderNav() {
     $('nav').hidden = false;
@@ -524,6 +524,45 @@ table.mini td{padding:3px 12px 3px 0}
       ${P.map(p => `<tr><td class="muted">${fDate(p.paid_at || p.created_at)}</td><td>${esc(p.description)}</td><td>${esc(p.buyer || '')}<br><span class="muted">${esc(p.buyer_email || '')}</span></td><td><strong>${money(p.amount)}</strong></td><td>${p.status === 'paid' ? '<span class="pill ok">Paid</span>' : p.status === 'open' ? `<span class="pill wait">Invoice ${esc(p.invoice_number || '')} · due ${p.due_date ? fDate(p.due_date + 'T12:00:00') : ''}</span>` : p.status === 'void' ? '<span class="pill off">Invoice canceled</span>' : '<span class="pill off">Not completed</span>'}${p.method === 'invoice' && p.status === 'paid' ? ' <span class="muted">by invoice</span>' : ''}${p.test ? ' <span class="pill off">Test</span>' : ''}${p.invoice_url ? `<br><a href="${esc(p.invoice_url)}" target="_blank" rel="noopener">Invoice</a>` : ''}</td></tr>`).join('')}
       </tbody></table>` : '<p class="empty">No payments yet.</p>'}</div>`; };
 
+  // ---------- members with no church (admin) ----------
+  const NCF = { all: 'Everyone', book: 'Have the study book', active: 'Active in the last 30 days', never: 'Never logged time' };
+  function ncList() {
+    const q = (st.ncQ || '').trim().toLowerCase(), f = st.ncF || 'all', today = new Date().toISOString().slice(0, 10);
+    return (st.nc || []).filter(m => (!q || (m.name + ' ' + m.email).toLowerCase().includes(q))
+      && (f === 'all' || (f === 'book' && (m.own_seat || m.book_key || (m.guest_until && m.guest_until >= today))) || (f === 'active' && m.minutes_30 > 0) || (f === 'never' && !m.minutes_all)));
+  }
+  VIEWS.nochurch = () => { const all = st.nc || [], L = ncList(), ch = (st.allChurches || []).filter(c => c.status === 'active'), today = new Date().toISOString().slice(0, 10);
+    const opts = `<option value="">Choose a church…</option>${ch.map(c => `<option value="${c.id}">${esc(c.name)}${c.city ? ' · ' + esc(c.city) : ''}</option>`).join('')}`;
+    const book = m => m.own_seat ? '<span class="pill ok">Bought</span>' : m.book_key ? '<span class="pill ok">Book key</span>' : m.guest_until && m.guest_until >= today ? `<span class="pill wait">Guest until ${fDate(m.guest_until + 'T12:00:00')}</span>` : '<span class="muted">No</span>';
+    return `<h2>No church</h2><p class="sub">Members whose account isn’t in any church yet. Members join a church by entering its code in the app (My Account › Join my church). You can also add someone to a church here; they’re added as an approved member, and they and the church’s leaders get an email.</p>
+    <div class="tiles">${tile('No church', String(all.length), 'accounts')}${tile('Have the study book', String(all.filter(m => m.own_seat || m.book_key || (m.guest_until && m.guest_until >= today)).length), 'own seat, book key or guest seat')}${tile('Active · 30 days', String(all.filter(m => m.minutes_30 > 0).length), 'logged time')}${tile('Never logged time', String(all.filter(m => !m.minutes_all).length), '')}</div>
+    <div class="card"><div class="row"><input id="ncQ" type="search" placeholder="Search name or email" value="${esc(st.ncQ || '')}" style="flex:1;min-width:220px">
+      <select id="ncF">${Object.entries(NCF).map(([k, t]) => `<option value="${k}" ${(st.ncF || 'all') === k ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
+      ${st.ncSel && st.ncSel.size ? `<div class="row" style="margin-top:12px;padding:10px;background:#E6F2F2;border-radius:10px"><strong class="grow">${st.ncSel.size} selected</strong><select id="ncBulkCh" aria-label="Church">${opts}</select><button class="btn teal sm" type="button" id="ncBulk">Add to church</button></div>` : ''}</div>
+    <div class="card tbl">${L.length ? `<table><thead><tr><th><input type="checkbox" id="ncAll" aria-label="Select all" ${L.length && L.every(m => st.ncSel.has(m.partner_id)) ? 'checked' : ''}></th><th>Member</th><th>Signed up</th><th>Study book</th><th>Time with God</th><th>Add to a church</th></tr></thead><tbody>
+      ${L.map(m => `<tr><td><input type="checkbox" data-ncs="${m.partner_id}" ${st.ncSel.has(m.partner_id) ? 'checked' : ''} aria-label="Select ${esc(m.name)}"></td>
+        <td><strong>${esc(m.name)}</strong><br><a href="mailto:${esc(m.email)}" class="muted">${esc(m.email)}</a>${m.past_church ? `<br><span class="muted">Was ${m.past_status === 'removed' ? 'in' : 'asking to join'} ${esc(m.past_church)}</span>` : ''}</td>
+        <td class="muted">${fDate(m.created_at)}</td><td>${book(m)}</td>
+        <td>${m.minutes_all ? `${hm(m.minutes_all)} total<br><span class="muted">${m.minutes_30 ? hm(m.minutes_30) + ' in 30 days' : 'none in 30 days'}${m.last_active ? ' · last ' + fDate(m.last_active + 'T12:00:00') : ''}</span>` : '<span class="muted">None yet</span>'}</td>
+        <td><div class="row" style="flex-wrap:nowrap"><select data-ncch="${m.partner_id}" aria-label="Church for ${esc(m.name)}" style="max-width:200px">${opts}</select><button class="btn alt sm" type="button" data-ncadd="${m.partner_id}">Add</button></div></td></tr>`).join('')}
+      </tbody></table>` : `<p class="empty">${all.length ? 'No one matches.' : 'Everyone is in a church.'}</p>`}</div>`; };
+  BIND.nochurch = () => {
+    const keep = (id, fn) => { const el = $(id); if (!el) return; el.oninput = el.onchange = e => { fn(e.target.value); const pos = e.target.selectionStart; render(); const n = $(id); if (n) { n.focus(); try { if (pos != null) n.setSelectionRange(pos, pos); } catch (x) {} } }; };
+    keep('ncQ', v => { st.ncQ = v; }); keep('ncF', v => { st.ncF = v; });
+    $app.querySelectorAll('[data-ncs]').forEach(b => b.onchange = () => { b.checked ? st.ncSel.add(b.dataset.ncs) : st.ncSel.delete(b.dataset.ncs); render(); });
+    if ($('ncAll')) $('ncAll').onchange = e => { ncList().forEach(m => e.target.checked ? st.ncSel.add(m.partner_id) : st.ncSel.delete(m.partner_id)); render(); };
+    const add = async (ids, cid) => { if (!cid) throw new Error('Choose a church first.'); let n = 0; for (const id of ids) { await Cloud.rpc('admin_add_to_church', { p_partner: id, p_church: cid, p_notify: true }); n++; } return n; };
+    const cname = id => ((st.allChurches || []).find(c => c.id === id) || {}).name || 'the church';
+    $app.querySelectorAll('[data-ncadd]').forEach(b => b.onclick = () => { const id = b.dataset.ncadd, cid = $app.querySelector(`[data-ncch="${id}"]`).value, m = st.nc.find(x => x.partner_id === id);
+      if (!cid) return flash('Choose a church first.', true);
+      if (!confirm(`Add ${m.name} to ${cname(cid)} as an approved member? They and the church’s leaders get an email.`)) return;
+      run(async () => { await add([id], cid); await loadTab(true); }, `${m.name} added to ${cname(cid)}.`); });
+    if ($('ncBulk')) $('ncBulk').onclick = () => { const cid = $('ncBulkCh').value, ids = [...st.ncSel];
+      if (!cid) return flash('Choose a church first.', true);
+      if (!confirm(`Add ${ids.length} member${ids.length === 1 ? '' : 's'} to ${cname(cid)} as approved members? Each gets an email.`)) return;
+      run(async () => { const n = await add(ids, cid); await loadTab(true); flash(`${n} added to ${cname(cid)}.`); }); };
+  };
+
   // ---------- account manager: my churches ----------
   VIEWS.amdash = () => { const L = st.amo || [], nf = n => Number(n || 0).toLocaleString('en-US');
     const tot = k => L.reduce((a, x) => a + Number(x[k] || 0), 0);
@@ -663,7 +702,7 @@ table.mini td{padding:3px 12px 3px 0}
         ${tile('Accounts', n0(M.accounts), `+${n0(M.new_7)} this week · +${n0(M.new_30)} in 30 days`)}
         ${tile('In a church', n0(M.in_church), `${n0(M.pending)} waiting for approval`, M.pending > 0)}
         ${tile('Have the study book', n0(M.with_book), `${n0(M.own_seats)} bought their own · ${n0(M.key_claims)} with a book key`)}
-        ${tile('No church yet', n0(M.no_church), 'Candidates for a church code or own seat')}
+        ${tile('No church yet', n0(M.no_church), M.no_church ? '<a href="#" data-go="nochurch">See who →</a>' : 'Candidates for a church code or own seat')}
         ${D.guests ? tile('Guest seats used', `${n0(D.guests.used)} of ${n0(D.guests.given)}`, `${n0(D.guests.active)} reading now · ${n0(D.guests.kept_going)} kept going`) : ''}</div>
       ${bars('cSign', 'New accounts per week (last 12 weeks)', M.signups_by_week.map(r => ({ k: r.week, v: r.n })), n0, (k, full) => full ? 'Week of ' + dShort(k) : dShort(k))}
       <h3 class="dh">Engagement</h3><div class="tiles">
@@ -764,7 +803,7 @@ table.mini td{padding:3px 12px 3px 0}
       if (st.tab === 'groups') await loadGroups();
       if (st.tab === 'messages') { await loadGroups(); st.msgs = st.church ? (await Cloud.rpc('leader_messages', { cid: st.church.church_id }) || []) : []; }
       if (['prices', 'licenses'].includes(st.tab)) st.plans = Cloud.ok(await c.from('license_plans').select('*').order('sort_order'));
-      if (['licenses', 'churches', 'season'].includes(st.tab)) {
+      if (['licenses', 'churches', 'season', 'nochurch'].includes(st.tab)) {
         st.season = Cloud.ok(await c.from('seasons').select('*').eq('active', true).maybeSingle());
         st.allChurches = Cloud.ok(await c.from('churches').select('id,name,code,city,state,enrollment_policy,status,kind').neq('status', 'pending').order('name'));
       }
@@ -772,6 +811,7 @@ table.mini td{padding:3px 12px 3px 0}
       if (st.tab === 'dash') st.dash = await Cloud.rpc('admin_dashboard');
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
       if (st.tab === 'settings') st.settings = await Cloud.rpc('admin_settings');
+      if (st.tab === 'nochurch') { st.nc = await Cloud.rpc('admin_no_church') || []; st.ncSel = new Set(); }
       if (st.tab === 'amdash') st.amo = await Cloud.rpc('am_overview') || [];
       if (st.tab === 'roles') { const [r, ch] = await Promise.all([Cloud.rpc('admin_roles'), Cloud.rpc('admin_all_churches')]); st.roles = r || []; st.allCh = ch || []; }
       if (st.tab === 'churches') st.ams = await Cloud.rpc('church_account_managers') || [];
