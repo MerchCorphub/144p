@@ -72,3 +72,6 @@ date: 2026-11-18T01:30:00Z
 - Admins (`platform_admin`): the whole Admin Panel except Roles.
 - Account managers (`account_manager`, one role row with no church plus one row per assigned church): `private.is_church_admin` returns true for their churches, so they act as church admin there; they can also approve those churches' requests, assign church admins, and set licenses (RLS `clic_am_*`). Their panel: My churches (`am_overview`), Churches, Licenses, plus church tools. No prices, season, book, book keys, settings, dashboard or payments.
 - Account managers get a Bcc copy of their churches' new-member and group-leader-request emails (0021, `email_outbox.bcc`); if a church has no leader to email yet, they get it directly.
+
+## No church (Admin Panel)
+- Admin Panel › No church (migration 0022): accounts with no pending or approved church membership — study book status, time logged, past church — with search, filters, and Add to church (single or bulk). `admin_add_to_church` adds them as approved members and emails them (the church's leaders get the usual "joined" email).
