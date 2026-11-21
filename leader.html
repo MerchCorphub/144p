@@ -131,16 +131,18 @@ table.mini td{padding:3px 12px 3px 0}
   async function run(fn, okMsg) { try { await fn(); if (okMsg) flash(okMsg); } catch (e) { flash(errMsg(e), true); } render(); }
 
   // ---------- tabs ----------
-  const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'], ...(st.admin ? [['dash', 'Dashboard'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['settings', 'Settings']] : [])];
+  const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'],
+    ...(st.admin ? [['dash', 'Dashboard'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['settings', 'Settings'], ...(st.owner ? [['roles', 'Roles']] : [])]
+      : st.am ? [['amdash', 'My churches'], ['churches', 'Churches'], ['licenses', 'Licenses']] : [])];
   function renderNav() {
     $('nav').hidden = false;
-    document.body.classList.toggle('side', !!st.admin);
+    document.body.classList.toggle('side', !!(st.admin || st.am));
     const btn = ([k, t]) => `<button type="button" data-tab="${k}" ${st.tab === k ? 'aria-current="page"' : ''}>${t}</button>`;
     const T = TABS();
-    if (st.admin) {
+    if (st.admin || st.am) {
       // Admin Panel: admin sections first, then the church tools
       const mine = ['approvals', 'groups', 'messages'];
-      $('tabs').innerHTML = `<div class="grp">Admin</div>${T.filter(x => !mine.includes(x[0])).map(btn).join('')}<div class="grp">Church tools</div>${T.filter(x => mine.includes(x[0])).map(btn).join('')}`;
+      $('tabs').innerHTML = `<div class="grp">${st.admin ? 'Admin' : 'Account manager'}</div>${T.filter(x => !mine.includes(x[0])).map(btn).join('')}<div class="grp">Church tools</div>${T.filter(x => mine.includes(x[0])).map(btn).join('')}`;
     } else $('tabs').innerHTML = T.map(btn).join('');
     $('tabs').querySelectorAll('[data-tab]').forEach(b => b.onclick = async () => { st.tab = b.dataset.tab; st.msg = st.err = ''; await loadTab(); });
   }
@@ -161,7 +163,7 @@ table.mini td{padding:3px 12px 3px 0}
       }
     }
   }
-  const canName = () => st.church && (st.church.role === 'church_admin' || st.church.role === 'platform_admin');
+  const canName = () => st.church && ['church_admin', 'platform_admin', 'account_manager'].includes(st.church.role);
   const VIEWS = {}, BIND = {};
   VIEWS.approvals = () => {
     if (!st.churches.length) return `<h2>Approvals</h2><p class="sub">You aren’t a leader for any church yet. Your church admin can make you a group leader.</p>`;
@@ -296,11 +298,11 @@ table.mini td{padding:3px 12px 3px 0}
         <td><select data-f="status" aria-label="Status">${Object.entries(STATUS).map(([k, [t]]) => `<option value="${k}" ${(l.status || 'pending_payment') === k ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
         <td><button class="btn sm" type="button" data-savelic="${ch.id}">Save</button></td></tr>`; }).join('')}
       </tbody></table>` : `<p class="empty">No churches yet. Add one in the Churches tab.</p>`}</div>
-    <h2 style="font-size:20px">Individual seats</h2>
+    ${st.admin ? `<h2 style="font-size:20px">Individual seats</h2>
     <div class="card tbl">${st.seats.length ? `<table><thead><tr><th>Name</th><th>Email</th><th>Price</th><th>Status</th><th></th></tr></thead><tbody>
       ${st.seats.map(x => `<tr><td>${esc(x.name)}</td><td>${esc(x.email)}</td><td>${money(x.price)}</td><td>${pill(x.status)}</td>
         <td><div class="row">${x.status !== 'active' ? `<button class="btn teal sm" type="button" data-seat="${x.seat_id}" data-to="active">Mark paid</button>` : ''}${x.status !== 'canceled' ? `<button class="btn danger sm" type="button" data-seat="${x.seat_id}" data-to="canceled">Cancel</button>` : ''}</div></td></tr>`).join('')}
-      </tbody></table>` : `<p class="empty">No individual seat requests yet.</p>`}</div>`;
+      </tbody></table>` : `<p class="empty">No individual seat requests yet.</p>`}</div>` : ''}`;
   };
   BIND.licenses = () => {
     $app.querySelectorAll('[data-ch] select[data-f="plan_id"]').forEach(sel => sel.onchange = () => {
@@ -453,11 +455,11 @@ table.mini td{padding:3px 12px 3px 0}
       <div class="row"><button class="btn teal sm" type="button" data-orgok="${r.id}">Approve</button><button class="btn danger sm" type="button" data-orgno="${r.id}">Decline</button></div></div></div>`).join('')}
     <p class="muted" style="font-size:13px;margin:6px 0 0">Approving makes the requester its admin and emails them the join code. Leaders sign up at <strong>time4god.app/leaders</strong>.</p></div>` : '';
   VIEWS.churches = () => orgReqCard() + `<h2>Churches</h2><p class="sub">Each church gets a code, a join link and a QR code. Members who join wait for approval by the church admin or a group leader. The church admin you assign here signs in to the Leader Console at <strong>leader.html</strong>.</p>
-    <form class="card" id="nc"><div class="row">
+    ${st.admin ? `<form class="card" id="nc"><div class="row">
       <div class="grow"><label for="cn">Church name</label><input id="cn" type="text" required style="width:100%"></div>
       <div><label for="cc">City</label><input id="cc" type="text"></div>
       <div><label for="cs">State</label><input id="cs" type="text" value="GA" style="width:70px"></div>
-      <div><label>&nbsp;</label><button class="btn" type="submit">Add church</button></div></div></form>
+      <div><label>&nbsp;</label><button class="btn" type="submit">Add church</button></div></div></form>` : ''}
     ${st.allChurches.length ? st.allChurches.map(ch => { const url = joinUrl(ch.code), admins = st.churchAdmins.filter(a => a.church_id === ch.id); return `<div class="card church">
       <div class="row" style="align-items:flex-start;gap:18px">
         <div class="qr" role="img" aria-label="QR code that opens the join page for ${esc(ch.name)}">${qrSvg(url, 4) || '<span class="sub">Loading QR…</span>'}</div>
@@ -474,6 +476,7 @@ table.mini td{padding:3px 12px 3px 0}
         </div>
       </div>
       <div class="admins">
+        ${(st.ams || []).filter(a => a.church_id === ch.id).length ? `<p class="muted" style="margin:0 0 8px">Account manager: ${(st.ams || []).filter(a => a.church_id === ch.id).map(a => esc(a.name || a.email)).join(', ')}</p>` : ''}
         <strong>Church admin</strong>
         ${admins.length ? `<ul>${admins.map(a => `<li><span>${esc(a.name || a.email)}${a.name ? ` <span class="sub">${esc(a.email)}</span>` : ''}</span> <button class="btn sm danger" type="button" data-rm="${esc(ch.id)}" data-em="${esc(a.email)}">Remove</button></li>`).join('')}</ul>` : `<p class="sub" style="margin:6px 0">No church admin yet.</p>`}
         <form class="row" data-add="${esc(ch.id)}"><label class="sr" for="ae-${esc(ch.id)}">Email of the church admin</label><input id="ae-${esc(ch.id)}" type="email" placeholder="Email of their 144(P) account" required style="flex:1;min-width:220px"><button class="btn sm teal" type="submit">Make church admin</button></form>
@@ -481,7 +484,7 @@ table.mini td{padding:3px 12px 3px 0}
   BIND.churches = () => {
     $app.querySelectorAll('[data-orgok]').forEach(b => b.onclick = () => { const r = st.orgReqs.find(x => x.id === b.dataset.orgok); if (!confirm(`Approve ${r.name}? ${r.requester} becomes its admin.`)) return; run(async () => { await Cloud.rpc('admin_decide_org', { p_id: r.id, p_approve: true }); await loadTab(true); }, `${r.name} approved. We emailed ${r.requester} the join code.`); });
     $app.querySelectorAll('[data-orgno]').forEach(b => b.onclick = () => { const r = st.orgReqs.find(x => x.id === b.dataset.orgno); if (!confirm(`Decline ${r.name}?`)) return; run(async () => { await Cloud.rpc('admin_decide_org', { p_id: r.id, p_approve: false }); await loadTab(true); }, `${r.name} declined. We emailed ${r.requester}.`); });
-    $('nc').onsubmit = e => { e.preventDefault(); run(async () => {
+    if ($('nc')) $('nc').onsubmit = e => { e.preventDefault(); run(async () => {
       const name = $('cn').value.trim(); if (!name) throw new Error('Enter the church name.');
       const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', code = Array.from(crypto.getRandomValues(new Uint8Array(6)), b => A[b % A.length]).join('');
       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') + '-' + code.slice(0, 3).toLowerCase();
@@ -520,6 +523,52 @@ table.mini td{padding:3px 12px 3px 0}
     <div class="card tbl">${P.length ? `<table><thead><tr><th>Date</th><th>What</th><th>Buyer</th><th>Amount</th><th>Status</th></tr></thead><tbody>
       ${P.map(p => `<tr><td class="muted">${fDate(p.paid_at || p.created_at)}</td><td>${esc(p.description)}</td><td>${esc(p.buyer || '')}<br><span class="muted">${esc(p.buyer_email || '')}</span></td><td><strong>${money(p.amount)}</strong></td><td>${p.status === 'paid' ? '<span class="pill ok">Paid</span>' : p.status === 'open' ? `<span class="pill wait">Invoice ${esc(p.invoice_number || '')} · due ${p.due_date ? fDate(p.due_date + 'T12:00:00') : ''}</span>` : p.status === 'void' ? '<span class="pill off">Invoice canceled</span>' : '<span class="pill off">Not completed</span>'}${p.method === 'invoice' && p.status === 'paid' ? ' <span class="muted">by invoice</span>' : ''}${p.test ? ' <span class="pill off">Test</span>' : ''}${p.invoice_url ? `<br><a href="${esc(p.invoice_url)}" target="_blank" rel="noopener">Invoice</a>` : ''}</td></tr>`).join('')}
       </tbody></table>` : '<p class="empty">No payments yet.</p>'}</div>`; };
+
+  // ---------- account manager: my churches ----------
+  VIEWS.amdash = () => { const L = st.amo || [], nf = n => Number(n || 0).toLocaleString('en-US');
+    const tot = k => L.reduce((a, x) => a + Number(x[k] || 0), 0);
+    return `<h2>My churches</h2><p class="sub">The churches assigned to you. You can approve their members, manage groups and messages (Church tools), set up church admins and QR codes (Churches), and set their seats (Licenses).</p>
+    ${L.length ? `<div class="tiles">${tile('Churches', nf(L.filter(x => x.status === 'active').length), `${nf(L.filter(x => x.status === 'pending').length)} waiting for approval`)}${tile('Members', nf(tot('members')), `${nf(tot('pending'))} waiting to join`)}${tile('Time given · 7 days', hm(tot('minutes_7')), `${nf(tot('active_7'))} members active`)}${tile('Paid', money(tot('paid_total')), tot('open_invoices') ? `${nf(tot('open_invoices'))} invoice${tot('open_invoices') === 1 ? '' : 's'} waiting · ${money(tot('open_amount'))}` : 'No invoices waiting')}</div>
+    <div class="card tbl"><table><thead><tr><th>Church</th><th>Members</th><th>Seats</th><th>Active · 7 days</th><th>Paid</th><th></th></tr></thead><tbody>
+    ${L.map(x => `<tr><td><strong>${esc(x.name)}</strong><br><span class="muted">${x.status === 'pending' ? 'Waiting for approval' : 'Code ' + esc(x.code)}${x.groups ? ' · ' + nf(x.groups) + ' groups' : ''}</span></td>
+      <td>${nf(x.members)}${x.pending ? ` <span class="pill wait">${nf(x.pending)} waiting</span>` : ''}</td>
+      <td>${x.seats ? `${nf(x.members)} of ${nf(x.seats)}${x.license_status && x.license_status !== 'active' ? ` <span class="pill off">${esc(x.license_status)}</span>` : ''}${x.expires_at ? `<br><span class="muted">until ${fDate(x.expires_at)}</span>` : ''}` : '<span class="muted">No seats</span>'}</td>
+      <td>${nf(x.active_7)} · ${hm(x.minutes_7)}</td>
+      <td>${money(x.paid_total)}${x.open_invoices ? `<br><span class="pill wait">${money(x.open_amount)} invoiced</span>` : ''}</td>
+      <td>${x.status === 'active' ? `<button class="btn alt sm" type="button" data-open="${x.church_id}">Open</button>` : `<button class="btn teal sm" type="button" data-go="churches">Review</button>`}</td></tr>`).join('')}</tbody></table></div>`
+    : `<div class="card"><p class="empty">No churches are assigned to you yet. The owner assigns them in the Admin Panel.</p></div>`}`; };
+  BIND.amdash = () => {
+    $app.querySelectorAll('[data-open]').forEach(b => b.onclick = () => run(async () => { st.church = st.churches.find(x => x.church_id === b.dataset.open) || st.church; st.tab = 'approvals'; await loadTab(); }));
+    $app.querySelectorAll('[data-go]').forEach(b => b.onclick = async () => { st.tab = b.dataset.go; st.msg = st.err = ''; await loadTab(); });
+  };
+
+  // ---------- roles (owner only) ----------
+  VIEWS.roles = () => { const R = st.roles || [], A = R.filter(r => r.role === 'platform_admin'), M = R.filter(r => r.role === 'account_manager');
+    const who = r => `<strong>${esc(r.name || r.email)}</strong>${r.name ? ` <span class="muted">${esc(r.email)}</span>` : ''}`;
+    return `<h2>Roles</h2><p class="sub">Only you, the owner, can see this page. Admins can do everything in the Admin Panel except change roles. Account managers work only on the churches you assign them: members, groups, messages, church admins, QR codes, seats, and those churches’ numbers. They can’t change prices, the season, the book, book keys or Settings.</p>
+    <form class="card" id="roleF"><strong>Add someone</strong><p class="muted" style="margin:4px 0 8px">They need an account in the app first. They’ll see their new access the next time they open <strong>time4god.app/admin.html</strong>.</p>
+      <div class="row"><input id="rEm" type="email" required placeholder="Their account email" style="flex:1;min-width:220px"><select id="rRole"><option value="account_manager">Account manager</option><option value="platform_admin">Admin</option></select><button class="btn teal" type="submit">Add</button></div></form>
+    <h3 style="margin:18px 0 8px">Admins (${A.length})</h3>
+    <div class="card">${A.map(r => `<div class="row" style="padding:8px 0;border-bottom:1px solid #EEF2F4"><div class="grow">${who(r)} ${r.is_owner ? '<span class="pill ok">Owner</span>' : ''}<br><span class="muted">Since ${fDate(r.since)}</span></div>
+      ${r.is_owner ? '' : `<button class="btn danger sm" type="button" data-rmrole="${r.user_id}" data-r="platform_admin" data-n="${esc(r.name || r.email)}">Remove</button>`}</div>`).join('')}</div>
+    <h3 style="margin:18px 0 8px">Account managers (${M.length})</h3>
+    ${M.length ? M.map(r => { const mine = new Set((r.churches || []).map(c => c.id)); return `<div class="card"><div class="row"><div class="grow">${who(r)}<br><span class="muted">${(r.churches || []).length ? (r.churches || []).map(c => esc(c.name) + (c.status === 'pending' ? ' (waiting)' : '')).join(', ') : 'No churches yet'}</span></div>
+      <button class="btn danger sm" type="button" data-rmrole="${r.user_id}" data-r="account_manager" data-n="${esc(r.name || r.email)}">Remove</button></div>
+      <details style="margin-top:10px"${st.openAm === r.user_id ? ' open' : ''}><summary style="cursor:pointer;font-weight:600">Choose churches</summary>
+        <div style="max-height:280px;overflow:auto;margin:8px 0;border:1px solid #E1E7EA;border-radius:10px;padding:8px 12px">${(st.allCh || []).map(c => `<label style="display:flex;gap:8px;align-items:center;padding:4px 0;font-weight:400"><input type="checkbox" data-amch="${r.user_id}" value="${c.id}" ${mine.has(c.id) ? 'checked' : ''}> ${esc(c.name)} <span class="muted">${esc([c.city, c.state].filter(Boolean).join(', '))}${c.status === 'pending' ? ' · waiting for approval' : ''}${c.kind === 'group' ? ' · group' : ''}</span></label>`).join('') || '<p class="muted">No churches yet.</p>'}</div>
+        <button class="btn teal sm" type="button" data-saveam="${r.user_id}">Save churches</button></details></div>`; }).join('') : '<div class="card"><p class="empty">No account managers yet.</p></div>'}`; };
+  BIND.roles = () => {
+    $('roleF').onsubmit = e => { e.preventDefault(); const em = $('rEm').value.trim(), role = $('rRole').value; run(async () => {
+      const r = await Cloud.rpc('admin_add_role', { p_email: em, p_role: role }); await loadTab(true);
+      if (r === 'already') throw new Error(`${em} already has that role.`);
+    }, `${em} is now ${role === 'platform_admin' ? 'an admin' : 'an account manager. Choose their churches below'}.`); };
+    $app.querySelectorAll('[data-rmrole]').forEach(b => b.onclick = () => { const label = b.dataset.r === 'platform_admin' ? 'admin' : 'account manager';
+      if (!confirm(`Remove ${b.dataset.n} as ${label}?${b.dataset.r === 'account_manager' ? ' They lose access to all their churches.' : ''}`)) return;
+      run(async () => { await Cloud.rpc('admin_remove_role', { p_user: b.dataset.rmrole, p_role: b.dataset.r }); await loadTab(true); }, `${b.dataset.n} removed as ${label}.`); });
+    $app.querySelectorAll('[data-saveam]').forEach(b => b.onclick = () => { const u = b.dataset.saveam;
+      const ids = [...$app.querySelectorAll(`[data-amch="${u}"]:checked`)].map(x => x.value);
+      run(async () => { st.openAm = u; const n = await Cloud.rpc('admin_set_am_churches', { p_user: u, p_churches: ids }); await loadTab(true); flash(`Saved. They manage ${n} church${n === 1 ? '' : 'es'}.`); }); });
+  };
 
   // ---------- settings (platform admin) ----------
   VIEWS.settings = () => { const S = st.settings; if (!S) return '<h2>Settings</h2><p class="sub">Loading…</p>';
@@ -723,12 +772,15 @@ table.mini td{padding:3px 12px 3px 0}
       if (st.tab === 'dash') st.dash = await Cloud.rpc('admin_dashboard');
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
       if (st.tab === 'settings') st.settings = await Cloud.rpc('admin_settings');
+      if (st.tab === 'amdash') st.amo = await Cloud.rpc('am_overview') || [];
+      if (st.tab === 'roles') { const [r, ch] = await Promise.all([Cloud.rpc('admin_roles'), Cloud.rpc('admin_all_churches')]); st.roles = r || []; st.allCh = ch || []; }
+      if (st.tab === 'churches') st.ams = await Cloud.rpc('church_account_managers') || [];
       if (st.tab === 'challenges') st.challengesAll = await Cloud.rpc('admin_challenges') || [];
       if (st.tab === 'churches') st.churchAdmins = await Cloud.rpc('admin_church_admins') || [];
       if (st.tab === 'churches') st.orgReqs = await Cloud.rpc('admin_org_requests') || [];
       if (st.tab === 'licenses') {
         st.licenses = st.season ? Cloud.ok(await c.from('church_licenses').select('*').eq('season_id', st.season.id)) : [];
-        st.seats = await Cloud.rpc('admin_individual_seats') || [];
+        st.seats = st.admin ? (await Cloud.rpc('admin_individual_seats') || []) : [];
       }
       if (st.tab === 'book') st.sections = Cloud.ok(await c.from('book_sections').select('slug,title,kind,unlock_week,sort_order,content_html,updated_at,hidden').order('sort_order'));
     } catch (e) { flash(errMsg(e), true); }
@@ -746,15 +798,19 @@ table.mini td{padding:3px 12px 3px 0}
     $('who').textContent = s.user.email; $('out').hidden = false;
     const roles = await Cloud.rpc('my_admin_roles') || [];
     st.admin = roles.some(r => r.role === 'platform_admin');
+    st.am = !st.admin && roles.some(r => r.role === 'account_manager');
+    st.owner = st.admin ? !!(await Cloud.rpc('my_is_owner')) : false;
     st.churches = await Cloud.rpc('my_leader_churches') || [];
     try { st.notify = await Cloud.rpc('my_notification_settings'); } catch (e) { st.notify = null; }
     try { st.nameOk = await Cloud.rpc('my_profile_complete'); } catch (e) { st.nameOk = true; }
     if (st.admin) { $('ttl').textContent = 'The 144(P) Plan · Admin Panel'; document.title = 'Admin Panel · The 144(P) Plan'; }
+    else if (st.am) { $('ttl').textContent = 'The 144(P) Plan · Account Manager'; document.title = 'Account Manager · The 144(P) Plan'; }
     st.church = st.churches[0] || null;
-    if (ADMIN_MODE && !st.admin) { $app.innerHTML = `<h2>Admin Panel</h2><p class="sub">This page is for the 144(P) Plan administrator. Church admins and group leaders use the <a href="leader.html">Leader Console</a>.</p>`; return; }
-    if (!st.churches.length && !st.admin) { $app.innerHTML = `<h2>Leader Console</h2><p class="sub">This account isn’t a church admin or group leader yet. Ask your church admin to make you a group leader, then sign in again.</p>`; return; }
+    if (ADMIN_MODE && !st.admin && !st.am) { $app.innerHTML = `<h2>Admin Panel</h2><p class="sub">This page is for the 144(P) Plan administrator. Church admins and group leaders use the <a href="leader.html">Leader Console</a>.</p>`; return; }
+    if (!st.churches.length && !st.admin && !st.am) { $app.innerHTML = `<h2>Leader Console</h2><p class="sub">This account isn’t a church admin or group leader yet. Ask your church admin to make you a group leader, then sign in again.</p>`; return; }
     if (st.admin) st.tab = 'dash';
     if (!st.churches.length && st.admin) st.tab = 'churches';
+    if (st.am) st.tab = 'amdash';
     let paid = null, payErr = '';
     try { paid = await Cloud.settlePayments(); } catch (x) { payErr = 'We couldn’t confirm the payment yet: ' + ((x && x.message) || '') + ' If you were charged, reload this page in a minute.'; }
     await loadTab();

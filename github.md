@@ -66,3 +66,8 @@ date: 2026-11-18T01:30:00Z
 ## Email settings
 - Admin Panel › Settings (migration 0019, table `app_settings`): admin notification email(s), reply-to email, and support email. Blank admin email = each platform admin's sign-in email.
 - send-emails reads reply-to from settings (the EMAIL_REPLY_TO secret is only a fallback). The support email shows on Help & Support, the study book page and the leaders page (`public_contact`).
+
+## Roles (migration 0020)
+- Owner (app_settings `owner_user_id`, Pete): Admin Panel › Roles to add/remove admins and account managers and assign churches to account managers.
+- Admins (`platform_admin`): the whole Admin Panel except Roles.
+- Account managers (`account_manager`, one role row with no church plus one row per assigned church): `private.is_church_admin` returns true for their churches, so they act as church admin there; they can also approve those churches' requests, assign church admins, and set licenses (RLS `clic_am_*`). Their panel: My churches (`am_overview`), Churches, Licenses, plus church tools. No prices, season, book, book keys, settings, dashboard or payments.
