@@ -132,7 +132,7 @@ table.mini td{padding:3px 12px 3px 0}
 
   // ---------- tabs ----------
   const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'],
-    ...(st.admin ? [['dash', 'Dashboard'], ['nochurch', 'No church'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['settings', 'Settings'], ...(st.owner ? [['roles', 'Roles']] : [])]
+    ...(st.admin ? [['dash', 'Dashboard'], ['members', 'All members'], ['nochurch', 'No church'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['settings', 'Settings'], ...(st.owner ? [['roles', 'Roles']] : [])]
       : st.am ? [['amdash', 'My churches'], ['churches', 'Churches'], ['licenses', 'Licenses']] : [])];
   function renderNav() {
     $('nav').hidden = false;
@@ -524,6 +524,28 @@ table.mini td{padding:3px 12px 3px 0}
       ${P.map(p => `<tr><td class="muted">${fDate(p.paid_at || p.created_at)}</td><td>${esc(p.description)}</td><td>${esc(p.buyer || '')}<br><span class="muted">${esc(p.buyer_email || '')}</span></td><td><strong>${money(p.amount)}</strong></td><td>${p.status === 'paid' ? '<span class="pill ok">Paid</span>' : p.status === 'open' ? `<span class="pill wait">Invoice ${esc(p.invoice_number || '')} · due ${p.due_date ? fDate(p.due_date + 'T12:00:00') : ''}</span>` : p.status === 'void' ? '<span class="pill off">Invoice canceled</span>' : '<span class="pill off">Not completed</span>'}${p.method === 'invoice' && p.status === 'paid' ? ' <span class="muted">by invoice</span>' : ''}${p.test ? ' <span class="pill off">Test</span>' : ''}${p.invoice_url ? `<br><a href="${esc(p.invoice_url)}" target="_blank" rel="noopener">Invoice</a>` : ''}</td></tr>`).join('')}
       </tbody></table>` : '<p class="empty">No payments yet.</p>'}</div>`; };
 
+  // ---------- all members by category (admin) ----------
+  const CAT = { member: ['Member', 'ok', 'Paid: bought the study book, has a church seat, or used a printed-book key'], guest: ['Guest', 'wait', 'Temporary seat from a Member’s Time4God Challenge'], prospect: ['Prospect', 'off', 'Free account, not paid'] };
+  const catPill = c => CAT[c] ? `<span class="pill ${CAT[c][1]}">${CAT[c][0]}</span>` : '';
+  const PAIDBY = { bought: 'Bought the study book', book_key: 'Printed-book key', own_seat: 'Own seat', church: 'Church seat', leader: 'Church leader' };
+  VIEWS.members = () => { const all = st.all || [], q = (st.amQ || '').trim().toLowerCase(), f = st.amF || 'all';
+    const L = all.filter(m => (f === 'all' || m.category === f) && (!q || (m.name + ' ' + m.email + ' ' + (m.church || '')).toLowerCase().includes(q)));
+    const n = c => all.filter(m => m.category === c).length;
+    return `<h2>All members</h2><p class="sub">Every account, by category. <strong>Member</strong>: paid (bought the study book, has a church seat, or used a printed-book key). <strong>Guest</strong>: a temporary seat from a Member’s Time4God Challenge, until the challenge ends. <strong>Prospect</strong>: a free account that hasn’t paid, including guests whose challenge has ended.</p>
+    <div class="tiles">${tile('Members', String(n('member')), 'paid')}${tile('Guests', String(n('guest')), 'on a challenge seat')}${tile('Prospects', String(n('prospect')), 'free, not paid')}${tile('All accounts', String(all.length), '')}</div>
+    <div class="card"><div class="row"><input id="amQ" type="search" placeholder="Search name, email or church" value="${esc(st.amQ || '')}" style="flex:1;min-width:220px">
+      <select id="amF">${[['all', 'Everyone'], ['member', 'Members'], ['guest', 'Guests'], ['prospect', 'Prospects']].map(([k, t]) => `<option value="${k}" ${f === k ? 'selected' : ''}>${t}</option>`).join('')}</select></div></div>
+    <div class="card tbl">${L.length ? `<table><thead><tr><th>Member</th><th>Category</th><th>Church</th><th>Time with God</th><th>Signed up</th></tr></thead><tbody>
+      ${L.map(m => `<tr><td><strong>${esc(m.name)}</strong><br><a href="mailto:${esc(m.email)}" class="muted">${esc(m.email)}</a></td>
+        <td>${catPill(m.category)}<br><span class="muted">${m.category === 'member' ? esc(PAIDBY[m.paid_by] || '') : m.category === 'guest' ? `until ${fDate(m.guest_until + 'T12:00:00')}${m.guest_from ? ' · from ' + esc(m.guest_from) : ''}` : m.guest_until ? 'Guest seat ended ' + fDate(m.guest_until + 'T12:00:00') : 'Free account'}</span></td>
+        <td>${m.church ? `${esc(m.church)}${m.church_status === 'pending' ? '<br><span class="pill wait">Waiting for approval</span>' : ''}` : '<span class="muted">No church</span>'}</td>
+        <td>${m.minutes_all ? `${hm(m.minutes_all)} total<br><span class="muted">${m.minutes_30 ? hm(m.minutes_30) + ' in 30 days' : 'none in 30 days'}</span>` : '<span class="muted">None yet</span>'}</td>
+        <td class="muted">${fDate(m.created_at)}</td></tr>`).join('')}</tbody></table>` : `<p class="empty">${all.length ? 'No one matches.' : 'No accounts yet.'}</p>`}</div>`; };
+  BIND.members = () => {
+    const keep = (id, fn) => { const el = $(id); if (!el) return; el.oninput = el.onchange = e => { fn(e.target.value); const pos = e.target.selectionStart; render(); const nn = $(id); if (nn) { nn.focus(); try { if (pos != null) nn.setSelectionRange(pos, pos); } catch (x) {} } }; };
+    keep('amQ', v => { st.amQ = v; }); keep('amF', v => { st.amF = v; });
+  };
+
   // ---------- members with no church (admin) ----------
   const NCF = { all: 'Everyone', book: 'Have the study book', active: 'Active in the last 30 days', never: 'Never logged time' };
   function ncList() {
@@ -563,7 +585,7 @@ table.mini td{padding:3px 12px 3px 0}
       ${st.ncSel && st.ncSel.size ? `<div class="row" style="margin-top:12px;padding:10px;background:#E6F2F2;border-radius:10px"><strong class="grow">${st.ncSel.size} selected</strong><select id="ncBulkCh" aria-label="Church">${opts}</select><button class="btn teal sm" type="button" id="ncBulk">Add to church</button></div>` : ''}</div>
     <div class="card tbl">${L.length ? `<table><thead><tr><th><input type="checkbox" id="ncAll" aria-label="Select all" ${L.length && L.every(m => st.ncSel.has(m.partner_id)) ? 'checked' : ''}></th><th>Member</th><th>Signed up</th><th>Study book</th><th>Time with God</th><th>Add to a church</th></tr></thead><tbody>
       ${L.map(m => `<tr><td><input type="checkbox" data-ncs="${m.partner_id}" ${st.ncSel.has(m.partner_id) ? 'checked' : ''} aria-label="Select ${esc(m.name)}"></td>
-        <td><strong>${esc(m.name)}</strong><br><a href="mailto:${esc(m.email)}" class="muted">${esc(m.email)}</a>${m.past_church ? `<br><span class="muted">Was ${m.past_status === 'removed' ? 'in' : 'asking to join'} ${esc(m.past_church)}</span>` : ''}</td>
+        <td><strong>${esc(m.name)}</strong> ${catPill(m.category)}<br><a href="mailto:${esc(m.email)}" class="muted">${esc(m.email)}</a>${m.past_church ? `<br><span class="muted">Was ${m.past_status === 'removed' ? 'in' : 'asking to join'} ${esc(m.past_church)}</span>` : ''}</td>
         <td class="muted">${fDate(m.created_at)}</td><td>${book(m)}</td>
         <td>${m.minutes_all ? `${hm(m.minutes_all)} total<br><span class="muted">${m.minutes_30 ? hm(m.minutes_30) + ' in 30 days' : 'none in 30 days'}${m.last_active ? ' · last ' + fDate(m.last_active + 'T12:00:00') : ''}</span>` : '<span class="muted">None yet</span>'}</td>
         <td><div class="row" style="flex-wrap:nowrap"><select data-ncch="${m.partner_id}" aria-label="Church for ${esc(m.name)}" style="max-width:200px">${opts}</select><button class="btn alt sm" type="button" data-ncadd="${m.partner_id}">Add</button></div></td></tr>`).join('')}
@@ -733,6 +755,7 @@ table.mini td{padding:3px 12px 3px 0}
       ${todo ? `<div class="card" style="border-color:#D9A62B;background:#FFF8E6"><strong>Needs your attention</strong><div class="row" style="margin-top:8px">${todo}</div></div>` : ''}
       <h3 class="dh">Members</h3><div class="tiles">
         ${tile('Accounts', n0(M.accounts), `+${n0(M.new_7)} this week · +${n0(M.new_30)} in 30 days`)}
+        ${D.categories ? tile('Members · Guests · Prospects', `${n0(D.categories.member)} · ${n0(D.categories.guest)} · ${n0(D.categories.prospect)}`, '<a href="#" data-go="members">See everyone →</a>') : ''}
         ${tile('In a church', n0(M.in_church), `${n0(M.pending)} waiting for approval`, M.pending > 0)}
         ${tile('Have the study book', n0(M.with_book), `${n0(M.own_seats)} bought their own · ${n0(M.key_claims)} with a book key`)}
         ${tile('No church yet', n0(M.no_church), M.no_church ? '<a href="#" data-go="nochurch">See who →</a>' : 'Candidates for a church code or own seat')}
@@ -845,6 +868,7 @@ table.mini td{padding:3px 12px 3px 0}
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
       if (st.tab === 'settings') st.settings = await Cloud.rpc('admin_settings');
       if (st.tab === 'nochurch') { const [a, b] = await Promise.all([Cloud.rpc('admin_no_church'), Cloud.rpc('admin_pending_members')]); st.nc = a || []; st.pend = b || []; st.ncSel = new Set(); st.pSel = new Set(); }
+      if (st.tab === 'members') st.all = await Cloud.rpc('admin_all_members') || [];
       if (st.tab === 'amdash') st.amo = await Cloud.rpc('am_overview') || [];
       if (st.tab === 'roles') { const [r, ch] = await Promise.all([Cloud.rpc('admin_roles'), Cloud.rpc('admin_all_churches')]); st.roles = r || []; st.allCh = ch || []; }
       if (st.tab === 'churches') st.ams = await Cloud.rpc('church_account_managers') || [];

@@ -76,3 +76,7 @@ date: 2026-11-18T01:30:00Z
 ## Members (Admin Panel)
 - Waiting for approval (migration 0023, `admin_pending_members`): every pending join request across churches, approve/decline (single or bulk, grouped per church through approve_memberships / decline_memberships so seat limits apply).
 - Admin Panel › No church (migration 0022): accounts with no pending or approved church membership — study book status, time logged, past church — with search, filters, and Add to church (single or bulk). `admin_add_to_church` adds them as approved members and emails them (the church's leaders get the usual "joined" email).
+
+## Member categories (migration 0025)
+- `private.member_category(pid)`: **member** (paid: own seat incl. book key, approved in a church with active seats, or leader of a licensed church), **guest** (active guest seat from a challenge), **prospect** (free, not paid; includes guests whose challenge ended).
+- Shown in Admin Panel › All members (`admin_all_members`, search + filter), on No church rows, as Dashboard counts, and in the app's My Account (Membership card, from `my_access.category`).

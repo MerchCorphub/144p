@@ -674,6 +674,14 @@ html,body{width:100%;min-height:100%}
       <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Church <span style="font-weight:400;color:#6A7A84">(optional)</span><input value="{{ ac.church }}" onChange="{{ acOn.church }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
       <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Table <span style="font-weight:400;color:#6A7A84">(optional)</span><input value="{{ ac.table }}" onChange="{{ acOn.table }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
       </sc-if>
+      <sc-if value="{{ hasCategory }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px">
+          <div style="font-size:14px;font-weight:600">Membership</div>
+          <div style="display:flex;align-items:center;gap:10px"><span style="font-size:14px;font-weight:700;padding:4px 12px;border-radius:999px;background:{{ catBg }};color:{{ catFg }}">{{ catLabel }}</span><span style="font-size:14px;color:#4F5F68">{{ catSub }}</span></div>
+          <div style="font-size:14px;color:#4F5F68;line-height:1.45">{{ catText }}</div>
+          <sc-if value="{{ catHasLink }}" hint-placeholder-val="{{ false }}"><a href="access.html" style="display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:12px;background:#123C56;color:#FFFFFF;font-size:15px;font-weight:600;text-decoration:none">{{ catLinkLabel }}</a></sc-if>
+        </div>
+      </sc-if>
       <sc-if value="{{ isCloud }}" hint-placeholder-val="{{ false }}">
         <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
           <div style="font-size:14px;font-weight:600">Church</div>
@@ -1025,6 +1033,7 @@ class Component extends DCLogic {
       if (!(await Cloud.session())) return;
       await Cloud.flush(); const data = await Cloud.pullPartner(); if (!data) return;
       const db = mergeCloud(JSON.parse(JSON.stringify(this.state.db)), data); persist(db); this.setState({ db });
+      try { const a = await Cloud.rpc('my_access'); if (a) this.setState({ access: a }); } catch (e) {}
     } catch (e) {}
   }
   syncDiff(a, b) {
@@ -1500,6 +1509,19 @@ class Component extends DCLogic {
       openAccount: () => this.go('account', { acct: null }), signOut: () => this.signOut(),
 
       ac, acOn, startLabel: fDate(u.start, FULL),
+      ...(() => { const A = u.cloud && s.access, c = A && A.category;
+        const fmt = d => { try { return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return d; } };
+        const by = { bought: 'You bought the study book', book_key: 'From your printed book', own_seat: 'Your own seat', church: 'Your church covers your seat', leader: 'As a church leader' };
+        const money = n => '$' + Number(n).toFixed(Number(n) % 1 ? 2 : 0);
+        if (!c) return { hasCategory: false };
+        if (c === 'member') return { hasCategory: true, catLabel: 'Member', catBg: '#E3F3EC', catFg: '#0E7A55', catSub: by[A.paid_by] || '',
+          catText: A.seat && A.seat_expires ? 'Your study book is open through ' + fmt(String(A.seat_expires).slice(0, 10)) + '.' : 'You have the full 12-week study book.', catHasLink: false };
+        if (c === 'guest') return { hasCategory: true, catLabel: 'Guest', catBg: '#FFF3D6', catFg: '#8A5A00', catSub: 'until ' + fmt(A.guest_until),
+          catText: (A.guest_from ? A.guest_from + ' gave you a seat for your Time4God Challenge. ' : 'You have a guest seat for your Time4God Challenge. ') + 'You can read the full study book until the challenge ends.' + (A.keep_going_price != null ? ' Keep it for your own year for ' + money(A.keep_going_price) + '.' : ''),
+          catHasLink: A.keep_going_price != null, catLinkLabel: 'Keep going · ' + money(A.keep_going_price || 0) };
+        return { hasCategory: true, catLabel: 'Prospect', catBg: '#EEF2F4', catFg: '#4F5F68', catSub: 'Free account',
+          catText: A.keep_going_price != null ? 'Your guest seat has ended. Keep the study book for your own year at the guest price.' : 'Your account is free. To read the study book, join a church that has seats, use the key in your printed book, or get the study book in the app.',
+          catHasLink: true, catLinkLabel: A.keep_going_price != null ? 'Keep going · ' + money(A.keep_going_price) : 'Get the study book' }; })(),
       isCloud: !!u.cloud, notCloud: !u.cloud, hasChurch: !!(u.cloud && u.membership), noChurch: !!(u.cloud && !u.membership),
       churchName: u.church || 'Your church', groupName: u.table || 'Not in a group yet (your church leader assigns groups)',
       churchStatus: u.membership === 'verified' ? 'Approved member' : u.membership === 'pending' ? 'Waiting for your church leader to approve you' : (u.membership || ''),
