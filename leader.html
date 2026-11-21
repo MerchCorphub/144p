@@ -132,7 +132,7 @@ table.mini td{padding:3px 12px 3px 0}
 
   // ---------- tabs ----------
   const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'],
-    ...(st.admin ? [['dash', 'Dashboard'], ['nochurch', 'No church'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['settings', 'Settings'], ...(st.owner ? [['roles', 'Roles']] : [])]
+    ...(st.admin ? [['dash', 'Dashboard'], ['nochurch', 'Members'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['settings', 'Settings'], ...(st.owner ? [['roles', 'Roles']] : [])]
       : st.am ? [['amdash', 'My churches'], ['churches', 'Churches'], ['licenses', 'Licenses']] : [])];
   function renderNav() {
     $('nav').hidden = false;
@@ -531,10 +531,32 @@ table.mini td{padding:3px 12px 3px 0}
     return (st.nc || []).filter(m => (!q || (m.name + ' ' + m.email).toLowerCase().includes(q))
       && (f === 'all' || (f === 'book' && (m.own_seat || m.book_key || (m.guest_until && m.guest_until >= today))) || (f === 'active' && m.minutes_30 > 0) || (f === 'never' && !m.minutes_all)));
   }
+  // Requests to join a church, from every church
+  function pendCard() { const P = st.pend || [], nf = n => Number(n || 0).toLocaleString('en-US');
+    return `<h2>Waiting for approval${P.length ? ` (${P.length})` : ''}</h2><p class="sub">People who entered a church code and are waiting for that church to approve them. Approving gives them their church seat; declining lets them ask again with the code.</p>
+    ${P.length ? `<div class="card tbl">${st.pSel.size ? `<div class="row" style="margin-bottom:10px;padding:10px;background:#E6F2F2;border-radius:10px"><strong class="grow">${st.pSel.size} selected</strong><button class="btn danger sm" type="button" id="pNo">Decline</button><button class="btn teal sm" type="button" id="pOk">Approve</button></div>` : ''}
+      <table><thead><tr><th><input type="checkbox" id="pAll" aria-label="Select all" ${P.every(m => st.pSel.has(m.membership_id)) ? 'checked' : ''}></th><th>Member</th><th>Church</th><th>Asked</th><th>Church seats</th><th></th></tr></thead><tbody>
+      ${P.map(m => { const left = m.seats != null ? m.seats - m.used : null; return `<tr><td><input type="checkbox" data-ps="${m.membership_id}" ${st.pSel.has(m.membership_id) ? 'checked' : ''} aria-label="Select ${esc(m.name)}"></td>
+        <td><strong>${esc(m.name)}</strong><br><a href="mailto:${esc(m.email)}" class="muted">${esc(m.email)}</a>${m.own_seat ? '<br><span class="pill ok">Has own seat</span>' : ''}</td>
+        <td>${esc(m.church)}</td><td class="muted">${fDate(m.requested_at)}</td>
+        <td>${left == null ? '<span class="pill off">No seats</span>' : left > 0 ? `${nf(left)} of ${nf(m.seats)} left` : '<span class="pill off">Full</span>'}</td>
+        <td><div class="row" style="flex-wrap:nowrap"><button class="btn danger sm" type="button" data-pno="${m.membership_id}">Decline</button><button class="btn teal sm" type="button" data-pok="${m.membership_id}">Approve</button></div></td></tr>`; }).join('')}
+      </tbody></table></div>` : '<div class="card"><p class="empty">No one is waiting for approval.</p></div>'}`; }
+  // Approve or decline, one church at a time (that's how the server checks seats)
+  async function decide(ids, ok) {
+    const by = {}; ids.forEach(id => { const m = st.pend.find(x => x.membership_id === id); if (m) (by[m.church_id] = by[m.church_id] || []).push(id); });
+    let n = 0; const errs = [];
+    for (const [cid, list] of Object.entries(by)) {
+      try { n += await Cloud.rpc(ok ? 'approve_memberships' : 'decline_memberships', { p_ids: list }); }
+      catch (e) { errs.push(`${(st.pend.find(x => x.church_id === cid) || {}).church}: ${errMsg(e)}`); }
+    }
+    await loadTab(true);
+    flash(`${ok ? 'Approved' : 'Declined'} ${n} ${n === 1 ? 'person' : 'people'}.${errs.length ? ' ' + errs.join(' ') : ''}`, errs.length > 0);
+  }
   VIEWS.nochurch = () => { const all = st.nc || [], L = ncList(), ch = (st.allChurches || []).filter(c => c.status === 'active'), today = new Date().toISOString().slice(0, 10);
     const opts = `<option value="">Choose a church…</option>${ch.map(c => `<option value="${c.id}">${esc(c.name)}${c.city ? ' · ' + esc(c.city) : ''}</option>`).join('')}`;
     const book = m => m.own_seat ? '<span class="pill ok">Bought</span>' : m.book_key ? '<span class="pill ok">Book key</span>' : m.guest_until && m.guest_until >= today ? `<span class="pill wait">Guest until ${fDate(m.guest_until + 'T12:00:00')}</span>` : '<span class="muted">No</span>';
-    return `<h2>No church</h2><p class="sub">Members whose account isn’t in any church yet. Members join a church by entering its code in the app (My Account › Join my church). You can also add someone to a church here; they’re added as an approved member, and they and the church’s leaders get an email.</p>
+    return pendCard() + `<h2>No church</h2><p class="sub">Members whose account isn’t in any church yet. Members join a church by entering its code in the app (My Account › Join my church). You can also add someone to a church here; they’re added as an approved member, and they and the church’s leaders get an email.</p>
     <div class="tiles">${tile('No church', String(all.length), 'accounts')}${tile('Have the study book', String(all.filter(m => m.own_seat || m.book_key || (m.guest_until && m.guest_until >= today)).length), 'own seat, book key or guest seat')}${tile('Active · 30 days', String(all.filter(m => m.minutes_30 > 0).length), 'logged time')}${tile('Never logged time', String(all.filter(m => !m.minutes_all).length), '')}</div>
     <div class="card"><div class="row"><input id="ncQ" type="search" placeholder="Search name or email" value="${esc(st.ncQ || '')}" style="flex:1;min-width:220px">
       <select id="ncF">${Object.entries(NCF).map(([k, t]) => `<option value="${k}" ${(st.ncF || 'all') === k ? 'selected' : ''}>${t}</option>`).join('')}</select></div>
@@ -547,6 +569,13 @@ table.mini td{padding:3px 12px 3px 0}
         <td><div class="row" style="flex-wrap:nowrap"><select data-ncch="${m.partner_id}" aria-label="Church for ${esc(m.name)}" style="max-width:200px">${opts}</select><button class="btn alt sm" type="button" data-ncadd="${m.partner_id}">Add</button></div></td></tr>`).join('')}
       </tbody></table>` : `<p class="empty">${all.length ? 'No one matches.' : 'Everyone is in a church.'}</p>`}</div>`; };
   BIND.nochurch = () => {
+    $app.querySelectorAll('[data-ps]').forEach(b => b.onchange = () => { b.checked ? st.pSel.add(b.dataset.ps) : st.pSel.delete(b.dataset.ps); render(); });
+    if ($('pAll')) $('pAll').onchange = e => { (st.pend || []).forEach(m => e.target.checked ? st.pSel.add(m.membership_id) : st.pSel.delete(m.membership_id)); render(); };
+    const who = id => (st.pend.find(x => x.membership_id === id) || {});
+    $app.querySelectorAll('[data-pok]').forEach(b => b.onclick = () => run(() => decide([b.dataset.pok], true)));
+    $app.querySelectorAll('[data-pno]').forEach(b => b.onclick = () => { const m = who(b.dataset.pno); if (!confirm(`Decline ${m.name}'s request to join ${m.church}? They can ask again with the church code.`)) return; run(() => decide([b.dataset.pno], false)); });
+    if ($('pOk')) $('pOk').onclick = () => run(() => decide([...st.pSel], true));
+    if ($('pNo')) $('pNo').onclick = () => { if (!confirm(`Decline ${st.pSel.size} request${st.pSel.size === 1 ? '' : 's'}? They can ask again with the church code.`)) return; run(() => decide([...st.pSel], false)); };
     const keep = (id, fn) => { const el = $(id); if (!el) return; el.oninput = el.onchange = e => { fn(e.target.value); const pos = e.target.selectionStart; render(); const n = $(id); if (n) { n.focus(); try { if (pos != null) n.setSelectionRange(pos, pos); } catch (x) {} } }; };
     keep('ncQ', v => { st.ncQ = v; }); keep('ncF', v => { st.ncF = v; });
     $app.querySelectorAll('[data-ncs]').forEach(b => b.onchange = () => { b.checked ? st.ncSel.add(b.dataset.ncs) : st.ncSel.delete(b.dataset.ncs); render(); });
@@ -691,7 +720,7 @@ table.mini td{padding:3px 12px 3px 0}
   VIEWS.dash = () => { const D = st.dash; if (!D) return '<h2>Dashboard</h2><p class="sub">Loading…</p>';
     const M = D.members, E = D.engagement, C = D.churches, R = D.revenue, CH = D.challenges, S = D.season || {};
     const todo = [C.requests ? `<button class="btn alt sm" type="button" data-go="churches">${C.requests} church/group request${C.requests === 1 ? '' : 's'} to approve</button>` : '',
-      M.pending ? `<button class="btn alt sm" type="button" data-go="approvals">${M.pending} member${M.pending === 1 ? '' : 's'} waiting for church approval</button>` : '',
+      M.pending ? `<button class="btn alt sm" type="button" data-go="nochurch">${M.pending} member${M.pending === 1 ? '' : 's'} waiting for church approval</button>` : '',
       D.invoices && D.invoices.open ? `<button class="btn alt sm" type="button" data-go="payments">${D.invoices.open} invoice${D.invoices.open === 1 ? '' : 's'} waiting for payment (${usd(D.invoices.open_amount)})${D.invoices.overdue ? ` · ${D.invoices.overdue} past due` : ''}</button>` : '',
       C.leader_requests ? `<span class="pill wait">${C.leader_requests} group-leader request${C.leader_requests === 1 ? '' : 's'} (church admins approve)</span>` : ''].filter(Boolean).join(' ');
     const seatPct = C.seats_sold ? Math.round(C.seats_used / C.seats_sold * 100) : 0;
@@ -811,7 +840,7 @@ table.mini td{padding:3px 12px 3px 0}
       if (st.tab === 'dash') st.dash = await Cloud.rpc('admin_dashboard');
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
       if (st.tab === 'settings') st.settings = await Cloud.rpc('admin_settings');
-      if (st.tab === 'nochurch') { st.nc = await Cloud.rpc('admin_no_church') || []; st.ncSel = new Set(); }
+      if (st.tab === 'nochurch') { const [a, b] = await Promise.all([Cloud.rpc('admin_no_church'), Cloud.rpc('admin_pending_members')]); st.nc = a || []; st.pend = b || []; st.ncSel = new Set(); st.pSel = new Set(); }
       if (st.tab === 'amdash') st.amo = await Cloud.rpc('am_overview') || [];
       if (st.tab === 'roles') { const [r, ch] = await Promise.all([Cloud.rpc('admin_roles'), Cloud.rpc('admin_all_churches')]); st.roles = r || []; st.allCh = ch || []; }
       if (st.tab === 'churches') st.ams = await Cloud.rpc('church_account_managers') || [];
