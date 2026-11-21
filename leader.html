@@ -706,6 +706,13 @@ table.mini td{padding:3px 12px 3px 0}
         <div><label for="kq" style="display:flex;gap:6px;align-items:center;font-weight:600"><input id="kq" type="checkbox" checked> Ask the page question</label></div>
         <div><label>&nbsp;</label><button class="btn" type="submit">Add key</button></div></form>
       <p class="muted" style="margin-top:6px;font-size:13px">Print the key in the book. If it gets shared too widely, turn it off and print a new key in the next printing.</p></div>
+    <div class="card tbl"><h3 style="margin:0 0 6px;font-size:18px">Page questions asked (${(st.kq || []).length})</h3>
+      <p class="muted" style="margin:0 0 10px">The page and word each reader was shown, and the word they must type next. If a reader is stuck, check that they’re on the right page of the printed book.</p>
+      ${(st.kq || []).length ? `<table><thead><tr><th>Date</th><th>Reader</th><th>Key</th><th>Page</th><th>Word shown</th><th>Answer</th><th>Status</th></tr></thead><tbody>${st.kq.map(q => {
+        const ctx = q.context ? esc(q.context).replace(new RegExp('(^|\\s)(' + esc(q.word).replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + '\\S*\\s+)(\\S+)'), '$1<strong>$2</strong><mark style="background:#FFE9A8;padding:0 2px">$3</mark>') : '';
+        const stt = { claimed: '<span class="pill ok">Claimed</span>', waiting: `<span class="pill wait">Waiting${q.wrong ? ' · ' + q.wrong + ' wrong' : ''}</span>`, locked: '<span class="pill off">3 wrong</span>', expired: '<span class="pill off">Expired</span>' }[q.status] || esc(q.status);
+        return `<tr><td class="muted">${fDate(q.created_at)}</td><td>${esc(q.name)}<br><span class="muted">${esc(q.email)}</span></td><td>${esc(q.code)}</td><td>${q.page}</td>
+          <td><strong>${esc(q.word)}</strong></td><td><strong style="color:#075D61">${esc(q.answer)}</strong>${ctx ? `<br><span class="muted" style="font-family:Georgia,serif;font-size:13px">…${ctx}…</span>` : ''}</td><td>${stt}</td></tr>`; }).join('')}</tbody></table>` : '<p class="empty">No one has been asked a page question yet.</p>'}</div>
     <div class="card tbl"><h3 style="margin:0 0 6px;font-size:18px">Claims (${st.claims.length})</h3>${st.claims.length ? `<table><thead><tr><th>Date</th><th>Reader</th><th>Key</th><th>Page checked</th></tr></thead><tbody>${st.claims.map(c => `<tr><td class="muted">${fDate(c.claimed_at)}</td><td>${esc(c.name)}<br><span class="muted">${esc(c.email)}</span></td><td>${esc(c.code)}</td><td>${c.page}</td></tr>`).join('')}</tbody></table>` : '<p class="empty">No claims yet.</p>'}</div>`; };
   BIND.keys = () => {
     if ($('pdf')) $('pdf').onchange = e => { const f = e.target.files[0]; if (!f) return; st.printPrev = null; st.printBusy = 'Reading the PDF…'; render();
@@ -863,7 +870,7 @@ table.mini td{padding:3px 12px 3px 0}
         st.season = Cloud.ok(await c.from('seasons').select('*').eq('active', true).maybeSingle());
         st.allChurches = Cloud.ok(await c.from('churches').select('id,name,code,city,state,enrollment_policy,status,kind').neq('status', 'pending').order('name'));
       }
-      if (st.tab === 'keys') { const [k, c, p] = await Promise.all([Cloud.rpc('admin_book_keys'), Cloud.rpc('admin_key_claims'), Cloud.rpc('admin_print_status')]); st.keys = k || []; st.claims = c || []; st.printStat = p; }
+      if (st.tab === 'keys') { const [k, c, p, q] = await Promise.all([Cloud.rpc('admin_book_keys'), Cloud.rpc('admin_key_claims'), Cloud.rpc('admin_print_status'), Cloud.rpc('admin_key_questions')]); st.keys = k || []; st.claims = c || []; st.printStat = p; st.kq = q || []; }
       if (st.tab === 'dash') st.dash = await Cloud.rpc('admin_dashboard');
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
       if (st.tab === 'settings') st.settings = await Cloud.rpc('admin_settings');
