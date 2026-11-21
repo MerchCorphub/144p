@@ -96,6 +96,21 @@ async function createInvoice(admin: any, key: string, paymentId: string) {
   return { invoice_url: sent.hosted_invoice_url, number: sent.number, due_date: due };
 }
 
+// Which Stripe mode the secret key is in, and whether the account can take payments (never the key itself)
+async function stripeStatus(raw: string) {
+  const key = raw.trim();
+  const kind = (key.match(/^(sk|rk|pk)_(live|test)_/) || [])[0] || (key.slice(0, 3) + '…');
+  const out: Record<string, unknown> = { key_kind: kind, key_has_spaces: key !== raw, mode: /_live_/.test(kind) ? 'live' : /_test_/.test(kind) ? 'test' : 'unknown' };
+  try {
+    const bal = await stripe('balance', key); out.livemode = bal.livemode;
+    const acct = await stripe('account', key);
+    Object.assign(out, { name: (acct.business_profile && acct.business_profile.name) || acct.settings?.dashboard?.display_name || null,
+      charges_enabled: acct.charges_enabled, payouts_enabled: acct.payouts_enabled, details_submitted: acct.details_submitted,
+      requirements_due: (acct.requirements && acct.requirements.currently_due) || [] });
+  } catch (e) { out.error = (e as Error).message; }
+  return out;
+}
+
 Deno.serve(async (req) => {
   const origin = req.headers.get('origin');
   if (req.method === 'OPTIONS') return new Response('ok', { headers: cors(origin) });
@@ -111,6 +126,8 @@ Deno.serve(async (req) => {
   if (notify) {
     const { data: ok } = await admin.rpc('notify_token_ok', { t: notify });
     if (!ok) return json({ error: 'Not allowed.' }, 401, origin);
+    let nb: Record<string, string> = {}; try { nb = await req.clone().json(); } catch (_) { /* none */ }
+    if (nb.action === 'stripe_mode') return json(await stripeStatus(key), 200, origin);
     try { return json({ checked: await syncInvoices(admin, key, null) }, 200, origin); }
     catch (e) { return json({ error: (e as Error).message }, 500, origin); }
   }
@@ -163,6 +180,12 @@ Deno.serve(async (req) => {
         if (!kept || !kept.stripe_invoice_id) await admin.rpc('stripe_drop_payment', { p_payment: prep.payment_id });
         return json({ error: (e as Error).message || 'The invoice could not be created.' }, 400, origin);
       }
+    }
+
+    if (body.action === 'stripe_mode') {
+      const { data: roles } = await admin.from('role_assignments').select('role').eq('user_id', who.user.id).eq('role', 'platform_admin').is('revoked_at', null).limit(1);
+      if (!roles || !roles.length) return json({ error: 'Only an admin can see this.' }, 403, origin);
+      return json(await stripeStatus(key), 200, origin);
     }
 
     if (body.action === 'sync_invoices') {
