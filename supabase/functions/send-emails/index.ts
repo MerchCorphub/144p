@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
   const replyTo = (cfg && cfg.reply_to) || Deno.env.get('EMAIL_REPLY_TO');
 
   const { data: rows, error } = await db.from('email_outbox')
-    .select('id,to_email,subject,html,body_text,attempts')
+    .select('id,to_email,bcc,subject,html,body_text,attempts')
     .is('sent_at', null).lt('attempts', 5).order('id').limit(40);
   if (error) return new Response(error.message, { status: 500 });
 
@@ -31,7 +31,7 @@ Deno.serve(async (req) => {
       const res = await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json', 'Idempotency-Key': 'outbox-' + m.id },
-        body: JSON.stringify({ from, to: [m.to_email], subject: m.subject, html: m.html, text: m.body_text, ...(replyTo ? { reply_to: replyTo } : {}) }),
+        body: JSON.stringify({ from, to: [m.to_email], ...(m.bcc && m.bcc.length ? { bcc: m.bcc } : {}), subject: m.subject, html: m.html, text: m.body_text, ...(replyTo ? { reply_to: replyTo } : {}) }),
       });
       if (res.ok) {
         await db.from('email_outbox').update({ sent_at: new Date().toISOString(), attempts: m.attempts + 1, last_error: null }).eq('id', m.id);
