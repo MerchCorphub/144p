@@ -1535,6 +1535,13 @@ class Component extends DCLogic {
         if (c === 'guest') return { hasCategory: true, catLabel: 'Guest', catBg: '#FFF3D6', catFg: '#8A5A00', catSub: 'until ' + fmt(A.guest_until),
           catText: (A.guest_from ? A.guest_from + ' gave you a seat for your Time4God Challenge. ' : 'You have a guest seat for your Time4God Challenge. ') + 'You can read the full study book until the challenge ends.' + (A.keep_going_price != null ? ' Keep it for your own year for ' + money(A.keep_going_price) + '.' : ''),
           catHasLink: A.keep_going_price != null, catLinkLabel: 'Keep going · ' + money(A.keep_going_price || 0) };
+        const price = A.individual_price != null ? money(A.individual_price) : '';
+        if (c === 'trial') return { hasCategory: true, catLabel: 'Trial', catBg: '#E6F0FA', catFg: '#1F4E8C', catSub: 'until ' + fmt(A.trial_until),
+          catText: 'Your free trial gives you the full study book through ' + fmt(A.trial_until) + '. Join ' + (price ? 'for ' + price + ' ' : '') + 'to keep reading for a full year.',
+          catHasLink: true, catLinkLabel: 'Join' + (price ? ' · ' + price : '') };
+        if (A.trial_until && A.keep_going_price == null) return { hasCategory: true, catLabel: 'Prospect', catBg: '#EEF2F4', catFg: '#4F5F68', catSub: 'Free trial ended ' + fmt(A.trial_until),
+          catText: 'Your free trial has ended. Join ' + (price ? 'for ' + price + ' ' : '') + 'to open the study book again for a full year. Your time with God so far is saved.',
+          catHasLink: true, catLinkLabel: 'Join' + (price ? ' · ' + price : '') };
         return { hasCategory: true, catLabel: 'Prospect', catBg: '#EEF2F4', catFg: '#4F5F68', catSub: 'Free account',
           catText: A.keep_going_price != null ? 'Your guest seat has ended. Keep the study book for your own year at the guest price.' : 'Your account is free. To read the study book, join a church that has seats, use the key in your printed book, or get the study book in the app.',
           catHasLink: true, catLinkLabel: A.keep_going_price != null ? 'Keep going · ' + money(A.keep_going_price) : 'Get the study book' }; })(),
