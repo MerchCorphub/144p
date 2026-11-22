@@ -542,24 +542,61 @@ table.mini td{padding:3px 12px 3px 0}
         <td>${m.minutes_all ? `${hm(m.minutes_all)} total<br><span class="muted">${m.minutes_30 ? hm(m.minutes_30) + ' in 30 days' : 'none in 30 days'}</span>` : '<span class="muted">None yet</span>'}</td>
         <td class="muted">${fDate(m.created_at)}</td></tr>`).join('')}</tbody></table>` : `<p class="empty">${all.length ? 'No one matches.' : 'No accounts yet.'}</p>`}</div>` + trialCard(); };
   // ---------- trial passes ----------
+  const isPhone = () => /Android|iPhone|iPad|iPod/i.test(navigator.userAgent) || (navigator.maxTouchPoints > 1 && /Mac/.test(navigator.platform || ''));
+  const freeTxt = n => n % 7 === 0 ? (n / 7 === 1 ? '1 week' : (n / 7) + ' weeks') : n + ' days';
+  // The default messages (editable before sending)
+  function trialMessage(tpl, name, days, mode) {
+    const hi = 'Hi' + (name ? ' ' + name.trim() : '') + ',', free = freeTxt(days || 14);
+    if (tpl === 'met') return `${hi} it was good to meet you. I wanted to share something that has been a blessing in my life. The Time4God Challenge is an app that helps you set aside time with God each day (prayer, Bible reading, worship, serving others) and see that time add up week by week. This invitation gives you ${free} free with the full study book, What Will You Give Today?: one short chapter each week, journal pages to reflect, and every chapter read aloud if you’d rather listen. Gentle daily reminders help you keep going, and you can invite a friend to take the challenge with you. No cost and no card needed. ${mode === 'text' ? 'Tap the link to start:' : 'Tap the button below to start.'}`;
+    return `${hi} I’ve been giving God a little more of my time each day, and it’s changing me. I’d love for you to walk with me. Here’s ${free} free in the Time4God Challenge, with the study book What Will You Give Today? No cost, no pressure. Just you and God, a little time each day.`;
+  }
+  const smsHref = body => 'sms:' + (/iPhone|iPad|iPod|Mac/i.test(navigator.userAgent) ? '&' : '?') + 'body=' + encodeURIComponent(body);
+  function trialForm() {
+    const mode = st.trMode || 'email', tpl = st.trTpl || 'close', days = st.trDays || 14;
+    if (st.trMsg == null || !st.trEdited) st.trMsg = trialMessage(tpl, st.trName || '', days, mode);
+    const seg = (k, v, t) => `<button type="button" class="btn ${st[k] === v || (!st[k] && (v === 'email' || v === 'close')) ? 'teal' : 'alt'} sm" data-seg="${k}" data-v="${v}" style="margin:0">${t}</button>`;
+    if (st.trLink) { const L = st.trLink, body = L.body + '\n\n' + L.url;
+      return `<div class="card" style="border:2px solid #D9A62B;background:#FFF8E6"><strong>Your text is ready${L.name ? ' for ' + esc(L.name) : ''}</strong>
+        <p class="muted" style="margin:6px 0 10px">Tap Open Messages, choose the person, and tap send. The link works once and is good for 30 days.</p>
+        <a class="btn teal" href="${esc(smsHref(body))}" style="display:block;text-align:center">Open Messages</a>
+        <button class="btn alt" type="button" id="trCopy" style="margin-top:8px;width:100%">Copy message and link</button>
+        <button class="btn alt sm" type="button" id="trDone" style="margin-top:10px">Done</button></div>`; }
+    return `<form class="card" id="trF">
+      <div class="row" style="gap:8px;margin-bottom:12px"><span style="font-weight:700;margin-right:4px">Send by</span>${seg('trMode', 'email', 'Email')}${seg('trMode', 'text', 'Text message')}</div>
+      ${mode === 'text' && !isPhone() ? `<p class="err" style="margin:0 0 10px">Text invitations are sent from your phone. Open <strong>time4god.app/admin.html</strong> on your phone to send one.</p>` : ''}
+      ${mode === 'email' ? `<label for="trE" style="font-weight:700">Email addresses</label><p class="muted" style="margin:2px 0 6px">One or more, separated by commas or new lines.</p>
+        <textarea id="trE" rows="2" required placeholder="name@example.com" style="width:100%;height:60px;min-height:60px;box-sizing:border-box;border:1px solid #C9D3D8;border-radius:10px;padding:10px;font:inherit">${esc(st.trEmails || '')}</textarea>` : ''}
+      <div class="row" style="margin-top:10px"><div style="flex:1;min-width:160px"><label for="trN">First name <span class="muted">(${mode === 'text' ? 'who you’re texting' : 'optional, one person'})</span></label><input id="trN" type="text" value="${esc(st.trName || '')}"></div>
+        <div style="width:120px"><label for="trD">Free days</label><input id="trD" type="number" min="1" max="60" value="${days}"></div></div>
+      <div class="row" style="gap:8px;margin:14px 0 6px"><span style="font-weight:700;margin-right:4px">Message</span>${seg('trTpl', 'close', 'Someone close')}${seg('trTpl', 'met', 'Someone I just met')}</div>
+      <textarea id="trM" rows="6" style="width:100%;height:150px;min-height:150px;box-sizing:border-box;border:1px solid #C9D3D8;border-radius:10px;padding:10px;font:inherit;line-height:1.45">${esc(st.trMsg)}</textarea>
+      <p class="muted" style="margin:4px 0 0;font-size:13px">${mode === 'text' ? 'Your personal link is added at the end.' : 'The email adds a “Start my free ' + freeTxt(days) + '” button and the date the invitation is good until.'} You can change the words; “Someone close” and “Someone I just met” bring back the suggested message.</p>
+      <button class="btn teal" type="submit" style="margin-top:12px" ${mode === 'text' && !isPhone() ? 'disabled' : ''}>${mode === 'text' ? 'Make my text' : 'Send trial invitation'}</button></form>`;
+  }
   function trialCard() { const T = st.trials || [];
     const S = { sent: '<span class="pill wait">Sent</span>', active: '<span class="pill wait">On trial</span>', joined: '<span class="pill ok">Joined</span>', ended: '<span class="pill off">Ended, not joined</span>', expired: '<span class="pill off">Invite expired</span>', canceled: '<span class="pill off">Canceled</span>' };
     const cnt = k => T.filter(t => t.status === k).length, tried = T.filter(t => t.claimed_at).length;
     return `<h2 style="margin-top:28px">Trial passes</h2><p class="sub">Invite someone to try the app free. They get an email with a link; their free days start when they accept, and they get the full study book. Two days before it ends, and again when it ends, they get an email asking them to join at the current individual price. Unused invitations expire after 30 days. One trial per person.</p>
-    <form class="card" id="trF"><label for="trE" style="font-weight:700">Email addresses</label><p class="muted" style="margin:2px 0 6px">One or more, separated by commas or new lines.</p>
-      <textarea id="trE" rows="3" required placeholder="name@example.com" style="width:100%;height:84px;min-height:84px;box-sizing:border-box;border:1px solid #C9D3D8;border-radius:10px;padding:10px;font:inherit"></textarea>
-      <div class="row" style="margin-top:10px"><div style="flex:1;min-width:160px"><label for="trN">First name <span class="muted">(optional, one person)</span></label><input id="trN" type="text"></div>
-        <div style="width:120px"><label for="trD">Free days</label><input id="trD" type="number" min="1" max="60" value="14"></div></div>
-      <label for="trM" style="margin-top:10px;display:block">Personal note <span class="muted">(optional, added to the email)</span></label><input id="trM" type="text" maxlength="300" placeholder="I thought of you for this…">
-      <button class="btn teal" type="submit" style="margin-top:12px">Send trial invitation</button></form>
+${trialForm()}
     <div class="tiles">${tile('Sent', String(T.length), `${cnt('sent')} not accepted yet`)}${tile('On trial now', String(cnt('active')), '')}${tile('Joined', String(cnt('joined')), tried ? Math.round(100 * cnt('joined') / tried) + '% of those who tried' : '')}${tile('Ended, not joined', String(cnt('ended')), '')}</div>
     <div class="card tbl">${T.length ? `<table><thead><tr><th>Invited</th><th>Sent</th><th>Status</th><th>Trial</th><th></th></tr></thead><tbody>${T.map(t => `<tr>
-      <td><strong>${esc(t.name || t.email)}</strong>${t.name ? `<br><span class="muted">${esc(t.email)}</span>` : ''}${t.reader && t.reader_email !== t.email ? `<br><span class="muted">Accepted by ${esc(t.reader)} (${esc(t.reader_email)})</span>` : ''}</td>
+      <td><strong>${esc(t.name || t.email || 'Text invitation')}</strong>${t.name && t.email ? `<br><span class="muted">${esc(t.email)}</span>` : ''}${t.via === 'text' ? '<br><span class="muted">Sent by text</span>' : ''}${t.reader && t.reader_email !== t.email ? `<br><span class="muted">Accepted by ${esc(t.reader)} (${esc(t.reader_email)})</span>` : ''}</td>
       <td class="muted">${fDate(t.created_at)}<br>${t.days} free days</td><td>${S[t.status] || esc(t.status)}</td>
       <td class="muted">${t.claimed_at ? `Started ${fDate(t.claimed_at)}${t.trial_until ? `<br>${t.status === 'active' ? 'Ends' : 'Ended'} ${fDate(t.trial_until + 'T12:00:00')}` : ''}` : t.status === 'sent' ? 'Good until ' + fDate(t.expires_at) : ''}</td>
-      <td>${t.status === 'sent' || t.status === 'expired' ? `<div class="row" style="flex-wrap:nowrap"><button class="btn alt sm" type="button" data-trre="${t.id}">Send again</button>${t.status === 'sent' ? `<button class="btn danger sm" type="button" data-trx="${t.id}">Cancel</button>` : ''}</div>` : t.status === 'active' ? `<button class="btn danger sm" type="button" data-trx="${t.id}" data-end="1">End trial</button>` : ''}</td></tr>`).join('')}</tbody></table>` : '<p class="empty">No trial passes sent yet.</p>'}</div>`; }
+      <td>${t.status === 'sent' || t.status === 'expired' ? `<div class="row" style="flex-wrap:nowrap">${t.via === 'text' ? (isPhone() ? `<button class="btn alt sm" type="button" data-trtx="${t.id}">Text again</button>` : '') : `<button class="btn alt sm" type="button" data-trre="${t.id}">Send again</button>`}${t.status === 'sent' ? `<button class="btn danger sm" type="button" data-trx="${t.id}">Cancel</button>` : ''}</div>` : t.status === 'active' ? `<button class="btn danger sm" type="button" data-trx="${t.id}" data-end="1">End trial</button>` : ''}</td></tr>`).join('')}</tbody></table>` : '<p class="empty">No trial passes sent yet.</p>'}</div>`; }
   BIND.members = () => {
-    $('trF').onsubmit = e => { e.preventDefault(); const em = $('trE').value; run(async () => { const n = await Cloud.rpc('admin_create_trials', { p_emails: em, p_name: $('trN').value || null, p_note: $('trM').value || null, p_days: parseInt($('trD').value, 10) || 14 }); await loadTab(true); flash(`Sent ${n} trial invitation${n === 1 ? '' : 's'}.`); }); };
+    const regen = () => { if (!st.trEdited && $('trM')) { st.trMsg = trialMessage(st.trTpl || 'close', st.trName || '', st.trDays || 14, st.trMode || 'email'); $('trM').value = st.trMsg; } };
+    $app.querySelectorAll('[data-seg]').forEach(b => b.onclick = () => { st[b.dataset.seg] = b.dataset.v; if (b.dataset.seg === 'trTpl') st.trEdited = false; st.trMsg = null; if (st.trEdited && b.dataset.seg === 'trMode') st.trMsg = $('trM').value; render(); });
+    if ($('trE')) $('trE').oninput = e => { st.trEmails = e.target.value; };
+    if ($('trN')) $('trN').oninput = e => { st.trName = e.target.value; regen(); };
+    if ($('trD')) $('trD').oninput = e => { st.trDays = Math.min(60, Math.max(1, parseInt(e.target.value, 10) || 14)); regen(); };
+    if ($('trM')) $('trM').oninput = e => { st.trMsg = e.target.value; st.trEdited = true; };
+    if ($('trF')) $('trF').onsubmit = e => { e.preventDefault(); const days = st.trDays || 14, msg = ($('trM').value || '').trim(), name = ($('trN').value || '').trim();
+      if ((st.trMode || 'email') === 'text') return run(async () => { const r = await Cloud.rpc('admin_create_trial_link', { p_name: name || null, p_note: msg || null, p_days: days }); st.trLink = { url: r.url, body: msg, name }; await loadTab(true); });
+      run(async () => { const n = await Cloud.rpc('admin_create_trials', { p_emails: $('trE').value, p_name: name || null, p_note: msg || null, p_days: days }); st.trEmails = ''; st.trName = ''; st.trEdited = false; st.trMsg = null; await loadTab(true); flash(`Sent ${n} trial invitation${n === 1 ? '' : 's'}.`); }); };
+    if ($('trDone')) $('trDone').onclick = () => { st.trLink = null; st.trName = ''; st.trEdited = false; st.trMsg = null; render(); };
+    if ($('trCopy')) $('trCopy').onclick = async () => { try { await navigator.clipboard.writeText(st.trLink.body + '\n\n' + st.trLink.url); flash('Copied. Paste it into any message.'); } catch (e) { flash(st.trLink.url); } };
+    $app.querySelectorAll('[data-trtx]').forEach(b => b.onclick = () => run(async () => { const r = await Cloud.rpc('admin_trial_text_again', { p_id: b.dataset.trtx }); st.trLink = { url: r.url, body: r.note || trialMessage('close', r.name || '', r.days, 'text'), name: r.name }; await loadTab(true); const c = document.getElementById('trCopy'); if (c) c.scrollIntoView({ block: 'center' }); }));
     $app.querySelectorAll('[data-trre]').forEach(b => b.onclick = () => run(async () => { await Cloud.rpc('admin_resend_trial', { p_id: b.dataset.trre }); await loadTab(true); }, 'Invitation sent again. It’s good for another 30 days.'));
     $app.querySelectorAll('[data-trx]').forEach(b => b.onclick = () => { const end = !!b.dataset.end; if (!confirm(end ? 'End this free trial now? They lose the study book right away.' : 'Cancel this invitation? The link will stop working.')) return;
       run(async () => { await Cloud.rpc('admin_cancel_trial', { p_id: b.dataset.trx }); await loadTab(true); }, end ? 'Trial ended.' : 'Invitation canceled.'); });
@@ -909,7 +946,7 @@ table.mini td{padding:3px 12px 3px 0}
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
       if (st.tab === 'settings') { st.settings = await Cloud.rpc('admin_settings'); st.stripe = null; Cloud.pay({ action: 'stripe_mode' }).then(r => { st.stripe = r || {}; if (st.tab === 'settings') render(); }).catch(e => { st.stripe = { error: errMsg(e) }; if (st.tab === 'settings') render(); }); }
       if (st.tab === 'nochurch') { const [a, b] = await Promise.all([Cloud.rpc('admin_no_church'), Cloud.rpc('admin_pending_members')]); st.nc = a || []; st.pend = b || []; st.ncSel = new Set(); st.pSel = new Set(); }
-      if (st.tab === 'members') { const [a, t] = await Promise.all([Cloud.rpc('admin_all_members'), Cloud.rpc('admin_trials')]); st.all = a || []; st.trials = t || []; }
+      if (st.tab === 'members') { const [a, t] = await Promise.all([Cloud.rpc('admin_all_members'), Cloud.rpc('admin_trials_v2')]); st.all = a || []; st.trials = t || []; }
       if (st.tab === 'amdash') st.amo = await Cloud.rpc('am_overview') || [];
       if (st.tab === 'roles') { const [r, ch] = await Promise.all([Cloud.rpc('admin_roles'), Cloud.rpc('admin_all_churches')]); st.roles = r || []; st.allCh = ch || []; }
       if (st.tab === 'churches') st.ams = await Cloud.rpc('church_account_managers') || [];
