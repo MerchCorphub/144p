@@ -120,7 +120,11 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
   const money = n => n == null ? '' : '$' + Number(n).toFixed(Number(n) % 1 ? 2 : 0);
   const fDate = d => new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
-  const st = { price: null, me: null, acc: null, msg: '', err: '', busy: false };
+  const st = { price: null, me: null, acc: null, msg: '', err: '', busy: false, trial: null, trialCode: null };
+  const TRIAL_KEY = '144p-trial', AFTER_KEY = '144p-after-auth';
+  // A trial invitation link: access.html?trial=CODE (kept on this device until they sign in)
+  try { const q = new URLSearchParams(location.search).get('trial'); if (q) localStorage.setItem(TRIAL_KEY, q.trim().toUpperCase()); st.trialCode = localStorage.getItem(TRIAL_KEY); } catch (e) {}
+  const days = n => n % 7 === 0 ? (n / 7) + (n === 7 ? ' week' : ' weeks') : n + ' days';
 
   // ‹ Back: one step back. Inside this page it steps back a view; otherwise it returns to where you came from in the app.
   function toApp() { try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) return history.back(); } catch (e) {} location.href = './'; }
@@ -130,11 +134,14 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
     const p = st.price || {}, a = st.acc;
     const covered = a && (a.church_covers || a.seat || a.admin);
     const guest = a && !covered && a.guest_active, keep = a && !covered && a.keep_going_price != null;
+    const trial = a && !covered && !guest && a.trial_active, trialOver = a && !covered && !guest && !a.trial_active && a.trial_until;
     let status = '';
     if (st.me && a) {
       if (a.admin) status = `<div class="status yes"><strong>You have full access</strong> as the platform admin.</div>`;
       else if (a.seat) status = `<div class="status yes"><strong>You have the study book.</strong>${a.seat_expires ? ` Your access runs through ${esc(fDate(a.seat_expires))}.` : ''}</div>`;
       else if (guest) status = `<div class="status yes"><strong>${a.guest_from ? esc(a.guest_from) + ' gave you a seat.' : 'You have a guest seat.'}</strong> The full study book is yours through ${esc(fDate(a.guest_until + 'T12:00:00'))}, the last day of your challenge.</div>`;
+      else if (trial) status = `<div class="status yes"><strong>Your free trial is on.</strong> The full study book is yours through ${esc(fDate(a.trial_until + 'T12:00:00'))}. Join for ${esc(money(p.individual))} any time to keep reading for a full year.</div>`;
+      else if (trialOver && !keep) status = `<div class="status no"><strong>Your free trial ended on ${esc(fDate(a.trial_until + 'T12:00:00'))}.</strong> Join for ${esc(money(p.individual))} to open the study book again for a full year. Your time with God so far is saved.</div>`;
       else if (a.church_covers) status = `<div class="status yes"><strong>${esc(a.church)} covers your study book.</strong> Nothing to pay.</div>`;
       else if (a.church && a.church_status === 'pending') status = `<div class="status no"><strong>Waiting for ${esc(a.church)} to approve you.</strong> If your church has seats, you won’t need to pay. You can also get the book yourself below.</div>`;
       else if (a.church && !a.church_license) status = `<div class="status no"><strong>${esc(a.church)} hasn’t added study book seats yet.</strong> Ask your church leader, or get the book yourself below.</div>`;
@@ -144,20 +151,25 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
     let html = `<div class="hero small"><picture><source srcset="t4g/t4g-logo.webp" type="image/webp"><img src="t4g/t4g-logo.png" alt="Time4God Challenge" width="150" height="150"></picture><h2>Time4God Challenge</h2><div class="s2">The 144(P) Plan</div><p>Signing up is free. The 12-week study book is how you go deeper.</p></div>
       ${(st.err ? `<div class="err" role="alert">${esc(st.err)}</div>` : '') + (st.msg ? `<div class="ok">${esc(st.msg)}</div>` : '')}
       ${status}
+      ${!st.me && st.trial && st.trial.ok ? `<div class="card" style="border:2px solid #D9A62B;background:#FFF8E6"><strong style="font-size:18px">You’re invited: ${esc(days(st.trial.days))} free</strong>
+        <p class="sub" style="margin:6px 0 0">${st.trial.name ? esc(st.trial.name) + ', you' : 'You'}’re invited to read the full study book free for ${esc(days(st.trial.days))}. Create your free account (or sign in) and your free days start right away. After that, join for ${esc(money(p.individual))} to keep reading.</p>
+        <button class="btn teal" type="button" data-auth="register">Create my free account</button><button class="btn alt" type="button" data-auth="signin">I already have an account</button></div>` : ''}
+      ${!st.me && st.trial && !st.trial.ok ? `<div class="err">${esc(st.trial.reason || 'This invitation isn’t available.')}</div>` : ''}
       <div class="card"><strong>Free with your account</strong>
         <ul class="ticks"><li>Log the time you give to God each day</li><li>Daily reminders and your streak</li><li>Take part in the Time4God Challenge</li></ul></div>
       <div class="card"><strong>The study book in the app</strong>
         <div style="display:flex;align-items:baseline;gap:8px;margin-top:10px"><span class="price">${esc(money(p.individual))}</span><span class="per">one payment · one year · tax included</span></div>
         <ul class="ticks"><li><em>What Will You Give Today?</em>, one chapter each week for 12 weeks</li><li>Weekly journal pages and checkpoints</li><li>Listen to any chapter read aloud</li><li><strong>A seat to give.</strong> The first person who accepts your Time4God Challenge gets the study book free for that challenge</li></ul></div>`;
     if (!st.me) {
-      html += `<a class="btn teal" href="./">Create your free account</a><a class="btn alt" href="./">Sign in</a>
+      html += `<button class="btn teal" type="button" data-auth="register">Create your free account</button><button class="btn alt" type="button" data-auth="signin">Sign in</button>
         <p class="sub" style="margin-top:12px">After you sign in, come back here to get the study book.</p>`;
     } else if (keep) {
       html += `<div class="card opt"><h3>Keep going · ${esc(money(a.keep_going_price))}</h3><p class="sub" style="margin:0 0 4px">Your own full year of the study book for ${esc(money(a.keep_going_price))} instead of ${esc(money(p.individual))}, because you came as a guest. It includes a seat to give the next person you challenge. All sales are final.</p>
           <button class="btn teal" id="keep" type="button" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Opening secure checkout…' : 'Keep going · ' + esc(money(a.keep_going_price))}</button></div>
         ${guest ? '<a class="btn alt" href="read.html">Open the study book</a>' : ''}`;
     } else if (!covered) {
-      html += `<div class="card opt"><h3>Buy it for yourself · ${esc(money(p.individual))}</h3><p class="sub" style="margin:0 0 4px">Pay securely with card, Apple Pay or Google Pay. All sales are final.</p>
+      if (trial) html += `<a class="btn alt" href="read.html">Open the study book</a>`;
+      html += `<div class="card opt"><h3>${trial || trialOver ? 'Join' : 'Buy it for yourself'} · ${esc(money(p.individual))}</h3><p class="sub" style="margin:0 0 4px">Pay securely with card, Apple Pay or Google Pay. All sales are final.</p>
           <button class="btn teal" id="buy" type="button" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Opening secure checkout…' : 'Get the study book · ' + esc(money(p.individual))}</button></div>
         <div class="card opt"><h3>Have the printed book?</h3><p class="sub" style="margin:0">Your copy includes the app edition and a seat to give. Use the book key printed inside.</p><a class="btn alt" href="redeem.html">Enter my book key</a></div>
         <div class="card opt"><h3>Is your church taking part?</h3><p class="sub" style="margin:0">If your church bought seats, the study book is included once you’re approved. Enter your church code in My Account.</p><a class="btn alt" href="./">Join my church</a></div>`;
@@ -170,6 +182,8 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
       <div class="two" style="margin-top:12px"><a class="btn alt" href="leaders.html?as=church" style="margin-top:0">Church leaders</a><a class="btn alt" href="leaders.html?as=group" style="margin-top:0">Group leaders</a></div></div>`;
     if (st.support) html += `<p class="sub" style="margin-top:14px;text-align:center">Questions? Email <a href="mailto:${esc(st.support)}">${esc(st.support)}</a></p>`;
     $app.innerHTML = html;
+    // Sign-in buttons come back here afterwards (and keep the trial invitation)
+    $app.querySelectorAll('[data-auth]').forEach(b => b.onclick = () => { try { localStorage.setItem(AFTER_KEY, 'access.html'); } catch (e) {} location.href = './?start=' + b.dataset.auth; });
     if ($('keep')) $('keep').onclick = async () => { st.err = ''; st.busy = true; render(); try { await Cloud.checkout('keep_going'); } catch (e) { st.busy = false; st.err = errMsg(e); render(); } };
     if ($('buy')) $('buy').onclick = async () => { st.err = ''; st.busy = true; render(); try { await Cloud.checkout('individual'); } catch (e) { st.busy = false; st.err = errMsg(e); render(); } };
   }
@@ -177,11 +191,20 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
   async function load() {
     try { st.price = await Cloud.rpc('public_pricing'); } catch (e) {}
     try { st.support = (await Cloud.rpc('public_contact')).support_email; } catch (e) {}
+    if (st.trialCode) { try { st.trial = await Cloud.rpc('trial_preview', { p_code: st.trialCode }); } catch (e) {} }
     const s = await Cloud.session();
     if (s) {
       st.me = await Cloud.ensurePartner();
       try { const r = await Cloud.settlePayments(); if (r === 'paid') st.msg = 'Payment received. Thank you! Your study book is ready.'; if (r === 'canceled') st.msg = 'Checkout canceled. You weren’t charged.'; }
       catch (e) { st.err = 'We couldn’t confirm your payment yet: ' + errMsg(e) + ' If you were charged, reload this page in a minute.'; }
+      // Accept a trial invitation once signed in
+      if (st.trialCode) {
+        try { const r = await Cloud.rpc('trial_claim', { p_code: st.trialCode });
+          if (r && r.status === 'ok') st.msg = `Welcome! Your free trial has started. Read the full study book through ${fDate(r.trial_until + 'T12:00:00')}.`; }
+        catch (e) { st.err = errMsg(e); }
+        try { localStorage.removeItem(TRIAL_KEY); history.replaceState(null, '', location.pathname); } catch (e) {}
+        st.trialCode = null; st.trial = null;
+      }
       try { st.acc = await Cloud.rpc('my_access'); } catch (e) {}
     }
     render();

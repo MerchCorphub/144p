@@ -80,3 +80,7 @@ date: 2026-11-18T01:30:00Z
 ## Member categories (migration 0025)
 - `private.member_category(pid)`: **member** (paid: own seat incl. book key, approved in a church with active seats, or leader of a licensed church), **guest** (active guest seat from a challenge), **prospect** (free, not paid; includes guests whose challenge ended).
 - Shown in Admin Panel › All members (`admin_all_members`, search + filter), on No church rows, as Dashboard counts, and in the app's My Account (Membership card, from `my_access.category`).
+
+## Trial passes (migration 0027)
+- Admin Panel › All members › Trial passes: admins email invitations (`admin_create_trials`); link `access.html?trial=CODE`. Free days (default 14) start when accepted (`trial_claim`); unused invites expire after 30 days; one trial per person; resend/cancel/end trial.
+- New category **trial** (Member > Guest > Trial > Prospect); study book unlocked while active. Daily job `trial-reminders` emails 2 days before the end and after it ends, asking them to join at the current individual price.

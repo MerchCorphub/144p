@@ -525,23 +525,45 @@ table.mini td{padding:3px 12px 3px 0}
       </tbody></table>` : '<p class="empty">No payments yet.</p>'}</div>`; };
 
   // ---------- all members by category (admin) ----------
-  const CAT = { member: ['Member', 'ok', 'Paid: bought the study book, has a church seat, or used a printed-book key'], guest: ['Guest', 'wait', 'Temporary seat from a Member’s Time4God Challenge'], prospect: ['Prospect', 'off', 'Free account, not paid'] };
+  const CAT = { member: ['Member', 'ok', 'Paid: bought the study book, has a church seat, or used a printed-book key'], guest: ['Guest', 'wait', 'Temporary seat from a Member’s Time4God Challenge'], trial: ['Trial', 'wait', 'Free trial pass'], prospect: ['Prospect', 'off', 'Free account, not paid'] };
   const catPill = c => CAT[c] ? `<span class="pill ${CAT[c][1]}">${CAT[c][0]}</span>` : '';
   const PAIDBY = { bought: 'Bought the study book', book_key: 'Printed-book key', own_seat: 'Own seat', church: 'Church seat', leader: 'Church leader' };
   VIEWS.members = () => { const all = st.all || [], q = (st.amQ || '').trim().toLowerCase(), f = st.amF || 'all';
     const L = all.filter(m => (f === 'all' || m.category === f) && (!q || (m.name + ' ' + m.email + ' ' + (m.church || '')).toLowerCase().includes(q)));
     const n = c => all.filter(m => m.category === c).length;
-    return `<h2>All members</h2><p class="sub">Every account, by category. <strong>Member</strong>: paid (bought the study book, has a church seat, or used a printed-book key). <strong>Guest</strong>: a temporary seat from a Member’s Time4God Challenge, until the challenge ends. <strong>Prospect</strong>: a free account that hasn’t paid, including guests whose challenge has ended.</p>
-    <div class="tiles">${tile('Members', String(n('member')), 'paid')}${tile('Guests', String(n('guest')), 'on a challenge seat')}${tile('Prospects', String(n('prospect')), 'free, not paid')}${tile('All accounts', String(all.length), '')}</div>
+    return `<h2>All members</h2><p class="sub">Every account, by category. <strong>Member</strong>: paid (bought the study book, has a church seat, or used a printed-book key). <strong>Guest</strong>: a temporary seat from a Member’s Time4God Challenge, until the challenge ends. <strong>Trial</strong>: a free trial pass you sent, until it ends. <strong>Prospect</strong>: a free account that hasn’t paid, including guests and trials that have ended.</p>
+    <div class="tiles">${tile('Members', String(n('member')), 'paid')}${tile('Guests', String(n('guest')), 'on a challenge seat')}${tile('Trials', String(n('trial')), 'on a free trial pass')}${tile('Prospects', String(n('prospect')), 'free, not paid')}</div>
     <div class="card"><div class="row"><input id="amQ" type="search" placeholder="Search name, email or church" value="${esc(st.amQ || '')}" style="flex:1;min-width:220px">
-      <select id="amF">${[['all', 'Everyone'], ['member', 'Members'], ['guest', 'Guests'], ['prospect', 'Prospects']].map(([k, t]) => `<option value="${k}" ${f === k ? 'selected' : ''}>${t}</option>`).join('')}</select></div></div>
+      <select id="amF">${[['all', 'Everyone'], ['member', 'Members'], ['guest', 'Guests'], ['trial', 'Trials'], ['prospect', 'Prospects']].map(([k, t]) => `<option value="${k}" ${f === k ? 'selected' : ''}>${t}</option>`).join('')}</select></div></div>
     <div class="card tbl">${L.length ? `<table><thead><tr><th>Member</th><th>Category</th><th>Church</th><th>Time with God</th><th>Signed up</th></tr></thead><tbody>
       ${L.map(m => `<tr><td><strong>${esc(m.name)}</strong><br><a href="mailto:${esc(m.email)}" class="muted">${esc(m.email)}</a></td>
-        <td>${catPill(m.category)}<br><span class="muted">${m.category === 'member' ? esc(PAIDBY[m.paid_by] || '') : m.category === 'guest' ? `until ${fDate(m.guest_until + 'T12:00:00')}${m.guest_from ? ' · from ' + esc(m.guest_from) : ''}` : m.guest_until ? 'Guest seat ended ' + fDate(m.guest_until + 'T12:00:00') : 'Free account'}</span></td>
+        <td>${catPill(m.category)}<br><span class="muted">${m.category === 'member' ? esc(PAIDBY[m.paid_by] || '') : m.category === 'guest' ? `until ${fDate(m.guest_until + 'T12:00:00')}${m.guest_from ? ' · from ' + esc(m.guest_from) : ''}` : m.category === 'trial' ? `until ${fDate(m.trial_until + 'T12:00:00')}` : m.trial_until ? 'Trial ended ' + fDate(m.trial_until + 'T12:00:00') : m.guest_until ? 'Guest seat ended ' + fDate(m.guest_until + 'T12:00:00') : 'Free account'}</span></td>
         <td>${m.church ? `${esc(m.church)}${m.church_status === 'pending' ? '<br><span class="pill wait">Waiting for approval</span>' : ''}` : '<span class="muted">No church</span>'}</td>
         <td>${m.minutes_all ? `${hm(m.minutes_all)} total<br><span class="muted">${m.minutes_30 ? hm(m.minutes_30) + ' in 30 days' : 'none in 30 days'}</span>` : '<span class="muted">None yet</span>'}</td>
-        <td class="muted">${fDate(m.created_at)}</td></tr>`).join('')}</tbody></table>` : `<p class="empty">${all.length ? 'No one matches.' : 'No accounts yet.'}</p>`}</div>`; };
+        <td class="muted">${fDate(m.created_at)}</td></tr>`).join('')}</tbody></table>` : `<p class="empty">${all.length ? 'No one matches.' : 'No accounts yet.'}</p>`}</div>` + trialCard(); };
+  // ---------- trial passes ----------
+  function trialCard() { const T = st.trials || [];
+    const S = { sent: '<span class="pill wait">Sent</span>', active: '<span class="pill wait">On trial</span>', joined: '<span class="pill ok">Joined</span>', ended: '<span class="pill off">Ended, not joined</span>', expired: '<span class="pill off">Invite expired</span>', canceled: '<span class="pill off">Canceled</span>' };
+    const cnt = k => T.filter(t => t.status === k).length, tried = T.filter(t => t.claimed_at).length;
+    return `<h2 style="margin-top:28px">Trial passes</h2><p class="sub">Invite someone to try the app free. They get an email with a link; their free days start when they accept, and they get the full study book. Two days before it ends, and again when it ends, they get an email asking them to join at the current individual price. Unused invitations expire after 30 days. One trial per person.</p>
+    <form class="card" id="trF"><label for="trE" style="font-weight:700">Email addresses</label><p class="muted" style="margin:2px 0 6px">One or more, separated by commas or new lines.</p>
+      <textarea id="trE" rows="3" required placeholder="name@example.com" style="width:100%;height:84px;min-height:84px;box-sizing:border-box;border:1px solid #C9D3D8;border-radius:10px;padding:10px;font:inherit"></textarea>
+      <div class="row" style="margin-top:10px"><div style="flex:1;min-width:160px"><label for="trN">First name <span class="muted">(optional, one person)</span></label><input id="trN" type="text"></div>
+        <div style="width:120px"><label for="trD">Free days</label><input id="trD" type="number" min="1" max="60" value="14"></div></div>
+      <label for="trM" style="margin-top:10px;display:block">Personal note <span class="muted">(optional, added to the email)</span></label><input id="trM" type="text" maxlength="300" placeholder="I thought of you for this…">
+      <button class="btn teal" type="submit" style="margin-top:12px">Send trial invitation</button></form>
+    <div class="tiles">${tile('Sent', String(T.length), `${cnt('sent')} not accepted yet`)}${tile('On trial now', String(cnt('active')), '')}${tile('Joined', String(cnt('joined')), tried ? Math.round(100 * cnt('joined') / tried) + '% of those who tried' : '')}${tile('Ended, not joined', String(cnt('ended')), '')}</div>
+    <div class="card tbl">${T.length ? `<table><thead><tr><th>Invited</th><th>Sent</th><th>Status</th><th>Trial</th><th></th></tr></thead><tbody>${T.map(t => `<tr>
+      <td><strong>${esc(t.name || t.email)}</strong>${t.name ? `<br><span class="muted">${esc(t.email)}</span>` : ''}${t.reader && t.reader_email !== t.email ? `<br><span class="muted">Accepted by ${esc(t.reader)} (${esc(t.reader_email)})</span>` : ''}</td>
+      <td class="muted">${fDate(t.created_at)}<br>${t.days} free days</td><td>${S[t.status] || esc(t.status)}</td>
+      <td class="muted">${t.claimed_at ? `Started ${fDate(t.claimed_at)}${t.trial_until ? `<br>${t.status === 'active' ? 'Ends' : 'Ended'} ${fDate(t.trial_until + 'T12:00:00')}` : ''}` : t.status === 'sent' ? 'Good until ' + fDate(t.expires_at) : ''}</td>
+      <td>${t.status === 'sent' || t.status === 'expired' ? `<div class="row" style="flex-wrap:nowrap"><button class="btn alt sm" type="button" data-trre="${t.id}">Send again</button>${t.status === 'sent' ? `<button class="btn danger sm" type="button" data-trx="${t.id}">Cancel</button>` : ''}</div>` : t.status === 'active' ? `<button class="btn danger sm" type="button" data-trx="${t.id}" data-end="1">End trial</button>` : ''}</td></tr>`).join('')}</tbody></table>` : '<p class="empty">No trial passes sent yet.</p>'}</div>`; }
   BIND.members = () => {
+    $('trF').onsubmit = e => { e.preventDefault(); const em = $('trE').value; run(async () => { const n = await Cloud.rpc('admin_create_trials', { p_emails: em, p_name: $('trN').value || null, p_note: $('trM').value || null, p_days: parseInt($('trD').value, 10) || 14 }); await loadTab(true); flash(`Sent ${n} trial invitation${n === 1 ? '' : 's'}.`); }); };
+    $app.querySelectorAll('[data-trre]').forEach(b => b.onclick = () => run(async () => { await Cloud.rpc('admin_resend_trial', { p_id: b.dataset.trre }); await loadTab(true); }, 'Invitation sent again. It’s good for another 30 days.'));
+    $app.querySelectorAll('[data-trx]').forEach(b => b.onclick = () => { const end = !!b.dataset.end; if (!confirm(end ? 'End this free trial now? They lose the study book right away.' : 'Cancel this invitation? The link will stop working.')) return;
+      run(async () => { await Cloud.rpc('admin_cancel_trial', { p_id: b.dataset.trx }); await loadTab(true); }, end ? 'Trial ended.' : 'Invitation canceled.'); });
+
     const keep = (id, fn) => { const el = $(id); if (!el) return; el.oninput = el.onchange = e => { fn(e.target.value); const pos = e.target.selectionStart; render(); const nn = $(id); if (nn) { nn.focus(); try { if (pos != null) nn.setSelectionRange(pos, pos); } catch (x) {} } }; };
     keep('amQ', v => { st.amQ = v; }); keep('amF', v => { st.amF = v; });
   };
@@ -774,7 +796,7 @@ table.mini td{padding:3px 12px 3px 0}
       ${todo ? `<div class="card" style="border-color:#D9A62B;background:#FFF8E6"><strong>Needs your attention</strong><div class="row" style="margin-top:8px">${todo}</div></div>` : ''}
       <h3 class="dh">Members</h3><div class="tiles">
         ${tile('Accounts', n0(M.accounts), `+${n0(M.new_7)} this week · +${n0(M.new_30)} in 30 days`)}
-        ${D.categories ? tile('Members · Guests · Prospects', `${n0(D.categories.member)} · ${n0(D.categories.guest)} · ${n0(D.categories.prospect)}`, '<a href="#" data-go="members">See everyone →</a>') : ''}
+        ${D.categories ? tile('Members · Guests · Trials · Prospects', `${n0(D.categories.member)} · ${n0(D.categories.guest)} · ${n0(D.categories.trial || 0)} · ${n0(D.categories.prospect)}`, '<a href="#" data-go="members">See everyone →</a>') : ''}
         ${tile('In a church', n0(M.in_church), `${n0(M.pending)} waiting for approval`, M.pending > 0)}
         ${tile('Have the study book', n0(M.with_book), `${n0(M.own_seats)} bought their own · ${n0(M.key_claims)} with a book key`)}
         ${tile('No church yet', n0(M.no_church), M.no_church ? '<a href="#" data-go="nochurch">See who →</a>' : 'Candidates for a church code or own seat')}
@@ -887,7 +909,7 @@ table.mini td{padding:3px 12px 3px 0}
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
       if (st.tab === 'settings') { st.settings = await Cloud.rpc('admin_settings'); st.stripe = null; Cloud.pay({ action: 'stripe_mode' }).then(r => { st.stripe = r || {}; if (st.tab === 'settings') render(); }).catch(e => { st.stripe = { error: errMsg(e) }; if (st.tab === 'settings') render(); }); }
       if (st.tab === 'nochurch') { const [a, b] = await Promise.all([Cloud.rpc('admin_no_church'), Cloud.rpc('admin_pending_members')]); st.nc = a || []; st.pend = b || []; st.ncSel = new Set(); st.pSel = new Set(); }
-      if (st.tab === 'members') st.all = await Cloud.rpc('admin_all_members') || [];
+      if (st.tab === 'members') { const [a, t] = await Promise.all([Cloud.rpc('admin_all_members'), Cloud.rpc('admin_trials')]); st.all = a || []; st.trials = t || []; }
       if (st.tab === 'amdash') st.amo = await Cloud.rpc('am_overview') || [];
       if (st.tab === 'roles') { const [r, ch] = await Promise.all([Cloud.rpc('admin_roles'), Cloud.rpc('admin_all_churches')]); st.roles = r || []; st.allCh = ch || []; }
       if (st.tab === 'churches') st.ams = await Cloud.rpc('church_account_managers') || [];
