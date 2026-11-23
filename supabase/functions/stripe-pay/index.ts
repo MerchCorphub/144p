@@ -1,14 +1,14 @@
 // stripe-pay: starts a Stripe Checkout payment and confirms it when the buyer returns.
 // The price always comes from the database (license_plans), never from the browser.
 // Large church purchases ($20,000+) can also be paid by Stripe invoice (bank transfer, ACH or card,
-// due in 15 days). Open invoices are checked every 15 minutes by a scheduled job (x-notify-token)
+// due in 15 days; the church also can mail a check or wire). Open invoices are checked every 15 minutes by a scheduled job (x-notify-token)
 // and whenever a leader opens the Leader Console.
 // Secrets (set in Supabase › Edge Functions › Secrets): STRIPE_SECRET_KEY.
 import { createClient } from 'npm:@supabase/supabase-js@2';
 
 const SITE = 'https://time4god.app';
 const ALLOWED_ORIGINS = ['https://time4god.app', 'https://www.time4god.app', 'https://merchcorphub.github.io'];
-const RETURN_PAGES = ['/', '/index.html', '/access.html', '/read.html', '/leader.html', '/admin.html', '/challenges.html', '/144p/', '/144p/access.html', '/144p/read.html', '/144p/leader.html', '/144p/admin.html'];
+const RETURN_PAGES = ['/', '/index.html', '/access.html', '/read.html', '/leader.html', '/admin.html', '/challenges.html', '/church-signup.html', '/144p/church-signup.html', '/144p/', '/144p/access.html', '/144p/read.html', '/144p/leader.html', '/144p/admin.html'];
 
 const cors = (origin: string | null) => ({
   'Access-Control-Allow-Origin': origin && ALLOWED_ORIGINS.includes(origin) ? origin : SITE,
@@ -89,11 +89,12 @@ async function createInvoice(admin: any, key: string, paymentId: string) {
     }
   }
   await stripe('invoiceitems', key, { customer, invoice: inv.id, amount: String(ctx.amount_cents), currency: 'usd', description: ctx.description }, 'item-' + paymentId);
-  await stripe(`invoices/${inv.id}/finalize`, key, { auto_advance: 'true' }, 'fin-' + paymentId);
-  const sent = await stripe(`invoices/${inv.id}/send`, key, {}, 'send-' + paymentId);
+  // Finalize only: the church gets our own Time4God invoice (PDF) by email, with this Stripe pay link on it.
+  const sent = await stripe(`invoices/${inv.id}/finalize`, key, { auto_advance: 'false' }, 'fin-' + paymentId);
   const due = sent.due_date ? new Date(sent.due_date * 1000).toISOString().slice(0, 10) : null;
   await admin.rpc('stripe_attach_invoice', { p_payment: paymentId, p_invoice: sent.id, p_number: sent.number || null, p_url: sent.hosted_invoice_url || null, p_due: due, p_test: sent.livemode === false });
-  return { invoice_url: sent.hosted_invoice_url, number: sent.number, due_date: due };
+  const { data: doc } = await admin.from('invoice_docs').select('number').eq('payment_id', paymentId).maybeSingle();
+  return { invoice_url: sent.hosted_invoice_url, number: (doc && doc.number) || sent.number, due_date: due };
 }
 
 // Which Stripe mode the secret key is in, and whether the account can take payments (never the key itself)
@@ -186,6 +187,32 @@ Deno.serve(async (req) => {
       const { data: roles } = await admin.from('role_assignments').select('role').eq('user_id', who.user.id).eq('role', 'platform_admin').is('revoked_at', null).limit(1);
       if (!roles || !roles.length) return json({ error: 'Only an admin can see this.' }, 403, origin);
       return json(await stripeStatus(key), 200, origin);
+    }
+
+    // Admin: a check or wire arrived. Close any Stripe invoice as paid outside Stripe, then turn the seats on.
+    if (body.action === 'mark_paid' || body.action === 'void_invoice') {
+      const { data: roles } = await admin.from('role_assignments').select('role').eq('user_id', who.user.id).eq('role', 'platform_admin').is('revoked_at', null).not('verified_at', 'is', null).limit(1);
+      if (!roles || !roles.length) return json({ error: 'Only an admin can do this.' }, 403, origin);
+      const { data: doc } = await admin.from('invoice_docs').select('id,status,payment_id').eq('id', body.doc_id || '').maybeSingle();
+      if (!doc) return json({ error: 'Invoice not found.' }, 404, origin);
+      const { data: pay } = await admin.from('payments').select('stripe_invoice_id').eq('id', doc.payment_id).maybeSingle();
+      const sid = pay && pay.stripe_invoice_id;
+      if (sid && doc.status === 'open') {
+        try {
+          const inv = await stripe('invoices/' + sid, key);
+          if (inv.status === 'open') {
+            if (body.action === 'mark_paid') await stripe(`invoices/${sid}/pay`, key, { paid_out_of_band: 'true' }, 'oob-' + doc.id);
+            else await stripe(`invoices/${sid}/void`, key, {}, 'void-' + doc.id);
+          } else if (inv.status === 'paid' && body.action === 'void_invoice') {
+            return json({ error: 'This invoice was already paid online. Refresh to see it.' }, 400, origin);
+          }
+        } catch (e) { return json({ error: 'Stripe: ' + (e as Error).message }, 502, origin); }
+      }
+      const r = body.action === 'mark_paid'
+        ? await admin.rpc('stripe_mark_doc_paid', { p_doc: doc.id, p_method: body.method || 'check', p_reference: body.reference || null, p_user: who.user.id })
+        : await admin.rpc('stripe_void_doc', { p_doc: doc.id, p_user: who.user.id });
+      if (r.error) return json({ error: r.error.message }, 400, origin);
+      return json({ ok: true, result: r.data }, 200, origin);
     }
 
     if (body.action === 'sync_invoices') {

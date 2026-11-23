@@ -146,19 +146,17 @@ const nf = n => Number(n).toLocaleString('en-US');
     return rows.length ? `<div class="card"><strong>Your requests</strong>${rows.join('')}</div>` : '';
   }
 
+  const signupCard = kind => `<div class="card"><strong>${kind === 'group' ? 'Sign up your group' : 'Sign up your church'}</strong><p class="sub">Four short steps: your free account, your ${kind === 'group' ? 'group' : 'church'}’s details, how many seats, then checkout by card${(st.price || {}).invoice_min != null ? ` or, for ${money(st.price.invoice_min)} or more, by invoice` : ''}.</p>
+      <a class="btn teal" href="church-signup.html${kind === 'group' ? '?as=group' : ''}">Start ${kind === 'group' ? 'group' : 'church'} sign-up ›</a></div>`;
+  const groupChoice = () => `<div class="card"><strong>Lead a group</strong>
+      <label class="choice"><input type="radio" name="gm" value="inchurch" ${st.gmode === 'inchurch' ? 'checked' : ''}><div><strong>My church is in the app</strong><span>Ask your church admin to make you the leader of your group.</span></div></label>
+      <label class="choice"><input type="radio" name="gm" value="indep" ${st.gmode === 'indep' ? 'checked' : ''}><div><strong>We’re an independent group</strong><span>A home Bible study, workplace or family group without a church in the app.</span></div></label></div>`;
   function form() {
+    if (st.as === 'church') return signupCard('church');
+    if (st.gmode === 'indep') return groupChoice() + signupCard('group');
     if (!st.me) return `<div class="card"><strong>Step 1: create your free account</strong><p class="sub">Leaders use the same free account as members. You’ll come right back here to finish.</p>
       <button class="btn teal" type="button" id="reg">Create my free account</button><button class="btn alt" type="button" id="sin">I already have an account</button></div>`;
-    if (st.as === 'church') return `<form class="card" id="cf"><strong>Register your church</strong><p class="sub">You become the church admin once we approve it, usually within a day.</p>
-      ${field('cn', 'Church name', { ph: 'Mount Moriah Baptist Church', max: 100 })}
-      <div class="grid2"><div>${field('cc', 'City', { ph: 'Atlanta' })}</div><div>${field('cs', 'State', { ph: 'GA', max: 2, up: 1 })}</div></div>
-      ${field('cr', 'Your role', { ph: 'Pastor, church administrator, ministry leader…' })}
-      ${field('cp', 'Church phone', { opt: 1, type: 'tel' })}${field('cw', 'Website', { opt: 1, ph: 'https://' })}
-      <label for="cnote">Anything we should know? <span style="font-weight:400;color:#4F5F68">(optional)</span></label><textarea id="cnote" maxlength="300" placeholder="About how many members might take part?"></textarea>
-      <button class="btn teal" type="submit" ${st.busy ? 'disabled' : ''}>Send for approval</button></form>`;
-    return `<div class="card"><strong>Lead a group</strong>
-      <label class="choice"><input type="radio" name="gm" value="inchurch" ${st.gmode === 'inchurch' ? 'checked' : ''}><div><strong>My church is in the app</strong><span>Ask your church admin to make you the leader of your group.</span></div></label>
-      <label class="choice"><input type="radio" name="gm" value="indep" ${st.gmode === 'indep' ? 'checked' : ''}><div><strong>We’re an independent group</strong><span>A home Bible study, workplace or family group without a church in the app.</span></div></label></div>
+    return groupChoice() + `
       ${st.gmode === 'inchurch' ? `<form class="card" id="gf">${field('gc', 'Church code', { ph: 'From your church office', up: 1, max: 12 })}${field('gn', 'Your group’s name', { ph: 'Men’s Breakfast, Young Adults, Tuesday Table…', max: 60 })}
           <label for="gnote">Note to your church admin <span style="font-weight:400;color:#4F5F68">(optional)</span></label><textarea id="gnote" maxlength="300"></textarea>
           <button class="btn teal" type="submit" ${st.busy ? 'disabled' : ''}>Ask to lead this group</button>
