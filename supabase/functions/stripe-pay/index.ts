@@ -159,7 +159,8 @@ Deno.serve(async (req) => {
         client_reference_id: prep.payment_id,
         'metadata[payment_id]': prep.payment_id,
         'payment_intent_data[metadata][payment_id]': prep.payment_id,
-        'custom_text[submit][message]': 'All sales are final. No refunds. Prices include tax.',
+        // No custom_text: Stripe Managed Payments (on for this account) doesn't allow it. Buyers agree to
+        // "all sales are final" on our own checkout step before they get here.
         success_url: `${base}${page}?paid={CHECKOUT_SESSION_ID}`,
         cancel_url: `${base}${page}?canceled=1`,
         ...(prep.email ? { customer_email: prep.email } : {}),
