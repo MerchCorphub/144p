@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Terms and Conditions · Time4God Challenge</title>
+<meta name="theme-color" content="#0B2257">
+<link rel="icon" type="image/png" sizes="32x32" href="t4g/t4g-icon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;700&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
+<script src="./cloud.js"></script>
+<script src="./legal.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#F7F3EA;color:#14284B;font-family:'Public Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+header{position:sticky;top:0;z-index:5;background:#0B2257;border-bottom:2px solid #D9A62B;color:#fff;padding:calc(12px + env(safe-area-inset-top)) 18px 12px}
+header .in{max-width:760px;margin:0 auto;display:flex;align-items:center;gap:12px}
+header a{color:#fff;text-decoration:none;font-weight:600;font-size:15px;padding:8px 0;min-width:60px}
+header h1{flex:1;margin:0;font-size:16px;font-weight:700;text-align:center}
+header .alt{text-align:right;color:#F2C94C;font-size:14px}
+main{max-width:760px;margin:0 auto;padding:8px 20px 60px}
+.doc{background:#fff;border:1px solid #E6DFCC;border-radius:14px;padding:6px 24px 24px;margin-top:16px;line-height:1.65;font-size:16px}
+.doc h1{font-family:'Source Serif 4',Georgia,serif;font-size:30px;color:#0B2257;margin:20px 0 4px}
+.doc h2{font-family:'Source Serif 4',Georgia,serif;font-size:21px;color:#0B2257;margin:30px 0 6px;padding-top:6px;border-top:1px solid #EEE7D6;scroll-margin-top:80px}
+.doc h3{font-size:16px;margin:20px 0 4px}
+.doc ul{padding-left:22px;margin:8px 0}
+.doc li{margin:5px 0}
+.doc a{color:#075D61}
+.toc{background:#fff;border:1px solid #E6DFCC;border-radius:14px;padding:14px 18px;margin-top:16px;font-size:14px}
+.toc summary{cursor:pointer;font-weight:700}
+.toc ol{margin:8px 0 0;padding-left:20px;columns:2;column-gap:28px}
+.toc a{color:#075D61;text-decoration:none}
+.meta{color:#4F5F68;font-size:13px;margin-top:10px}
+@media (max-width:600px){.toc ol{columns:1}.doc{padding:4px 16px 18px}}
+@media print{header,.toc{display:none}.doc{border:0;padding:0}body{background:#fff}}
+</style>
+</head>
+<body>
+<header><div class="in"><a href="./" id="back">‹ Back</a><h1 id="ttl">Terms and Conditions</h1><a class="alt" id="other" href="privacy.html">Privacy</a></div></header>
+<main id="app"><p style="margin-top:24px;color:#4F5F68">Loading…</p></main>
+<script>
+(function () {
+  const SLUG = location.pathname.endsWith('privacy.html') ? 'privacy' : 'terms';
+  const $app = document.getElementById('app');
+  if (SLUG === 'privacy') { document.getElementById('ttl').textContent = 'Privacy Policy'; document.title = 'Privacy Policy · Time4God Challenge'; const o = document.getElementById('other'); o.textContent = 'Terms'; o.href = 'terms.html'; }
+  document.getElementById('back').onclick = e => { e.preventDefault(); try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) return history.back(); } catch (x) {} location.href = './'; };
+  function show(body, meta) {
+    const r = Legal.render(body);
+    $app.innerHTML = (r.toc.length > 4 ? `<details class="toc"><summary>Contents</summary><ol>${r.toc.map(([id, t]) => `<li><a href="#${id}">${Legal.esc(t.replace(/^\d+\.\s*/, ''))}</a></li>`).join('')}</ol></details>` : '')
+      + `<article class="doc">${r.html}${meta ? `<p class="meta">${meta}</p>` : ''}</article>`;
+    if (location.hash) { const t = document.getElementById(location.hash.slice(1)); if (t) t.scrollIntoView(); }
+  }
+  (async () => {
+    try {
+      const d = await Cloud.rpc('public_legal', { p_slug: SLUG });
+      if (d && d.body) return show(d.body, `Version ${d.version}`);
+      throw new Error('none');
+    } catch (e) {
+      // Fallback: the copy published with the site
+      try { const t = await (await fetch(`legal/${SLUG}.md`, { cache: 'no-cache' })).text(); show(Legal.fill(t, { date: 'November 23, 2026' }), ''); }
+      catch (x) { $app.innerHTML = '<p style="margin-top:24px">This page couldn’t load. Please check your connection and try again.</p>'; }
+    }
+  })();
+})();
+</script>
+</body>
+</html>
