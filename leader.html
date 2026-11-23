@@ -177,6 +177,12 @@ table.mini td{padding:3px 12px 3px 0}
       if (w) w.location = data.signedUrl; else location.href = data.signedUrl; }
     catch (e) { if (w) w.close(); flash('The PDF isn’t ready yet. Try again in a minute.', true); }
   }
+  const PICK_KEY = '144p-leader-church';
+  const pick = id => { st.church = st.churches.find(x => x.church_id === id) || st.church; try { localStorage.setItem(PICK_KEY, st.church.church_id); } catch (e) {} };
+  // One clear "which church" picker at the top of Approvals, Groups and Messages
+  const churchPicker = id => st.churches.length > 1 ? `<div class="card" style="border-color:#123C56;background:#F3F7FA;margin-bottom:0"><div class="row" style="flex-wrap:wrap"><label for="${id}" style="margin:0;font-weight:700;font-size:16px">Which church?</label>
+      <select id="${id}" style="min-width:260px;font-size:16px;font-weight:600">${st.churches.map(x => `<option value="${x.church_id}" ${x.church_id === st.church.church_id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select>
+      <span class="muted">${st.churches.length} churches${st.admin ? ' · as platform admin you can manage every approved church' : ''}</span></div></div>` : '';
   const canName = () => st.church && ['church_admin', 'platform_admin', 'account_manager'].includes(st.church.role);
   const VIEWS = {}, BIND = {};
   VIEWS.approvals = () => {
@@ -187,9 +193,9 @@ table.mini td{padding:3px 12px 3px 0}
     const ns = st.notify;
     const emailCard = ns ? `<div class="card"><label class="pick" style="border:0;padding:0"><input type="checkbox" class="check" id="nsNew" ${ns.email_new_members ? 'checked' : ''}> <span><strong>Email me about new members</strong><br><span class="muted">${st.admin ? 'New accounts, join requests at every church, payments and new churches' : 'Each time someone asks to join your church'}, sent to ${esc(ns.email || 'your account email')}.</span></span></label></div>` : '';
     const nameCard = st.nameOk === false ? `<div class="card" style="border-color:#D9A62B;background:#FFF8E6"><strong>Add your full name.</strong> Members see your name on messages and approvals. Open <a href="./">the app</a> › More › My Account, enter your first and last name, and tap Save changes.</div>` : '';
-    return `<h2>Approvals</h2><p class="sub">Approve people who belong to your church. Approved members can read the book and count toward your church’s score.</p>${nameCard}${emailCard}
+    return `<h2>Approvals</h2><p class="sub">Approve people who belong to your church. Approved members can read the book and count toward your church’s score.</p>${churchPicker('ch')}${nameCard}${emailCard}
       <div class="card"><div class="row">
-        ${st.churches.length > 1 ? `<div><label for="ch">Church</label><select id="ch">${st.churches.map(x => `<option value="${x.church_id}" ${x.church_id === st.church.church_id ? 'selected' : ''}>${esc(x.name)}</option>`).join('')}</select></div>` : `<div><label>Church</label><strong>${esc(st.church.name)}</strong></div>`}
+        <div><label>Church</label><strong style="font-size:18px">${esc(st.church.name)}</strong></div>
         <div class="grow"></div>
         <div><label>Church code to share</label><span class="code">${esc(st.church.code)}</span></div>
       </div>
@@ -265,7 +271,7 @@ table.mini td{padding:3px 12px 3px 0}
       st.invBusy = true; render();
       run(async () => { try { const r = await Cloud.pay({ action: 'invoice', type: 'church', church_id: st.church.church_id, seats: parseInt(st.buySeats, 10) }); st.buy = false; await loadChurch(); flash(`Invoice ${r.number || ''} is ready. A PDF copy is on its way to your billing email, and you can open it here.`); } finally { st.invBusy = false; } }); };
     if ($('buyGo')) $('buyGo').onclick = () => { const b = $('buyGo'); b.disabled = true; b.textContent = 'Opening secure checkout…'; run(async () => { await Cloud.checkout('church', { church_id: st.church.church_id, seats: parseInt(st.buySeats, 10) }); }); };
-    if ($('ch')) $('ch').onchange = e => run(async () => { st.church = st.churches.find(x => x.church_id === e.target.value); await loadChurch(); });
+    if ($('ch')) $('ch').onchange = e => run(async () => { pick(e.target.value); await loadChurch(); });
     const pend = st.members.filter(m => m.status === 'pending');
     if ($('all')) $('all').onchange = e => { st.sel = e.target.checked ? new Set(pend.map(m => m.membership_id)) : new Set(); st.msg = st.err = ''; render(); };
     $app.querySelectorAll('[data-sel]').forEach(b => b.onchange = () => { const id = b.dataset.sel; st.sel.has(id) ? st.sel.delete(id) : st.sel.add(id); st.msg = st.err = ''; render(); });
@@ -358,11 +364,12 @@ table.mini td{padding:3px 12px 3px 0}
         ${st.admin ? (open ? `<form class="addbox" data-newinv="${x.id}" style="margin-top:10px"><strong>New invoice for ${esc(x.name)}</strong><p class="muted" style="margin:4px 0 8px">Priced at the seat rate for the church’s new total. The church can pay by check or wire${''}; it’s emailed with the PDF.</p>
             <div class="row" style="flex-wrap:wrap"><div><label>Seats</label><input type="number" min="1" name="seats" required style="max-width:120px"></div><div><label>Days to pay</label><input type="number" min="1" name="days" value="15" style="max-width:100px"></div><div class="grow"><label>Note on the invoice (optional)</label><input type="text" name="note" maxlength="120"></div></div>
             <div class="row" style="margin-top:10px"><button class="btn teal sm" type="submit">Create and email invoice</button><button class="btn alt sm" type="button" data-newinvclose>Close</button></div></form>`
-          : `<div class="row" style="margin-top:10px"><button class="btn alt sm" type="button" data-newinvopen="${x.id}">+ Create invoice</button></div>`) : ''}
+          : `<div class="row" style="margin-top:10px"><button class="btn alt sm" type="button" data-newinvopen="${x.id}">+ Create invoice</button>${!x.pending && st.churches.some(y => y.church_id === x.id) ? `<button class="btn alt sm" type="button" data-open="${x.id}">Open in Approvals ›</button>` : ''}</div>`) : ''}
       </div>`; }).join('') : `<div class="card"><p class="empty">${f === 'all' ? 'No churches or groups yet. They appear here as soon as someone registers.' : 'Nothing here right now.'}</p></div>`}
     ${st.admin ? manualLicenses() : ''}`;
   };
   BIND.licenses = () => {
+    $app.querySelectorAll('[data-open]').forEach(b => b.onclick = () => run(async () => { pick(b.dataset.open); st.tab = 'approvals'; await loadTab(); }));
     $app.querySelectorAll('[data-lf]').forEach(b => b.onclick = () => { st.licF = b.dataset.lf; render(); });
     const det = $('licManual'); if (det) det.ontoggle = () => { st.licOpenManual = det.open; };
     $app.querySelectorAll('[data-pdf]').forEach(b => b.onclick = () => openPdf(b.dataset.pdf));
@@ -458,7 +465,7 @@ table.mini td{padding:3px 12px 3px 0}
   BIND.groups = () => {
     $app.querySelectorAll('[data-lrok]').forEach(b => b.onclick = () => { const r = (st.leadReqs || []).find(x => x.id === b.dataset.lrok), gsel = $('lr-' + r.id).value || null; run(async () => { await Cloud.rpc('decide_group_lead', { p_id: r.id, p_approve: true, p_group: gsel }); await loadGroups(); }, `${r.name} is now a group leader. We emailed them.`); });
     $app.querySelectorAll('[data-lrno]').forEach(b => b.onclick = () => { const r = (st.leadReqs || []).find(x => x.id === b.dataset.lrno); if (!confirm(`Decline ${r.name}'s request to lead ${r.group_name}?`)) return; run(async () => { await Cloud.rpc('decide_group_lead', { p_id: r.id, p_approve: false, p_group: null }); await loadGroups(); }, 'Request declined.'); });
-    if ($('gch')) $('gch').onchange = e => run(async () => { st.church = st.churches.find(x => x.church_id === e.target.value); st.gAdd = null; st.gSel = new Set(); await loadGroups(); });
+    if ($('gch')) $('gch').onchange = e => run(async () => { pick(e.target.value); st.gAdd = null; st.gSel = new Set(); await loadGroups(); });
     if ($('ng')) $('ng').onsubmit = e => { e.preventDefault(); const nm = $('gn').value.trim(); run(async () => { await Cloud.rpc('save_group', { cid: st.church.church_id, p_id: null, p_name: nm }); await loadGroups(); }, `${nm} added. Choose its leader and add members below.`); };
     $app.querySelectorAll('[data-rename]').forEach(b => b.onclick = () => { st.gRename = b.dataset.rename; st.msg = st.err = ''; render(); });
     $app.querySelectorAll('[data-rncx]').forEach(b => b.onclick = () => { st.gRename = null; render(); });
@@ -491,7 +498,7 @@ table.mini td{padding:3px 12px 3px 0}
         <div style="margin:4px 0">${esc(m.body)}</div><span class="muted">From ${esc(m.sender_name)} · ${m.members} member${m.members === 1 ? '' : 's'} · ${m.pushes} notification${m.pushes === 1 ? '' : 's'} · ${m.emails} email${m.emails === 1 ? '' : 's'}</span></li>`).join('')}</ul>` : '<p class="empty">No messages sent yet.</p>'}</div>`;
   };
   BIND.messages = () => {
-    if ($('mch')) $('mch').onchange = e => run(async () => { st.church = st.churches.find(x => x.church_id === e.target.value); st.msgTo = ''; await loadTab(true); });
+    if ($('mch')) $('mch').onchange = e => run(async () => { pick(e.target.value); st.msgTo = ''; await loadTab(true); });
     if ($('mto')) $('mto').onchange = e => { st.msgTo = e.target.value; };
     if ($('mb')) $('mb').oninput = e => { st.msgDraft = e.target.value; $('mcount').textContent = st.msgDraft.length + '/500'; };
     if ($('mf')) $('mf').onsubmit = e => { e.preventDefault(); const body = st.msgDraft.trim(); if (!body) { flash('Write a message first.', true); render(); return; }
@@ -765,7 +772,7 @@ ${trialForm()}
       <td>${x.status === 'active' ? `<button class="btn alt sm" type="button" data-open="${x.church_id}">Open</button>` : `<button class="btn teal sm" type="button" data-go="churches">Review</button>`}</td></tr>`).join('')}</tbody></table></div>`
     : `<div class="card"><p class="empty">No churches are assigned to you yet. The owner assigns them in the Admin Panel.</p></div>`}`; };
   BIND.amdash = () => {
-    $app.querySelectorAll('[data-open]').forEach(b => b.onclick = () => run(async () => { st.church = st.churches.find(x => x.church_id === b.dataset.open) || st.church; st.tab = 'approvals'; await loadTab(); }));
+    $app.querySelectorAll('[data-open]').forEach(b => b.onclick = () => run(async () => { pick(b.dataset.open); st.tab = 'approvals'; await loadTab(); }));
     $app.querySelectorAll('[data-go]').forEach(b => b.onclick = async () => { st.tab = b.dataset.go; st.msg = st.err = ''; await loadTab(); });
   };
 
@@ -1076,7 +1083,8 @@ ${trialForm()}
     try { st.nameOk = await Cloud.rpc('my_profile_complete'); } catch (e) { st.nameOk = true; }
     if (st.admin) { $('ttl').textContent = 'The 144(P) Plan · Admin Panel'; document.title = 'Admin Panel · The 144(P) Plan'; }
     else if (st.am) { $('ttl').textContent = 'The 144(P) Plan · Account Manager'; document.title = 'Account Manager · The 144(P) Plan'; }
-    st.church = st.churches[0] || null;
+    let saved = null; try { saved = localStorage.getItem(PICK_KEY); } catch (e) {}
+    st.church = st.churches.find(x => x.church_id === saved) || st.churches[0] || null;
     if (ADMIN_MODE && !st.admin && !st.am) { $app.innerHTML = `<h2>Admin Panel</h2><p class="sub">This page is for the 144(P) Plan administrator. Church admins and group leaders use the <a href="leader.html">Leader Console</a>.</p>`; return; }
     if (!st.churches.length && !st.admin && !st.am) { $app.innerHTML = `<h2>Leader Console</h2><p class="sub">This account isn’t a church admin or group leader yet. Ask your church admin to make you a group leader, then sign in again.</p>`; return; }
     if (st.admin) st.tab = 'dash';
