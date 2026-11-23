@@ -982,7 +982,7 @@ const TOUR = [
 const TOUR_KEY = '144p-tour-off';
 // Leaders who start on time4god.app/leaders come back there after creating an account or signing in
 const AFTER_KEY = '144p-after-auth';
-const afterAuth = () => { try { const to = localStorage.getItem(AFTER_KEY); if (to && /^[a-z]+\.html(\?[a-z=&]*)?$/.test(to)) { localStorage.removeItem(AFTER_KEY); setTimeout(() => { location.href = to; }, 900); return true; } } catch (e) {} return false; };
+const afterAuth = () => { try { const to = localStorage.getItem(AFTER_KEY); if (to && /^[a-z][a-z-]*\.html(\?[a-z=&]*)?$/.test(to)) { localStorage.removeItem(AFTER_KEY); setTimeout(() => { location.href = to; }, 900); return true; } } catch (e) {} return false; };
 const tourOff = () => { try { return localStorage.getItem(TOUR_KEY) === '1'; } catch (e) { return false; } };
 
 class Component extends DCLogic {
@@ -1254,7 +1254,7 @@ class Component extends DCLogic {
       authSwap: () => this.setState({ screen: scr === 'register' ? 'signin' : 'register', err: '' }),
       authSubmit: () => (scr === 'register' ? this.register() : this.signin()),
       toRegister: () => this.setState({ screen: 'register', err: '', form: {} }),
-      toGroupLeader: () => { location.href = 'leaders.html?as=group'; }, toChurchLeader: () => { location.href = 'leaders.html?as=church'; },
+      toGroupLeader: () => { location.href = 'leaders.html?as=group'; }, toChurchLeader: () => { location.href = 'church-signup.html'; },
       hasSupport: !!this.state.supportEmail, supportEmail: this.state.supportEmail || '', supportHref: 'mailto:' + (this.state.supportEmail || '') + '?subject=' + encodeURIComponent('Question about the 144(P) Plan app'),
       priceShort: this.state.pricing && this.state.pricing.individual != null ? '$' + Number(this.state.pricing.individual).toFixed(Number(this.state.pricing.individual) % 1 ? 2 : 0) : 'available',
       hasJoin: !!s.join, joinName: s.join ? s.join.name : '',

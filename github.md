@@ -84,3 +84,20 @@ date: 2026-11-18T01:30:00Z
 ## Trial passes (migration 0027)
 - Admin Panel › All members › Trial passes: admins email invitations (`admin_create_trials`); link `access.html?trial=CODE`. Free days (default 14) start when accepted (`trial_claim`); unused invites expire after 30 days; one trial per person; resend/cancel/end trial.
 - New category **trial** (Member > Guest > Trial > Prospect); study book unlocked while active. Daily job `trial-reminders` emails 2 days before the end and after it ends, asking them to join at the current individual price.
+
+## Church sign-up and Time4God invoices (Nov 2026)
+
+**Sign-up (church-signup.html)** — four steps with a progress bar: 1 Account → 2 Register (church or independent group, street address, billing contact and billing email) → 3 Seats (live price per seat and total) → 4 Checkout. Checkout offers **Pay now by card** (Stripe Checkout) or **Pay by invoice** (only for orders of $20,000 or more). The person can pay while the church waits for approval; members can join only after Pete approves. "Church leaders" buttons in the app now open this page. The page picks up where the person left off (`my_church_signup`).
+
+**Invoices** — every church purchase gets a Time4God invoice document (`invoice_docs`, numbered T4G-YYYY-####):
+- card purchase → a PAID invoice (receipt)
+- invoice purchase ($20,000+) → an OPEN invoice with three ways to pay: online (Stripe pay link), mail a check, or wire
+- Admin Panel › Licenses › Create invoice → an invoice by hand for any number of seats
+
+The `invoice-pdf` function draws the PDF (logo, bill-to, seats × price, how to pay, terms), stores it in the private `invoices` bucket, and emails it to the billing email as an attachment (`send-emails` attaches it). Stripe no longer sends its own invoice email; it only provides the online pay link. Saving invoice details in Settings redraws open invoices.
+
+**Admin Panel › Licenses** — tiles for Waiting for approval / Waiting for payment / Paid and active / No seats yet. Each church card shows approval (with Approve/Decline), seats used, and its invoices with PDF, Email again, Mark paid (check, wire or other, with a reference) and Cancel. "Set a license by hand" is still there, folded away.
+
+**Admin Panel › Settings › What prints on invoices** — payable-to name, mailing address for checks, wire instructions, terms. Pete types bank details here himself.
+
+Migrations 0029–0032. Edge functions: invoice-pdf (new), stripe-pay (mark_paid, void_invoice; finalize-only invoices), send-emails (attachments).

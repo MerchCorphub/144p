@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Church sign-up · Time4God Challenge</title>
+<meta property="og:title" content="Lead the Time4God Challenge at your church">
+<meta property="og:description" content="Free sign-up. Study book seats for your members, approvals, groups, messages and church-vs-church challenges.">
+<meta property="og:image" content="https://time4god.app/t4g/t4g-icon-512.png">
+<meta name="theme-color" content="#0B2257">
+<meta name="description" content="Give God your time for 12 weeks and challenge a friend, your group or another church. Part of The 144(P) Plan.">
+<meta property="og:title" content="Time4God Challenge">
+<meta property="og:description" content="Who will give the most time to God? Take the 12-week Time4God Challenge. #Time4GodChallenge">
+<meta property="og:image" content="https://time4god.app/t4g/t4g-icon-512.png">
+<link rel="manifest" href="manifest-t4g.json">
+<link rel="icon" type="image/png" sizes="32x32" href="t4g/t4g-icon-32.png">
+<link rel="icon" type="image/png" sizes="48x48" href="t4g/t4g-icon-48.png">
+<link rel="apple-touch-icon" href="t4g/t4g-apple-touch.png">
+<meta name="apple-mobile-web-app-title" content="Time4God">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
+<script src="./cloud.js"></script>
+<style>
+*{box-sizing:border-box}
+html,body{margin:0;background:#F7F3EA;color:#14284B;font-family:'Public Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+a{color:#075D61}
+button,input,select,textarea{font:inherit}
+button:focus-visible,input:focus-visible,a:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #0E8A7E;outline-offset:2px}
+.wrap{max-width:640px;margin:0 auto;padding:0 18px 48px}
+header{position:sticky;top:0;z-index:5;background:#0B2257;border-bottom:2px solid #D9A62B;color:#fff;padding:calc(12px + env(safe-area-inset-top)) 18px 12px}
+header .in{max-width:640px;margin:0 auto;display:flex;align-items:center;gap:12px}
+header a,header button.link{color:#fff;text-decoration:none;font-weight:600;font-size:15px;background:none;border:0;padding:8px 0;cursor:pointer;min-width:60px}
+header button.link{text-align:right}
+header h1{flex:1;margin:0;font-size:17px;font-weight:700;text-align:center;line-height:1.2;display:flex;align-items:center;justify-content:center;gap:10px}
+header h1 img{width:34px;height:34px;flex:none}
+header h1 .tx{display:block;text-align:left;white-space:nowrap;font-size:15px}
+header h1 small{display:block;font-size:12px;font-weight:600;color:#F2C94C;letter-spacing:.04em}
+.hero{margin:0 -18px;padding:28px 22px 30px;text-align:center;color:#fff;background:linear-gradient(180deg,#0B2257 0%,#123A86 62%,#2B4FA0 80%,#C9772A 100%)}
+.hero img{width:min(240px,62vw);height:auto;display:block;margin:0 auto 12px;filter:drop-shadow(0 8px 18px rgba(0,0,0,.35))}
+.hero h2{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+.hero .s2{font-size:14px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#F2C94C;margin:0 0 10px}
+.hero p{color:#fff;font-size:16px;line-height:1.55;margin:0 auto;max-width:440px;text-shadow:0 1px 2px rgba(0,0,0,.35)}
+.hero.small{padding:18px 22px 20px}
+.hero.small img{width:min(150px,40vw);margin-bottom:8px}
+.hero .tag{color:#F2C94C}
+.card{background:#fff;border:1px solid #E6DFCC;border-radius:14px;box-shadow:0 1px 2px rgba(11,34,87,.05);padding:18px;margin-top:16px}
+h2.t{font-family:'Source Serif 4',Georgia,serif;font-size:24px;font-weight:600;margin:22px 0 4px;color:#0B2257}
+p.sub{margin:4px 0 0;color:#4F5F68;font-size:15px;line-height:1.5}
+label{display:block;font-weight:600;font-size:14px;margin:14px 0 6px}
+input[type=text],input[type=email],input[type=password],input[type=date],textarea{width:100%;min-height:48px;border:1px solid #9AA8B0;border-radius:10px;padding:10px 12px;font-size:16px;background:#fff;color:#173344}
+textarea{min-height:86px;resize:vertical}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:50px;border:0;border-radius:12px;background:#0B2257;color:#fff;font-weight:600;font-size:16px;cursor:pointer;margin-top:12px;text-decoration:none;padding:0 14px}
+.btn.teal{background:linear-gradient(180deg,#F6CF5A,#D9A62B);color:#0B2257;box-shadow:0 2px 0 #A87A12}
+.btn.teal:hover{filter:brightness(1.04)}
+.btn.alt{background:#fff;color:#0B2257;border:1px solid #0B2257}
+.btn.danger{background:#fff;color:#A33A2E;border:1px solid #A33A2E}
+.btn[disabled]{background:#9AA8B0;cursor:default}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.two .btn{margin-top:0}
+.err{background:#FBEAE7;color:#7A2A20;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:14px}
+.ok{background:#E8F5F3;color:#075D61;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:14px}
+.pill{display:inline-block;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;background:#E8F5F3;color:#075D61}
+.pill.wait{background:#FFF4DC;color:#6B4E12}.pill.off{background:#EEF1F2;color:#4F5F68}.pill.live{background:#0B2257;color:#F2C94C}
+.group{margin-top:24px}
+.group h3{font-size:13px;letter-spacing:.06em;text-transform:uppercase;color:#4F5F68;margin:0 0 8px}
+.item{display:block;width:100%;text-align:left;background:#fff;border:1px solid #E1E7EA;border-radius:12px;padding:14px;margin-bottom:8px;cursor:pointer;color:#173344}
+.item:hover{border-color:#075D61}
+.item .top{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.item .ti{font-weight:700;font-size:15px}
+.item .meta{font-size:13px;color:#4F5F68;margin-top:4px}
+.empty{color:#4F5F68;font-size:14px;padding:4px 2px}
+.choice{display:flex;gap:12px;align-items:flex-start;border:1px solid #E1E7EA;border-radius:12px;padding:12px 14px;margin-top:8px;cursor:pointer;font-weight:500}
+.choice:has(input:checked){border-color:#075D61;background:#F2FAF8}
+.choice input{margin-top:4px;width:18px;height:18px;accent-color:#075D61;flex:none}
+.choice strong{display:block}
+.choice span{font-size:14px;color:#4F5F68}
+.score{display:grid;grid-template-columns:1fr auto 1fr;gap:10px;align-items:center;text-align:center}
+.score .side{border-radius:12px;padding:14px 8px;background:#F3F5F6}
+.score .side.lead{background:#FFF6DC;outline:2px solid #D9A62B}
+.score .nm{font-weight:700;font-size:15px;line-height:1.3}
+.score .big{font-family:'Source Serif 4',Georgia,serif;font-size:30px;font-weight:600;color:#0B2257;margin:6px 0 2px}
+.score .sm{font-size:12px;color:#4F5F68;line-height:1.4}
+.score .vs{font-weight:700;color:#4F5F68}
+.msgbox{background:#F3F5F6;border-radius:10px;padding:12px;font-size:15px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+table.days{width:100%;border-collapse:collapse;font-size:14px;margin-top:6px}
+table.days th,table.days td{padding:8px 6px;border-bottom:1px solid #E1E7EA;text-align:right}
+table.days th:first-child,table.days td:first-child{text-align:left}
+ol.board{list-style:none;padding:0;margin:6px 0 0}
+ol.board li{display:flex;gap:10px;align-items:center;padding:9px 4px;border-bottom:1px solid #E1E7EA}
+ol.board .rk{width:26px;font-weight:700;color:#4F5F68}
+ol.board .nm{flex:1}
+ol.board li.me{background:#F2FAF8;font-weight:700}
+.tag{font-size:13px;font-weight:700;color:#075D61;letter-spacing:.04em}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.page-q{background:#FFF6DC;border:2px solid #D9A62B;border-radius:14px;padding:18px;text-align:center;margin-top:16px}
+.page-q .pg{font-family:'Source Serif 4',Georgia,serif;font-size:44px;font-weight:600;color:#0B2257;line-height:1}
+.page-q .wd{font-family:'Source Serif 4',Georgia,serif;font-size:28px;font-weight:600;color:#0B2257;margin:6px 0}
+.steps{margin:10px 0 0;padding-left:20px;color:#4F5F68;font-size:15px;line-height:1.6}
+input.key{text-transform:uppercase;letter-spacing:.08em;font-weight:700;text-align:center;font-size:20px}
+.price{font-family:'Source Serif 4',Georgia,serif;font-size:40px;font-weight:600;color:#0B2257;line-height:1}
+.per{font-size:14px;color:#4F5F68}
+ul.ticks{list-style:none;padding:0;margin:12px 0 0}
+ul.ticks li{padding:6px 0 6px 26px;position:relative;font-size:15px;line-height:1.45}
+ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A55;font-weight:700}
+.status{border-radius:12px;padding:14px;margin-top:16px;font-size:15px;line-height:1.5}
+.status.yes{background:#E8F5EE;color:#0E5A3E;border:1px solid #BFE3CF}
+.status.no{background:#FFF8E6;color:#6B4E12;border:1px solid #F1D8A0}
+.opt{margin-top:14px}
+.opt h3{margin:0 0 4px;font-size:17px;color:#0B2257}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:18px}
+.tab{border:2px solid #0B2257;border-radius:12px;min-height:50px;background:#fff;color:#0B2257;font-weight:700;font-size:16px;cursor:pointer}
+.tab[aria-selected=true]{background:#0B2257;color:#fff}
+table.plans{width:100%;border-collapse:collapse;margin-top:8px;font-size:15px}
+table.plans td{padding:10px 4px;border-bottom:1px solid #EEE7D6}
+table.plans td:last-child{text-align:right;font-weight:700;color:#0B2257}
+ol.how{margin:8px 0 0;padding-left:22px;line-height:1.6;font-size:15px}
+.req{border:1px solid #E6DFCC;border-radius:12px;padding:12px;margin-top:8px;font-size:15px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+select{width:100%;min-height:48px;border:1px solid #9AA8B0;border-radius:10px;padding:10px 12px;font-size:16px;background:#fff}
+
+.prog{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin:18px 0 4px;list-style:none;padding:0;counter-reset:s}
+.prog li{text-align:center;font-size:12px;font-weight:700;color:#7A8790;letter-spacing:.02em}
+.prog li:before{counter-increment:s;content:counter(s);display:flex;align-items:center;justify-content:center;width:30px;height:30px;margin:0 auto 4px;border-radius:50%;background:#E6DFCC;color:#4F5F68;font-size:14px}
+.prog li.on{color:#0B2257}.prog li.on:before{background:#0B2257;color:#F2C94C}
+.prog li.done{color:#0E7A55}.prog li.done:before{content:'✓';background:#0E7A55;color:#fff}
+.sum{width:100%;border-collapse:collapse;font-size:15px;margin-top:8px}
+.sum td{padding:9px 2px;border-bottom:1px solid #EEE7D6}.sum td:last-child{text-align:right}
+.sum tr.tot td{font-size:19px;font-weight:700;color:#0B2257;border-bottom:0;padding-top:12px}
+.pm{display:flex;gap:12px;align-items:flex-start;border:2px solid #E1E7EA;border-radius:14px;padding:14px;margin-top:10px;cursor:pointer;background:#fff}
+.pm:has(input:checked){border-color:#0B2257;background:#F5F8FF}
+.pm.off{opacity:.6;cursor:not-allowed}
+.pm input{margin-top:4px;width:20px;height:20px;accent-color:#0B2257;flex:none}
+.pm strong{display:block;font-size:16px}
+.pm .d{font-size:14px;color:#4F5F68;line-height:1.5;margin-top:2px}
+.pm ul{margin:6px 0 0;padding-left:18px;font-size:14px;color:#173344;line-height:1.55}
+input[type=number],input[type=tel]{width:100%;min-height:48px;border:1px solid #9AA8B0;border-radius:10px;padding:10px 12px;font-size:16px;background:#fff;color:#173344}
+input.big{font-size:22px;font-weight:700;text-align:center;max-width:220px}
+.tl{list-style:none;padding:0;margin:10px 0 0}
+.tl li{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid #EEE7D6;font-size:15px;line-height:1.45}
+.tl .ic{flex:none;width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px}
+.tl .ic.y{background:#0E7A55;color:#fff}.tl .ic.w{background:#F2C94C;color:#0B2257}.tl .ic.n{background:#E6DFCC;color:#4F5F68}
+.inv{display:flex;justify-content:space-between;gap:10px;align-items:center;border:1px solid #E6DFCC;border-radius:12px;padding:12px;margin-top:8px}
+.inv .btn{width:auto;margin:0;min-height:40px;font-size:14px}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:500;font-size:14px;margin-top:14px;line-height:1.45}
+.check input{width:18px;height:18px;margin-top:2px;accent-color:#0B2257;flex:none}
+.edit{background:none;border:0;color:#075D61;font-weight:600;text-decoration:underline;cursor:pointer;padding:0;font-size:14px}
+</style>
+</head>
+<body>
+<header><div class="in">
+  <a href="./" id="backApp">‹ Back</a>
+  <h1><img src="t4g/t4g-icon-48.png" alt="" width="34" height="34"><span class="tx">Church sign-up<small>The 144(P) Plan</small></span></h1>
+  <button class="link" id="signOut" hidden type="button">Sign out</button>
+</div></header>
+<main class="wrap" id="app" aria-live="polite"><p class="sub" style="margin-top:24px">Loading…</p></main>
+<script>
+(function () {
+  const $app = document.getElementById('app'), $ = id => document.getElementById(id);
+  const esc = s => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const nf = n => Number(n).toLocaleString('en-US');
+  const money = n => n == null ? '' : '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const fDate = s => s ? new Date(String(s).length <= 10 ? s + 'T12:00:00' : s).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : '';
+  const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
+  const q = new URLSearchParams(location.search);
+  const st = { kind: q.get('as') === 'group' ? 'group' : 'church', me: null, su: null, opts: null, price: null, support: null, step: null, seats: '', method: 'card', agree: false, err: '', msg: '', busy: false, docs: null, editing: false };
+  const AFTER = '144p-after-auth';
+  const word = () => (st.su && st.su.church ? st.su.church.kind : st.kind) === 'group' ? 'group' : 'church';
+  const goAuth = mode => { try { localStorage.setItem(AFTER, 'church-signup.html' + (st.kind === 'group' ? '?as=group' : '')); } catch (e) {} location.href = './?start=' + mode; };
+  const opt = ' <span style="font-weight:400;color:#4F5F68">(optional)</span>';
+  const fld = (id, label, v, o = {}) => `<label for="${id}">${label}${o.opt ? opt : ''}</label><input id="${id}" type="${o.type || 'text'}" value="${esc(v || '')}" ${o.opt ? '' : 'required'} ${o.ph ? `placeholder="${esc(o.ph)}"` : ''} ${o.max ? `maxlength="${o.max}"` : ''} ${o.ac ? `autocomplete="${o.ac}"` : ''} ${o.up ? 'style="text-transform:uppercase"' : ''}>`;
+
+  // ---------- where the person is ----------
+  function stepNow() {
+    if (!st.me) return 'account';
+    const c = st.su && st.su.church;
+    if (!c || st.editing) return 'register';
+    if ((c.license && c.license.status === 'active') || c.open_invoice) return 'done';
+    if (st.step === 'checkout' && tier()) return 'checkout';
+    return 'seats';
+  }
+  function tier() {
+    const o = st.opts; if (!o) return null;
+    const n = parseInt(st.seats, 10); if (!(n >= (o.min_seats || 5)) || n > (o.max_seats || 1e9)) return null;
+    return (o.tiers || []).find(t => n >= t.min && n <= t.max) || null;
+  }
+  const total = () => { const t = tier(); return t ? parseInt(st.seats, 10) * Number(t.rate) : 0; };
+  const invoiceOk = () => st.opts && st.opts.invoice_min != null && total() >= Number(st.opts.invoice_min);
+
+  function progress(s) {
+    const order = ['account', 'register', 'seats', 'checkout'], i = s === 'done' ? 4 : order.indexOf(s);
+    const names = ['Account', 'Register', 'Seats', 'Checkout'];
+    return `<ol class="prog" aria-label="Sign-up steps">${names.map((n, k) => `<li class="${k < i ? 'done' : k === i ? 'on' : ''}" ${k === i ? 'aria-current="step"' : ''}>${n}</li>`).join('')}</ol>`;
+  }
+
+  // ---------- step 1 ----------
+  const vAccount = () => `<div class="card"><strong>Step 1 · Your free account</strong>
+    <p class="sub">You’ll use one account to manage your ${word()} and read the study book. It takes a minute, and you come right back here.</p>
+    <button class="btn teal" type="button" id="reg">Create my free account</button><button class="btn alt" type="button" id="sin">I already have an account</button></div>
+    ${pricingCard()}`;
+
+  // ---------- step 2 ----------
+  function vRegister() {
+    const c = (st.su && st.su.church) || {}, w = word();
+    return `<form class="card" id="rf"><strong>Step 2 · Register your ${w}</strong>
+      <p class="sub">This is what goes on your invoice. We review every ${w} before members can join, usually within a day. You can buy seats right after this step, while you wait.</p>
+      ${st.su && st.su.church ? '' : `<label class="choice" style="margin-top:12px"><input type="radio" name="kind" value="church" ${st.kind === 'church' ? 'checked' : ''}><div><strong>A church</strong><span>A congregation with its own members.</span></div></label>
+      <label class="choice"><input type="radio" name="kind" value="group" ${st.kind === 'group' ? 'checked' : ''}><div><strong>An independent group</strong><span>A home Bible study, workplace or family group without a church in the app.</span></div></label>`}
+      ${fld('cn', w === 'group' ? 'Group name' : 'Church name', c.name, { ph: w === 'group' ? 'Thursday Night Bible Study' : 'Mount Moriah Baptist Church', max: 100, ac: 'organization' })}
+      ${fld('ca', 'Street address', c.address, { ph: '123 Main Street', ac: 'street-address' })}
+      <div class="grid2"><div>${fld('cc', 'City', c.city, { ac: 'address-level2' })}</div><div class="grid2"><div>${fld('cs', 'State', c.state, { max: 2, up: 1, ac: 'address-level1' })}</div><div>${fld('cz', 'ZIP', c.zip, { max: 10, ac: 'postal-code' })}</div></div></div>
+      ${fld('cp', w === 'group' ? 'Phone' : 'Church phone', c.phone, { type: 'tel', opt: 1, ac: 'tel' })}
+      ${w === 'church' ? fld('cw', 'Website', c.website, { opt: 1, ph: 'https://' }) : ''}
+      <h3 style="font-size:15px;margin:20px 0 0;color:#0B2257">Who to bill</h3>
+      ${fld('bn', 'Billing contact name', c.contact || (st.su && st.su.name), { ac: 'name' })}
+      ${fld('be', 'Billing email (invoices and receipts go here)', c.billing_email || (st.su && st.su.email), { type: 'email', ac: 'email' })}
+      ${fld('cr', 'Your role', '', { ph: 'Pastor, church administrator, group leader…' })}
+      <label for="cnote">Anything we should know?${opt}</label><textarea id="cnote" maxlength="300" placeholder="About how many members might take part?"></textarea>
+      <button class="btn teal" type="submit" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Saving…' : 'Save and choose seats ›'}</button>
+      ${st.editing ? '<button class="btn alt" type="button" id="cancelEdit">Cancel</button>' : ''}</form>`;
+  }
+
+  // ---------- step 3 ----------
+  function pricingCard() {
+    const T = (st.opts && st.opts.tiers) || (st.price && st.price.church_plans || []).map(x => ({ name: x.name, min: x.min, max: x.seats, rate: x.price }));
+    if (!T.length) return '';
+    const t = tier();
+    return `<div class="card"><strong>Price per seat</strong><p class="sub" style="margin-top:4px">Each seat gives one member the 12-week study book in the app for one year. The more seats, the less each one costs. Prices include tax.</p>
+      <table class="plans">${T.map((x, i) => `<tr${t && t.min === x.min ? ' style="background:#FFF6DC"' : ''}><td>${esc(x.name)} · ${i === T.length - 1 ? nf(x.min) + '+' : nf(x.min) + '–' + nf(x.max)} seats</td><td>${money(x.rate)} a seat</td></tr>`).join('')}</table></div>`;
+  }
+  function vSeats() {
+    const o = st.opts, c = st.su.church, t = tier(), n = parseInt(st.seats, 10);
+    if (!o) return `<div class="card"><p class="sub">Loading prices…</p></div>`;
+    let note = '';
+    if (st.seats !== '') {
+      if (!(n >= (o.min_seats || 5))) note = `The smallest purchase is ${o.min_seats || 5} seats.`;
+      else if (o.max_seats && n > o.max_seats) note = `For more than ${nf(o.max_seats)} seats, email us${st.support ? ' at ' + st.support : ''} and we’ll set it up.`;
+    }
+    return `${regSummary(c)}${pricingCard()}
+      <div class="card"><strong>Step 3 · How many seats?</strong>
+      <p class="sub">One seat for each member who will read the study book. You can add more seats later at the rate for your new total.</p>
+      <label for="sn">Number of seats</label><input id="sn" class="big" type="number" inputmode="numeric" min="${o.min_seats || 5}" step="1" value="${esc(st.seats)}" placeholder="At least ${o.min_seats || 5}">
+      ${note ? `<div class="err">${esc(note)}</div>` : ''}
+      ${t ? `<p style="font-size:18px;margin:14px 0 0"><strong>${nf(n)} seats × ${money(t.rate)} = ${money(total())}</strong></p>
+        <p class="sub" style="font-size:14px">${esc(t.name)} rate · good for one year from payment.${invoiceOk() ? ' <strong>This order can be paid by invoice</strong> (check, wire or online).' : o.invoice_min ? ` Orders of ${money(o.invoice_min)} or more can also be paid by invoice.` : ''}</p>` : ''}
+      <button class="btn teal" type="button" id="toCheckout" ${t && !note ? '' : 'disabled'}>Continue to checkout ›</button></div>`;
+  }
+  const regSummary = c => `<div class="card"><div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start"><div><strong>${esc(c.name)}</strong> ${c.status === 'active' ? '<span class="pill">Approved</span>' : '<span class="pill wait">Waiting for approval</span>'}<br>
+    <span class="sub" style="font-size:14px">${esc([c.address, [c.city, [c.state, c.zip].filter(Boolean).join(' ')].filter(Boolean).join(', ')].filter(Boolean).join(' · '))}<br>Bill to ${esc(c.contact || '')} · ${esc(c.billing_email || '')}</span></div>
+    <button class="edit" type="button" id="editReg">Edit</button></div></div>`;
+
+  // ---------- step 4 ----------
+  function vCheckout() {
+    const o = st.opts, c = st.su.church, t = tier(), n = parseInt(st.seats, 10), inv = invoiceOk();
+    if (!inv && st.method === 'invoice') st.method = 'card';
+    const open = o.open_invoice;
+    return `<div class="card"><strong>Step 4 · Checkout</strong>
+      <table class="sum"><tr><td>${esc(c.name)}<br><span class="sub" style="font-size:13px">Study book seats · one year</span></td><td></td></tr>
+        <tr><td>Seats</td><td>${nf(n)}</td></tr><tr><td>Price per seat (${esc(t.name)})</td><td>${money(t.rate)}</td></tr>
+        <tr class="tot"><td>Total</td><td>${money(total())}</td></tr></table>
+      <p class="sub" style="font-size:13px">Prices include tax. <button class="edit" type="button" id="backSeats">Change seats</button></p></div>
+      <div class="card"><strong>How would you like to pay?</strong>
+      <label class="pm"><input type="radio" name="pm" value="card" ${st.method === 'card' ? 'checked' : ''}><div><strong>Pay now by card</strong>
+        <div class="d">Card, Apple Pay or Google Pay on Stripe’s secure page. Your seats are ready the moment you pay, and a paid invoice is emailed to ${esc(c.billing_email || 'you')}.</div></div></label>
+      <label class="pm ${inv && !open ? '' : 'off'}"><input type="radio" name="pm" value="invoice" ${st.method === 'invoice' ? 'checked' : ''} ${inv && !open ? '' : 'disabled'}><div><strong>Pay by invoice</strong>
+        <div class="d">${open ? `Invoice ${esc(open.number || '')} is already waiting for payment. Pay that one first, or pay this order by card.`
+          : inv ? `We email a Time4God invoice (PDF) to ${esc(c.billing_email || 'your billing email')}. Pay within ${o.invoice_days || 15} days in any of these ways:`
+          : `For orders of ${money(o.invoice_min)} or more. This order is ${money(total())}.`}</div>
+        ${inv && !open ? `<ul><li><strong>Online</strong> by card, ACH or bank wire, from the link on the invoice</li><li><strong>Mail a check</strong> to the address on the invoice</li><li><strong>Wire</strong> to our bank, using the details on the invoice</li></ul>
+          <div class="d" style="margin-top:6px">Your seats turn on as soon as your payment is received.</div>` : ''}</div></label>
+      <label class="check"><input type="checkbox" id="agree" ${st.agree ? 'checked' : ''}><span>I understand all sales are final, and members can join once the ${word()} is approved.</span></label>
+      <button class="btn teal" type="button" id="payGo" ${st.agree && !st.busy ? '' : 'disabled'}>${st.busy ? (st.method === 'invoice' ? 'Creating your invoice…' : 'Opening secure checkout…') : st.method === 'invoice' ? `Email my invoice for ${money(total())}` : `Pay ${money(total())} by card`}</button></div>`;
+  }
+
+  // ---------- done ----------
+  function vDone() {
+    const c = st.su.church, L = c.license, oi = c.open_invoice, paid = L && L.status === 'active', approved = c.status === 'active', w = word();
+    const docs = (st.docs || []).filter(d => d.status !== 'void');
+    return `<div class="card"><strong>${esc(c.name)}</strong>
+      <ul class="tl">
+        <li><span class="ic y">✓</span><div><strong>Registered</strong><br><span class="sub" style="font-size:14px">Bill to ${esc(c.contact || '')} · ${esc(c.billing_email || '')}</span></div></li>
+        <li>${paid ? `<span class="ic y">✓</span><div><strong>Paid · ${nf(L.seats)} seats</strong><br><span class="sub" style="font-size:14px">Good through ${fDate(L.expires_at)}</span></div>`
+          : `<span class="ic w">$</span><div><strong>Invoice ${esc(oi.number)} · ${money(oi.amount)} due ${fDate(oi.due_date)}</strong><br><span class="sub" style="font-size:14px">We emailed it to ${esc(c.billing_email || 'you')}. Pay online, by check or by wire. Your seats turn on when the payment is received.</span>
+            ${oi.url ? `<br><a class="btn teal" style="width:auto;min-height:42px;margin-top:8px" href="${esc(oi.url)}" target="_blank" rel="noopener">Pay online now</a>` : ''}</div>`}</li>
+        <li>${approved ? `<span class="ic y">✓</span><div><strong>Approved</strong><br><span class="sub" style="font-size:14px">Your join code is <strong>${esc(c.code)}</strong>. Share it with your members.</span></div>`
+          : `<span class="ic w">…</span><div><strong>Waiting for approval</strong><br><span class="sub" style="font-size:14px">We review every ${w}, usually within a day, and email you when it’s done. Then members can join with your code.</span></div>`}</li>
+      </ul>
+      ${approved ? '<a class="btn teal" href="leader.html">Open the Leader Console</a>' : ''}</div>
+      ${docs.length ? `<div class="card"><strong>Your invoices</strong>${docs.map(d => `<div class="inv"><div><strong>${esc(d.number)}</strong> · ${money(d.amount)} ${d.status === 'paid' ? '<span class="pill">Paid</span>' : '<span class="pill wait">Due ' + esc(fDate(d.due_date)) + '</span>'}<br><span class="sub" style="font-size:13px">${esc(d.description)}</span></div>
+        ${d.pdf_path ? `<button class="btn alt" type="button" data-pdf="${esc(d.pdf_path)}">PDF</button>` : '<span class="sub" style="font-size:13px">PDF on its way</span>'}</div>`).join('')}</div>` : ''}`;
+  }
+
+  // ---------- render ----------
+  function toApp() { try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) return history.back(); } catch (e) {} location.href = 'leaders.html'; }
+  $('backApp').onclick = e => {
+    e.preventDefault();
+    const s = stepNow();
+    if (s === 'checkout') { st.step = 'seats'; render(); return; }
+    if (s === 'register' && st.editing) { st.editing = false; render(); return; }
+    toApp();
+  };
+  function render() {
+    $('signOut').hidden = !st.me;
+    const s = stepNow();
+    const views = { account: vAccount, register: vRegister, seats: vSeats, checkout: vCheckout, done: vDone };
+    $app.innerHTML = `<h2 class="t">${s === 'done' ? 'You’re all set' : `Bring the Time4God Challenge to your ${word()}`}</h2>
+      ${s === 'done' ? '' : '<p class="sub">Register, choose your seats, and check out. Four short steps.</p>'}
+      ${progress(s)}
+      ${(st.err ? `<div class="err" role="alert">${esc(st.err)}</div>` : '') + (st.msg ? `<div class="ok">${esc(st.msg)}</div>` : '')}
+      ${views[s]()}
+      ${st.support ? `<p class="sub" style="margin-top:16px;font-size:14px">Questions? Email <a href="mailto:${esc(st.support)}">${esc(st.support)}</a></p>` : ''}`;
+    bind();
+  }
+  function bind() {
+    if ($('reg')) $('reg').onclick = () => goAuth('register');
+    if ($('sin')) $('sin').onclick = () => goAuth('signin');
+    $app.querySelectorAll('input[name=kind]').forEach(r => r.onchange = () => { st.kind = r.value; keepForm(() => render()); });
+    if ($('rf')) $('rf').onsubmit = e => { e.preventDefault();
+      // Read the form before anything re-draws it
+      const kindEl = $app.querySelector('input[name=kind]:checked');
+      const args = { p_kind: kindEl ? kindEl.value : (st.su.church ? st.su.church.kind : st.kind), p_name: $('cn').value, p_address: $('ca').value, p_city: $('cc').value, p_state: $('cs').value, p_zip: $('cz').value,
+        p_phone: $('cp').value, p_website: $('cw') ? $('cw').value : '', p_contact: $('bn').value, p_role: $('cr').value, p_billing_email: $('be').value, p_note: $('cnote').value };
+      act(async () => { await Cloud.rpc('register_church', args); st.editing = false; st.step = 'seats'; await reload(); }, false, () => keepFormVals(args));
+    };
+    if ($('cancelEdit')) $('cancelEdit').onclick = () => { st.editing = false; render(); };
+    if ($('editReg')) $('editReg').onclick = () => { st.editing = true; render(); window.scrollTo(0, 0); };
+    if ($('sn')) $('sn').oninput = e => { st.seats = e.target.value; const pos = e.target.selectionStart; render(); const i = $('sn'); if (i) { i.focus(); try { i.setSelectionRange(pos, pos); } catch (x) {} } };
+    if ($('toCheckout')) $('toCheckout').onclick = () => { st.step = 'checkout'; st.method = invoiceOk() ? st.method : 'card'; st.err = ''; render(); window.scrollTo(0, 0); };
+    if ($('backSeats')) $('backSeats').onclick = () => { st.step = 'seats'; render(); };
+    $app.querySelectorAll('input[name=pm]').forEach(r => r.onchange = () => { st.method = r.value; render(); });
+    if ($('agree')) $('agree').onchange = e => { st.agree = e.target.checked; render(); };
+    if ($('payGo')) $('payGo').onclick = () => act(async () => {
+      const cid = st.su.church.id, seats = parseInt(st.seats, 10);
+      if (st.method === 'invoice') {
+        const r = await Cloud.pay({ action: 'invoice', type: 'church', church_id: cid, seats });
+        st.step = null; await reload();
+        st.msg = `Invoice ${r.number || ''} is ready. We’re emailing a PDF copy to ${st.su.church.billing_email || 'your billing email'}.`;
+      } else {
+        await Cloud.checkout('church', { church_id: cid, seats });
+      }
+    });
+    $app.querySelectorAll('[data-pdf]').forEach(b => b.onclick = () => act(async () => {
+      const w = window.open('', '_blank');
+      const c = await Cloud.sb(); const { data, error } = await c.storage.from('invoices').createSignedUrl(b.dataset.pdf, 300);
+      if (error || !data) { if (w) w.close(); throw new Error('The PDF isn’t ready yet. Try again in a minute.'); }
+      if (w) w.location = data.signedUrl; else location.href = data.signedUrl;
+    }, true));
+  }
+  // Keep typed values when the form re-draws (switching church/group)
+  function keepForm(fn) { const v = {}; $app.querySelectorAll('#rf input[id],#rf textarea').forEach(i => v[i.id] = i.value); fn(); Object.keys(v).forEach(k => { if ($(k)) $(k).value = v[k]; }); }
+  async function act(fn, quiet, restore) { st.err = st.msg = ''; st.busy = true; if (!quiet) render(); let failed = false; try { await fn(); } catch (e) { st.err = errMsg(e); failed = true; } st.busy = false; render(); if (failed && restore) restore(); if (!quiet) window.scrollTo(0, 0); }
+  function keepFormVals(a) { const m = { cn: a.p_name, ca: a.p_address, cc: a.p_city, cs: a.p_state, cz: a.p_zip, cp: a.p_phone, cw: a.p_website, bn: a.p_contact, cr: a.p_role, be: a.p_billing_email, cnote: a.p_note };
+    Object.keys(m).forEach(k => { if ($(k)) $(k).value = m[k] || ''; }); const r = $app.querySelector(`input[name=kind][value="${a.p_kind}"]`); if (r) r.checked = true; }
+
+  async function reload() {
+    st.su = await Cloud.rpc('my_church_signup');
+    const c = st.su && st.su.church;
+    st.opts = null; st.docs = null;
+    if (c) {
+      if (c.kind) st.kind = c.kind;
+      try { st.opts = await Cloud.rpc('purchase_options', { cid: c.id }); } catch (e) {}
+      try { st.docs = await Cloud.rpc('church_invoice_docs', { cid: c.id }); } catch (e) {}
+    }
+  }
+  async function load() {
+    try { st.price = await Cloud.rpc('public_pricing'); } catch (e) {}
+    try { st.support = (await Cloud.rpc('public_contact')).support_email; } catch (e) {}
+    const s = await Cloud.session();
+    if (s) {
+      st.me = await Cloud.ensurePartner();
+      let r = null; try { r = await Cloud.settlePayments(); } catch (e) { st.err = errMsg(e); }
+      await reload();
+      if (r === 'paid') st.msg = 'Payment received. Thank you! Your paid invoice is on its way to your email.';
+      if (r === 'canceled') { st.msg = 'Checkout was canceled. Nothing was charged.'; st.step = 'seats'; }
+    }
+    render();
+  }
+  $('signOut').onclick = async () => { await Cloud.signOut(); st.me = null; st.su = null; render(); };
+  load().catch(e => { st.err = errMsg(e); render(); });
+})();
+</script>
+</body>
+</html>

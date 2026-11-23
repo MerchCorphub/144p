@@ -104,6 +104,12 @@ h3.dh{margin:22px 0 10px;font-size:15px;letter-spacing:.06em;text-transform:uppe
 .chart .pk{font-size:11px;fill:#173344;font-weight:700}
 .chart .bar.on path{fill:#2A62A6}
 .chart .tip{position:absolute;background:#173344;color:#fff;font-size:12.5px;padding:6px 8px;border-radius:6px;pointer-events:none;white-space:nowrap}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
+.kpi{background:#fff;border:1px solid #E1E7EA;border-radius:12px;padding:12px;text-align:left;cursor:pointer;font:inherit;color:#173344}
+.kpi .n{display:block;font-size:26px;font-weight:700;color:#123C56;line-height:1.1}
+.kpi .l{display:block;font-size:13px;color:#4F5F68;margin-top:2px}
+.kpi.on{border-color:#123C56;box-shadow:inset 0 0 0 1px #123C56}
+@media (max-width:700px){.kpis{grid-template-columns:1fr 1fr}}
 table.mini{font-size:13px;margin-top:6px}
 table.mini td{padding:3px 12px 3px 0}
 </style>
@@ -156,12 +162,20 @@ table.mini td{padding:3px 12px 3px 0}
     st.invoices = [];
     if (canName()) {
       try { st.invoices = (await Cloud.rpc('church_invoices', { cid: st.church.church_id })) || []; } catch (e) { st.invoices = []; }
+      try { st.docs = (await Cloud.rpc('church_invoice_docs', { cid: st.church.church_id })) || []; } catch (e) { st.docs = []; }
       // An invoice may have been paid since we last looked: ask Stripe, then reload once
       if (st.invoices.some(i => i.status === 'open') && !st.invoiceSynced) {
         st.invoiceSynced = true;
         try { const r = await Cloud.pay({ action: 'sync_invoices' }); if (Object.values((r && r.checked) || {}).includes('paid')) return loadChurch(); } catch (e) {}
       }
     }
+  }
+  // Invoice PDFs live in private storage; open them with a short-lived link
+  async function openPdf(path) {
+    const w = window.open('', '_blank');
+    try { const { data, error } = await c.storage.from('invoices').createSignedUrl(path, 300); if (error || !data) throw error || new Error('');
+      if (w) w.location = data.signedUrl; else location.href = data.signedUrl; }
+    catch (e) { if (w) w.close(); flash('The PDF isn’t ready yet. Try again in a minute.', true); }
   }
   const canName = () => st.church && ['church_admin', 'platform_admin', 'account_manager'].includes(st.church.role);
   const VIEWS = {}, BIND = {};
@@ -227,26 +241,29 @@ table.mini td{padding:3px 12px 3px 0}
       ${big && !o.open_invoice ? `<div class="two" style="margin-top:10px;gap:10px;display:grid;grid-template-columns:1fr 1fr">
           <button class="btn teal" type="button" id="buyInv" ${st.invBusy ? 'disabled' : ''}>${st.invBusy ? 'Creating your invoice…' : 'Send me an invoice'}</button>
           <button class="btn alt" type="button" id="buyGo" style="margin-top:0">Pay by card now</button></div>
-        <p class="muted" style="margin-top:6px;font-size:13px">Purchases of ${money(o.invoice_min)} or more can be paid by invoice. We email it to you from Stripe. Pay within ${o.invoice_days || 15} days by bank transfer (wire or ACH, using the account details on the invoice) or by card. Your seats turn on as soon as the payment arrives.</p>`
+        <p class="muted" style="margin-top:6px;font-size:13px">Purchases of ${money(o.invoice_min)} or more can be paid by invoice. We email you a Time4God invoice (PDF). Pay within ${o.invoice_days || 15} days online (card, ACH or wire), by check, or by wire to our bank. Your seats turn on as soon as the payment arrives.</p>`
       : `<button class="btn teal" type="button" id="buyGo" ${ok ? '' : 'disabled'} style="margin-top:10px">Continue to secure checkout</button><p class="muted" style="margin-top:6px;font-size:13px">You’ll pay on Stripe’s secure page (card, Apple Pay or Google Pay), then come back here.${o.invoice_min ? ` Spending ${money(o.invoice_min)} or more? You can ask for an invoice and pay by bank transfer.` : ''}</p>`}</div>`;
   }
   function invoiceList() {
-    const L = (st.invoices || []).filter(i => i.status === 'open' || i.status === 'paid');
+    const L = (st.docs || []).filter(i => i.status !== 'void');
     if (!L.length) return '';
-    return L.map(i => { const late = i.status === 'open' && i.due_date && i.due_date < new Date().toISOString().slice(0, 10);
-      return `<div class="card" style="margin:12px 0 0;${i.status === 'open' ? 'border-color:#D9A62B;background:#FFF8E6' : ''}"><div class="row"><div class="grow"><strong>Invoice ${esc(i.number || '')} · ${money(i.amount)}</strong> ${i.status === 'paid' ? '<span class="pill ok">Paid</span>' : late ? '<span class="pill off">Past due</span>' : '<span class="pill wait">Waiting for payment</span>'}<br>
-        <span class="muted">${esc(i.description)}${i.status === 'open' && i.due_date ? ` · due ${fDate(i.due_date + 'T12:00:00')}` : ''}</span>
-        ${i.status === 'open' ? '<br><span class="muted">These seats turn on as soon as the payment arrives. Bank transfers can take 1–3 business days to arrive.</span>' : ''}</div>
-        ${i.url ? `<a class="btn ${i.status === 'open' ? 'teal' : 'alt'} sm" href="${esc(i.url)}" target="_blank" rel="noopener">${i.status === 'open' ? 'View or pay invoice' : 'View invoice'}</a>` : ''}</div></div>`; }).join('');
+    const today = new Date().toISOString().slice(0, 10);
+    return `<div style="margin-top:14px"><strong>Invoices and receipts</strong>${L.map(i => { const late = i.status === 'open' && i.due_date && i.due_date < today;
+      return `<div class="card" style="margin:8px 0 0;${i.status === 'open' ? 'border-color:#D9A62B;background:#FFF8E6' : ''}"><div class="row" style="flex-wrap:wrap"><div class="grow"><strong>${esc(i.number)} · ${money(i.amount)}</strong> ${i.status === 'paid' ? '<span class="pill ok">Paid</span>' : late ? '<span class="pill off">Past due</span>' : '<span class="pill wait">Waiting for payment</span>'}<br>
+        <span class="muted">${esc(i.description)}${i.status === 'open' && i.due_date ? ` · due ${fDate(i.due_date)}` : i.status === 'paid' ? ` · paid ${fDate(i.paid_at)}` : ''}</span>
+        ${i.status === 'open' ? '<br><span class="muted">Pay online, by check or by wire (details on the PDF). These seats turn on as soon as the payment is received.</span>' : ''}</div>
+        <div class="row">${i.pdf_path ? `<button class="btn alt sm" type="button" data-pdf="${esc(i.pdf_path)}">PDF</button>` : '<span class="muted">PDF on its way</span>'}
+        ${i.status === 'open' && i.stripe_url ? `<a class="btn teal sm" href="${esc(i.stripe_url)}" target="_blank" rel="noopener">Pay online</a>` : ''}</div></div></div>`; }).join('')}</div>`;
   }
   BIND.approvals = () => {
+    $app.querySelectorAll('[data-pdf]').forEach(b => b.onclick = () => openPdf(b.dataset.pdf));
     if ($('nsNew')) $('nsNew').onchange = e => { const on = e.target.checked; run(async () => { await Cloud.rpc('set_notification_settings', { p_new_members: on }); st.notify.email_new_members = on; }, on ? 'You’ll get an email when someone new signs up.' : 'New-member emails turned off.'); };
     if ($('buyOpen')) $('buyOpen').onclick = () => run(async () => { st.buy = true; st.buySeats = ''; st.buyOpts = null; render(); st.buyOpts = await Cloud.rpc('purchase_options', { cid: st.church.church_id }); try { st.support = (await Cloud.rpc('public_contact')).support_email; } catch (e) {} });
     if ($('buyClose')) $('buyClose').onclick = () => { st.buy = false; render(); };
     if ($('buyN')) $('buyN').oninput = e => { if (st.buySeats === e.target.value) return; st.buySeats = e.target.value; const pos = e.target.selectionStart; render(); const i = $('buyN'); if (i) { i.focus(); try { i.setSelectionRange(pos, pos); } catch (x) {} } };
     if ($('buyInv')) $('buyInv').onclick = () => { if (!confirm(`Send an invoice for ${parseInt(st.buySeats, 10).toLocaleString()} seats to your email? Your seats turn on when it’s paid.`)) return;
       st.invBusy = true; render();
-      run(async () => { try { const r = await Cloud.pay({ action: 'invoice', type: 'church', church_id: st.church.church_id, seats: parseInt(st.buySeats, 10) }); st.buy = false; await loadChurch(); flash(`Invoice ${r.number || ''} is on its way to your email. You can also open it here.`); } finally { st.invBusy = false; } }); };
+      run(async () => { try { const r = await Cloud.pay({ action: 'invoice', type: 'church', church_id: st.church.church_id, seats: parseInt(st.buySeats, 10) }); st.buy = false; await loadChurch(); flash(`Invoice ${r.number || ''} is ready. A PDF copy is on its way to your billing email, and you can open it here.`); } finally { st.invBusy = false; } }); };
     if ($('buyGo')) $('buyGo').onclick = () => { const b = $('buyGo'); b.disabled = true; b.textContent = 'Opening secure checkout…'; run(async () => { await Cloud.checkout('church', { church_id: st.church.church_id, seats: parseInt(st.buySeats, 10) }); }); };
     if ($('ch')) $('ch').onchange = e => run(async () => { st.church = st.churches.find(x => x.church_id === e.target.value); await loadChurch(); });
     const pend = st.members.filter(m => m.status === 'pending');
@@ -285,11 +302,11 @@ table.mini td{padding:3px 12px 3px 0}
   };
 
   // ---------- licenses ----------
-  VIEWS.licenses = () => {
+  const manualLicenses = () => {
     const churchPlans = st.plans.filter(p => p.kind === 'church' && p.active);
     const lic = id => st.licenses.find(l => l.church_id === id);
-    return `<h2>Licenses · ${esc(st.season ? st.season.name : 'No active season')}</h2><p class="sub">Give each church a license for the season. The book opens for its approved members when the license is Active.</p>
-    <div class="card tbl">${st.allChurches.length ? `<table><thead><tr><th>Church</th><th>Price level</th><th>Seats</th><th>Price</th><th>Status</th><th></th></tr></thead><tbody>
+    return `<details class="card" ${st.licOpenManual ? 'open' : ''} id="licManual"><summary style="cursor:pointer;font-weight:700">Set a license by hand · ${esc(st.season ? st.season.name : 'No active season')}</summary><p class="muted" style="margin:8px 0 0">For special cases only (a gift, a correction). Payments and invoices set licenses on their own.</p>
+    <div class="tbl" style="margin-top:8px">${st.allChurches.length ? `<table><thead><tr><th>Church</th><th>Price level</th><th>Seats</th><th>Price</th><th>Status</th><th></th></tr></thead><tbody>
       ${st.allChurches.map(ch => { const l = lic(ch.id) || {}; return `<tr data-ch="${ch.id}">
         <td><strong>${esc(ch.name)}</strong><br><span class="muted">Code ${esc(ch.code)}</span></td>
         <td><select data-f="plan_id" aria-label="License option"><option value="">Choose…</option>${churchPlans.map(p => `<option value="${p.id}" data-min="${p.min_seats || 1}" data-price="${p.price}" ${l.plan_id === p.id ? 'selected' : ''}>${esc(p.name)} · ${money(p.price)} a seat</option>`).join('')}</select></td>
@@ -297,14 +314,75 @@ table.mini td{padding:3px 12px 3px 0}
         <td><input type="number" min="0" step="0.01" data-f="price" value="${l.price != null ? Number(l.price).toFixed(2) : ''}" aria-label="Price"></td>
         <td><select data-f="status" aria-label="Status">${Object.entries(STATUS).map(([k, [t]]) => `<option value="${k}" ${(l.status || 'pending_payment') === k ? 'selected' : ''}>${t}</option>`).join('')}</select></td>
         <td><button class="btn sm" type="button" data-savelic="${ch.id}">Save</button></td></tr>`; }).join('')}
-      </tbody></table>` : `<p class="empty">No churches yet. Add one in the Churches tab.</p>`}</div>
+      </tbody></table>` : `<p class="empty">No churches yet. Add one in the Churches tab.</p>`}</div></details>
     ${st.admin ? `<h2 style="font-size:20px">Individual seats</h2>
     <div class="card tbl">${st.seats.length ? `<table><thead><tr><th>Name</th><th>Email</th><th>Price</th><th>Status</th><th></th></tr></thead><tbody>
       ${st.seats.map(x => `<tr><td>${esc(x.name)}</td><td>${esc(x.email)}</td><td>${money(x.price)}</td><td>${pill(x.status)}</td>
         <td><div class="row">${x.status !== 'active' ? `<button class="btn teal sm" type="button" data-seat="${x.seat_id}" data-to="active">Mark paid</button>` : ''}${x.status !== 'canceled' ? `<button class="btn danger sm" type="button" data-seat="${x.seat_id}" data-to="canceled">Cancel</button>` : ''}</div></td></tr>`).join('')}
       </tbody></table>` : `<p class="empty">No individual seat requests yet.</p>`}</div>` : ''}`;
   };
+  // Overview: every church with approval, seats, payment and invoices in one place
+  const LF = { all: 'All', approval: 'Waiting for approval', invoice: 'Waiting for payment', active: 'Paid and active', none: 'No seats yet' };
+  const licState = x => ({ approval: x.status === 'pending', invoice: (x.invoices || []).some(d => d.status === 'open'), active: x.license_status === 'active', none: x.license_status !== 'active' && !(x.invoices || []).some(d => d.status === 'open') });
+  const PAIDHOW = { card: 'card', online: 'online', check: 'check', wire: 'wire', other: 'other' };
+  function docRow(d) {
+    const today = new Date().toISOString().slice(0, 10), late = d.status === 'open' && d.due_date && d.due_date < today;
+    const st_ = d.status === 'paid' ? `<span class="pill ok">Paid${d.paid_method ? ' · ' + esc(PAIDHOW[d.paid_method] || d.paid_method) : ''}</span>` : d.status === 'void' ? '<span class="pill off">Canceled</span>' : late ? '<span class="pill off">Past due</span>' : '<span class="pill wait">Waiting for payment</span>';
+    return `<tr><td><strong>${esc(d.number)}</strong>${d.test ? ' <span class="muted">(test)</span>' : ''}<br><span class="muted">${esc(d.description || '')}</span></td>
+      <td>${money(d.amount)}</td><td>${st_}<br><span class="muted">${d.status === 'paid' ? 'Paid ' + fDate(d.paid_at) + (d.paid_reference ? ' · ' + esc(d.paid_reference) : '') : d.status === 'open' ? 'Due ' + fDate(d.due_date) : ''}</span></td>
+      <td><span class="muted">${d.emailed_at ? 'Emailed ' + fDate(d.emailed_at) : d.status === 'void' ? '' : 'Not emailed yet'}</span></td>
+      <td><div class="row" style="justify-content:flex-end">${d.pdf_path ? `<button class="btn alt sm" type="button" data-pdf="${esc(d.pdf_path)}">PDF</button>` : '<span class="muted">Making PDF…</span>'}
+        ${st.admin && d.status !== 'void' ? `<button class="btn alt sm" type="button" data-resend="${d.id}">Email again</button>` : ''}
+        ${st.admin && d.status === 'open' ? `<button class="btn teal sm" type="button" data-paid="${d.id}">Mark paid</button><button class="btn danger sm" type="button" data-void="${d.id}">Cancel</button>` : ''}</div></td></tr>`;
+  }
+  VIEWS.licenses = () => {
+    const L = st.lov || [], f = st.licF || 'all';
+    const count = k => k === 'all' ? L.length : L.filter(x => licState(x)[k]).length;
+    const show = f === 'all' ? L : L.filter(x => licState(x)[f]);
+    const owed = L.reduce((t, x) => t + (x.invoices || []).filter(d => d.status === 'open').reduce((a, d) => a + Number(d.amount), 0), 0);
+    return `<h2>Licenses</h2><p class="sub">Every church and group: whether it’s approved, whether it has paid, and its invoices. Card payments turn seats on right away. Invoices turn seats on when you mark them paid (check or wire) or when they’re paid online.</p>
+    <div class="kpis">${['approval', 'invoice', 'active', 'none'].map(k => `<button type="button" class="kpi ${f === k ? 'on' : ''}" data-lf="${k}"><span class="n">${count(k)}</span><span class="l">${LF[k]}</span></button>`).join('')}</div>
+    ${owed ? `<p class="muted" style="margin:8px 0 0">${money(owed)} in open invoices.</p>` : ''}
+    ${f !== 'all' ? `<div class="row" style="margin-top:12px"><span class="grow muted">Showing: ${LF[f]}</span><button type="button" class="btn alt sm" data-lf="all">Show all (${count('all')})</button></div>` : ''}
+    ${show.length ? show.map(x => { const s = licState(x), open = st.licOpen === x.id;
+      return `<div class="card" style="${s.approval ? 'border-color:#D9A62B' : ''}">
+        <div class="row" style="align-items:flex-start;flex-wrap:wrap"><div class="grow"><strong style="font-size:17px">${esc(x.name)}</strong> <span class="muted">${x.kind === 'group' ? 'Independent group' : 'Church'}${x.city ? ' · ' + esc(x.city) + (x.state ? ', ' + esc(x.state) : '') : ''}</span><br>
+          <span class="muted">${x.code && !x.pending ? 'Code ' + esc(x.code) + ' · ' : ''}Bill to ${esc(x.billing_name || x.requester || '')}${x.contact_email ? ' · ' + esc(x.contact_email) : ''}</span></div>
+          <div class="row" style="gap:6px;flex-wrap:wrap">
+            ${x.pending ? '<span class="pill wait">Not approved yet</span>' : '<span class="pill ok">Approved</span>'}
+            ${s.active ? `<span class="pill ok">Paid · ${Number(x.used || 0)} of ${Number(x.seats || 0)} seats used</span>` : s.invoice ? '<span class="pill wait">Invoice waiting</span>' : '<span class="pill off">No seats yet</span>'}
+          </div></div>
+        ${s.active && x.expires_at ? `<p class="muted" style="margin:6px 0 0">Seats good through ${fDate(x.expires_at)}${x.license_price != null ? ' · license total ' + money(x.license_price) : ''}</p>` : ''}
+        ${x.pending && st.admin ? `<div class="row" style="margin-top:10px"><span class="grow muted">${s.active ? 'Paid and waiting for you. Approve it so members can join.' : 'Requested by ' + esc(x.requester || '') + ' on ' + fDate(x.created_at) + '.'}</span><button class="btn teal sm" type="button" data-lok="${x.id}">Approve</button><button class="btn danger sm" type="button" data-lno="${x.id}">Decline</button></div>` : ''}
+        ${(x.invoices || []).length ? `<div class="tbl" style="margin-top:10px"><table><thead><tr><th>Invoice</th><th>Amount</th><th>Status</th><th>Email</th><th></th></tr></thead><tbody>${x.invoices.map(docRow).join('')}</tbody></table></div>` : ''}
+        ${st.admin ? (open ? `<form class="addbox" data-newinv="${x.id}" style="margin-top:10px"><strong>New invoice for ${esc(x.name)}</strong><p class="muted" style="margin:4px 0 8px">Priced at the seat rate for the church’s new total. The church can pay by check or wire${''}; it’s emailed with the PDF.</p>
+            <div class="row" style="flex-wrap:wrap"><div><label>Seats</label><input type="number" min="1" name="seats" required style="max-width:120px"></div><div><label>Days to pay</label><input type="number" min="1" name="days" value="15" style="max-width:100px"></div><div class="grow"><label>Note on the invoice (optional)</label><input type="text" name="note" maxlength="120"></div></div>
+            <div class="row" style="margin-top:10px"><button class="btn teal sm" type="submit">Create and email invoice</button><button class="btn alt sm" type="button" data-newinvclose>Close</button></div></form>`
+          : `<div class="row" style="margin-top:10px"><button class="btn alt sm" type="button" data-newinvopen="${x.id}">+ Create invoice</button></div>`) : ''}
+      </div>`; }).join('') : `<div class="card"><p class="empty">${f === 'all' ? 'No churches or groups yet. They appear here as soon as someone registers.' : 'Nothing here right now.'}</p></div>`}
+    ${st.admin ? manualLicenses() : ''}`;
+  };
   BIND.licenses = () => {
+    $app.querySelectorAll('[data-lf]').forEach(b => b.onclick = () => { st.licF = b.dataset.lf; render(); });
+    const det = $('licManual'); if (det) det.ontoggle = () => { st.licOpenManual = det.open; };
+    $app.querySelectorAll('[data-pdf]').forEach(b => b.onclick = () => openPdf(b.dataset.pdf));
+    $app.querySelectorAll('[data-newinvopen]').forEach(b => b.onclick = () => { st.licOpen = b.dataset.newinvopen; render(); });
+    $app.querySelectorAll('[data-newinvclose]').forEach(b => b.onclick = () => { st.licOpen = null; render(); });
+    $app.querySelectorAll('[data-newinv]').forEach(f => f.onsubmit = e => { e.preventDefault(); const seats = parseInt(f.seats.value, 10), days = parseInt(f.days.value, 10) || 15, note = f.note.value || null;
+      run(async () => { const r = await Cloud.rpc('admin_create_invoice', { p_church: f.dataset.newinv, p_seats: seats, p_days: days, p_note: note }); st.licOpen = null; await loadTab(true); flash(`Invoice ${r.number} created. The PDF is emailed to the church within a minute or two.`); }); });
+    const findDoc = id => { for (const x of st.lov || []) for (const d of x.invoices || []) if (d.id === id) return [x, d]; return []; };
+    $app.querySelectorAll('[data-paid]').forEach(b => b.onclick = () => { const [x, d] = findDoc(b.dataset.paid);
+      const how = prompt(`Mark invoice ${d.number} (${money(d.amount)}) from ${x.name} as paid.\n\nHow was it paid? Type check, wire or other:`, 'check'); if (how == null) return;
+      const m = (how.trim().toLowerCase().match(/^(check|wire|other)/) || [])[1]; if (!m) { flash('Type check, wire or other.', true); return; }
+      const ref = prompt(m === 'check' ? 'Check number (optional):' : m === 'wire' ? 'Wire confirmation or reference (optional):' : 'Note (optional):', ''); if (ref == null) return;
+      run(async () => { await Cloud.pay({ action: 'mark_paid', doc_id: d.id, method: m, reference: ref }); await loadTab(true); }, `Invoice ${d.number} marked paid. Seats are on, and a paid copy is emailed to the church.`); });
+    $app.querySelectorAll('[data-void]').forEach(b => b.onclick = () => { const [x, d] = findDoc(b.dataset.void);
+      if (!confirm(`Cancel invoice ${d.number} for ${money(d.amount)} to ${x.name}? The church won’t be able to pay it.`)) return;
+      run(async () => { await Cloud.pay({ action: 'void_invoice', doc_id: d.id }); await loadTab(true); }, `Invoice ${d.number} canceled.`); });
+    $app.querySelectorAll('[data-resend]').forEach(b => b.onclick = () => run(async () => { await Cloud.rpc('admin_email_invoice', { p_doc: b.dataset.resend }); await loadTab(true); }, 'The invoice will be emailed again within a minute or two.'));
+    $app.querySelectorAll('[data-lok],[data-lno]').forEach(b => b.onclick = () => { const id = b.dataset.lok || b.dataset.lno, ok = !!b.dataset.lok, x = (st.lov || []).find(y => y.id === id);
+      if (!confirm(`${ok ? 'Approve' : 'Decline'} ${x.name}?${ok ? ` ${x.requester || 'The requester'} becomes its admin and gets the join code.` : ''}`)) return;
+      run(async () => { await Cloud.rpc('admin_decide_org', { p_id: id, p_approve: ok }); await loadTab(true); }, `${x.name} ${ok ? 'approved' : 'declined'}. We emailed ${x.requester || 'them'}.`); });
     $app.querySelectorAll('[data-ch] select[data-f="plan_id"]').forEach(sel => sel.onchange = () => {
       const o = sel.selectedOptions[0], tr = sel.closest('tr'); if (!o || !o.dataset.price) return;
       const n = tr.querySelector('[data-f="seats"]'); if (!(parseInt(n.value, 10) > 0)) n.value = o.dataset.min;
@@ -736,7 +814,22 @@ ${trialForm()}
       <div class="row" style="margin-top:16px"><button class="btn teal" type="submit">Save settings</button><button class="btn alt" type="button" id="sTest">Send a test email</button></div>
       <p class="muted" style="margin-top:8px;font-size:13px">The test goes to the admin notification email. Reply to it to check the reply-to address.${S.updated_at ? ` Last changed ${fDate(S.updated_at)}.` : ''}</p>
     </form>
+    ${invoiceSettingsCard()}
     ${stripeCard()}`; };
+  function invoiceSettingsCard() { const I = st.invSet;
+    if (!I) return '<div class="card"><strong>Invoices</strong><p class="muted" style="margin:6px 0 0">Loading…</p></div>';
+    return `<form class="card" id="invF"><strong>What prints on invoices</strong>
+      <p class="muted" style="margin:4px 0 10px">Churches see this on every Time4God invoice and receipt (PDF). Bank details are typed here only, never sent by chat or email.</p>
+      <label for="iPay" style="font-weight:700">Make checks payable to</label><input id="iPay" type="text" maxlength="120" value="${esc(I.payable_to || '')}" placeholder="Merch Corporation">
+      <label for="iAddr" style="font-weight:700;margin-top:14px;display:block">Mailing address for checks</label>
+      <textarea id="iAddr" rows="3" maxlength="300" placeholder="Street&#10;City, State ZIP" style="width:100%">${esc(I.address || '')}</textarea>
+      <label for="iWire" style="font-weight:700;margin-top:14px;display:block">Wire transfer instructions</label>
+      <p class="muted" style="margin:2px 0 6px">Bank name, routing number, account number and account name, one per line.</p>
+      <textarea id="iWire" rows="5" maxlength="500" placeholder="Bank: &#10;Routing (ABA): &#10;Account: &#10;Account name: " style="width:100%">${esc(I.wire || '')}</textarea>
+      <label for="iTerms" style="font-weight:700;margin-top:14px;display:block">Terms at the bottom of each invoice</label>
+      <textarea id="iTerms" rows="2" maxlength="300" style="width:100%">${esc(I.terms || '')}</textarea>
+      ${!I.address || !I.wire ? `<p class="err" style="margin-top:10px">${!I.address && !I.wire ? 'Add a mailing address and wire instructions' : !I.address ? 'Add a mailing address' : 'Add wire instructions'} so churches know where to send payment. Until then the invoice tells them to ask you.</p>` : ''}
+      <div class="row" style="margin-top:14px"><button class="btn teal" type="submit">Save invoice details</button></div></form>`; }
   function stripeCard() { const S = st.stripe;
     if (!S) return '<div class="card"><strong>Stripe</strong><p class="muted" style="margin:6px 0 0">Checking your Stripe connection…</p></div>';
     const wrongKey = /^pk_/.test(S.key_kind || '');
@@ -752,6 +845,8 @@ ${trialForm()}
     if (!$('setF')) return;
     $('setF').onsubmit = e => { e.preventDefault(); const a = { p_admin_emails: $('sAdmin').value, p_reply_to: $('sReply').value, p_support: $('sSupport').value };
       run(async () => { await Cloud.rpc('admin_save_settings', a); st.settings = await Cloud.rpc('admin_settings'); }, 'Settings saved.'); };
+    if ($('invF')) $('invF').onsubmit = e => { e.preventDefault(); const a = { p_payable_to: $('iPay').value, p_address: $('iAddr').value, p_wire: $('iWire').value, p_terms: $('iTerms').value };
+      run(async () => { await Cloud.rpc('admin_save_invoice_settings', a); st.invSet = await Cloud.rpc('admin_invoice_settings'); }, 'Invoice details saved. New and resent invoices use them.'); };
     $('sTest').onclick = () => run(async () => { const n = await Cloud.rpc('admin_send_test_email'); flash(`Test email sent to ${n} address${n === 1 ? '' : 'es'}. It should arrive within a minute or two.`); });
   };
 
@@ -944,7 +1039,7 @@ ${trialForm()}
       if (st.tab === 'keys') { const [k, c, p, q] = await Promise.all([Cloud.rpc('admin_book_keys'), Cloud.rpc('admin_key_claims'), Cloud.rpc('admin_print_status'), Cloud.rpc('admin_key_questions')]); st.keys = k || []; st.claims = c || []; st.printStat = p; st.kq = q || []; }
       if (st.tab === 'dash') st.dash = await Cloud.rpc('admin_dashboard');
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
-      if (st.tab === 'settings') { st.settings = await Cloud.rpc('admin_settings'); st.stripe = null; Cloud.pay({ action: 'stripe_mode' }).then(r => { st.stripe = r || {}; if (st.tab === 'settings') render(); }).catch(e => { st.stripe = { error: errMsg(e) }; if (st.tab === 'settings') render(); }); }
+      if (st.tab === 'settings') { st.settings = await Cloud.rpc('admin_settings'); try { st.invSet = await Cloud.rpc('admin_invoice_settings'); } catch (e) { st.invSet = {}; } st.stripe = null; Cloud.pay({ action: 'stripe_mode' }).then(r => { st.stripe = r || {}; if (st.tab === 'settings') render(); }).catch(e => { st.stripe = { error: errMsg(e) }; if (st.tab === 'settings') render(); }); }
       if (st.tab === 'nochurch') { const [a, b] = await Promise.all([Cloud.rpc('admin_no_church'), Cloud.rpc('admin_pending_members')]); st.nc = a || []; st.pend = b || []; st.ncSel = new Set(); st.pSel = new Set(); }
       if (st.tab === 'members') { const [a, t] = await Promise.all([Cloud.rpc('admin_all_members'), Cloud.rpc('admin_trials_v2')]); st.all = a || []; st.trials = t || []; }
       if (st.tab === 'amdash') st.amo = await Cloud.rpc('am_overview') || [];
@@ -954,6 +1049,7 @@ ${trialForm()}
       if (st.tab === 'churches') st.churchAdmins = await Cloud.rpc('admin_church_admins') || [];
       if (st.tab === 'churches') st.orgReqs = await Cloud.rpc('admin_org_requests') || [];
       if (st.tab === 'licenses') {
+        st.lov = await Cloud.rpc('admin_license_overview') || [];
         st.licenses = st.season ? Cloud.ok(await c.from('church_licenses').select('*').eq('season_id', st.season.id)) : [];
         st.seats = st.admin ? (await Cloud.rpc('admin_individual_seats') || []) : [];
       }
