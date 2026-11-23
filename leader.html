@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,600&display=swap" rel="stylesheet">
 <script src="./cloud.js"></script>
+<script src="./legal.js"></script>
 <script src="./book-import.js"></script>
 <script src="./print-import.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
@@ -104,6 +105,9 @@ h3.dh{margin:22px 0 10px;font-size:15px;letter-spacing:.06em;text-transform:uppe
 .chart .pk{font-size:11px;fill:#173344;font-weight:700}
 .chart .bar.on path{fill:#2A62A6}
 .chart .tip{position:absolute;background:#173344;color:#fff;font-size:12.5px;padding:6px 8px;border-radius:6px;pointer-events:none;white-space:nowrap}
+.legalprev{border:1px solid #E1E7EA;border-radius:10px;padding:4px 20px 16px;margin-top:10px;max-height:620px;overflow:auto;line-height:1.6;background:#fff}
+.legalprev h1{font-size:24px;margin:16px 0 4px}.legalprev h2{font-size:18px;margin:22px 0 4px;color:#123C56}.legalprev ul{padding-left:20px}
+code{background:#EEF2F4;border-radius:4px;padding:1px 5px;font-size:12.5px}
 .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}
 .kpi{background:#fff;border:1px solid #E1E7EA;border-radius:12px;padding:12px;text-align:left;cursor:pointer;font:inherit;color:#173344}
 .kpi .n{display:block;font-size:26px;font-weight:700;color:#123C56;line-height:1.1}
@@ -237,7 +241,7 @@ table.mini td{padding:3px 12px 3px 0}
     }
     const ok = tier && !note, big = ok && o.invoice_min && n * tier.rate >= Number(o.invoice_min);
     return `<div class="addbox"><div class="row"><strong class="grow">${cur ? `Add seats · you have ${nf(cur.seats)}` : 'Buy seats for your church'}</strong><button class="btn alt sm" type="button" id="buyClose">Close</button></div>
-      <p class="muted" style="margin:6px 0 10px">${cur ? `Added seats cost the rate for your new total and end on ${cur.expires_at ? fDate(cur.expires_at) : 'the same date as your others'}.` : 'One payment, good for one year from today. Members you approve read free.'} Prices include tax. All sales are final.</p>
+      <p class="muted" style="margin:6px 0 10px">${cur ? `Added seats cost the rate for your new total and end on ${cur.expires_at ? fDate(cur.expires_at) : 'the same date as your others'}.` : 'One payment, good for one year from today. Members you approve read free.'} Prices include tax. All sales are final. By buying you agree to the <a href="terms.html" target="_blank" rel="noopener">Terms</a> for churches and groups.</p>
       <div class="tbl"><table><thead><tr><th>Seats in total</th><th>Price per seat</th></tr></thead><tbody>${T.map((t, i) => `<tr${tier && tier.id === t.id ? ' style="background:#E6F2F2;font-weight:700"' : ''}><td>${esc(t.name)} · ${i === T.length - 1 ? nf(t.min) + '+' : nf(t.min) + '–' + nf(t.max)}</td><td>${money(t.rate)}</td></tr>`).join('')}</tbody></table></div>
       <label for="buyN" style="margin-top:12px;display:block;font-weight:600">${cur ? 'How many more seats?' : 'How many seats?'}</label>
       <input id="buyN" type="number" inputmode="numeric" min="${min}" step="1" value="${esc(st.buySeats || '')}" placeholder="${cur ? 'e.g. 10' : 'At least ' + min}" style="max-width:200px">
@@ -822,7 +826,30 @@ ${trialForm()}
       <p class="muted" style="margin-top:8px;font-size:13px">The test goes to the admin notification email. Reply to it to check the reply-to address.${S.updated_at ? ` Last changed ${fDate(S.updated_at)}.` : ''}</p>
     </form>
     ${invoiceSettingsCard()}
+    ${legalCard()}
     ${stripeCard()}`; };
+  // Terms and Privacy: edit, preview, keep every version
+  function legalCard() { const L = st.legal;
+    if (!L) return '<div class="card"><strong>Terms and Privacy Policy</strong><p class="muted" style="margin:6px 0 0">Loading…</p></div>';
+    if (L.error) return `<div class="card"><strong>Terms and Privacy Policy</strong><p class="err" style="margin:8px 0 0">${esc(L.error)}</p></div>`;
+    const slug = st.legalSlug || 'terms', d = (L.docs || []).find(x => x.slug === slug);
+    if (!d) return '<div class="card"><strong>Terms and Privacy Policy</strong><p class="muted">Not set up yet.</p></div>';
+    const draft = st.legalDraft != null ? st.legalDraft : d.body, dirty = draft !== d.body;
+    const fill = t => Legal.fill(t, { support: (st.settings || {}).support_email, address: st.invSet && st.invSet.address ? st.invSet.address.replace(/\n/g, ', ') : null, date: fDate(st.legalDate || d.effective_date) });
+    return `<div class="card" id="legalCard"><div class="row" style="flex-wrap:wrap"><strong class="grow">Terms and Privacy Policy</strong>
+        <a class="btn alt sm" href="terms.html" target="_blank" rel="noopener">View Terms</a><a class="btn alt sm" href="privacy.html" target="_blank" rel="noopener">View Privacy</a></div>
+      <p class="muted" style="margin:4px 0 10px">The pages everyone sees at time4god.app/terms.html and /privacy.html. Write in plain text: <code># Title</code>, <code>## Section</code>, <code>- list item</code>, <code>**bold**</code>, <code>[link](privacy.html)</code>. These fill in by themselves: <code>{{support_email}}</code>, <code>{{mailing_address}}</code>, <code>{{effective_date}}</code>. Every save is kept, so you can go back.</p>
+      <div class="row" style="gap:6px">${(L.docs || []).map(x => `<button type="button" class="btn ${x.slug === slug ? '' : 'alt'} sm" data-lgslug="${x.slug}">${esc(x.title)}</button>`).join('')}</div>
+      <p class="muted" style="margin:10px 0 0">Version ${d.version} · effective ${fDate(d.effective_date)} · last saved ${fDate(d.updated_at)}${dirty ? ' · <strong style="color:#A33A2E">unsaved changes</strong>' : ''}</p>
+      <div class="row" style="margin-top:10px;flex-wrap:wrap"><div><label for="lgDate" style="font-weight:700">Effective date</label><input id="lgDate" type="date" value="${esc(st.legalDate || String(d.effective_date).slice(0, 10))}"></div>
+        <div class="grow"></div><div class="row" style="gap:6px"><button type="button" class="btn ${st.legalPrev ? 'alt' : ''} sm" data-lgmode="edit">Edit</button><button type="button" class="btn ${st.legalPrev ? '' : 'alt'} sm" data-lgmode="prev">Preview</button></div></div>
+      ${st.legalPrev ? `<div class="legalprev">${Legal.render(fill(draft)).html}</div>`
+        : `<textarea id="lgBody" spellcheck="true" style="width:100%;min-height:520px;margin-top:10px;font:14px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace">${esc(draft)}</textarea>`}
+      <div class="row" style="margin-top:12px;flex-wrap:wrap"><button type="button" class="btn teal" id="lgSave" ${dirty || st.legalDate ? '' : 'disabled'}>Save and publish</button>
+        ${dirty ? '<button type="button" class="btn alt" id="lgUndo">Discard changes</button>' : ''}<span class="grow"></span>
+        <button type="button" class="btn alt sm" id="lgHist">${st.legalHist ? 'Hide' : 'Show'} earlier versions (${d.versions})</button></div>
+      ${st.legalHist ? `<div class="tbl" style="margin-top:10px"><table><thead><tr><th>Version</th><th>Effective</th><th>Saved</th><th></th></tr></thead><tbody>${(st.legalHist || []).map(v => `<tr><td>${v.version}${v.version === d.version ? ' <span class="pill ok">Live</span>' : ''}</td><td>${fDate(v.effective_date)}</td><td>${fDate(v.saved_at)}</td><td>${v.version === d.version ? '' : `<button type="button" class="btn alt sm" data-lgload="${v.id}">Load into editor</button>`}</td></tr>`).join('')}</tbody></table></div>` : ''}
+      <p class="muted" style="margin-top:10px;font-size:13px">Have an attorney review changes before you publish them. When you change something important, set a new effective date; the pages show it at the top.</p></div>`; }
   function invoiceSettingsCard() { const I = st.invSet;
     if (!I) return '<div class="card"><strong>Invoices</strong><p class="muted" style="margin:6px 0 0">Loading…</p></div>';
     return `<form class="card" id="invF"><strong>What prints on invoices</strong>
@@ -852,6 +879,22 @@ ${trialForm()}
     if (!$('setF')) return;
     $('setF').onsubmit = e => { e.preventDefault(); const a = { p_admin_emails: $('sAdmin').value, p_reply_to: $('sReply').value, p_support: $('sSupport').value };
       run(async () => { await Cloud.rpc('admin_save_settings', a); st.settings = await Cloud.rpc('admin_settings'); }, 'Settings saved.'); };
+    // Terms / Privacy editor
+    const keepDraft = () => { if ($('lgBody')) st.legalDraft = $('lgBody').value; if ($('lgDate')) st.legalDate = $('lgDate').value; };
+    $app.querySelectorAll('[data-lgslug]').forEach(b => b.onclick = () => { keepDraft(); const d = (st.legal.docs || []).find(x => x.slug === (st.legalSlug || 'terms'));
+      if (d && st.legalDraft != null && st.legalDraft !== d.body && !confirm('You have unsaved changes on this page. Switch anyway and lose them?')) return;
+      st.legalSlug = b.dataset.lgslug; st.legalDraft = null; st.legalDate = null; st.legalHist = null; render(); });
+    $app.querySelectorAll('[data-lgmode]').forEach(b => b.onclick = () => { keepDraft(); st.legalPrev = b.dataset.lgmode === 'prev'; render(); });
+    if ($('lgBody')) $('lgBody').oninput = e => { const was = st.legalDraft; st.legalDraft = e.target.value; const d = (st.legal.docs || []).find(x => x.slug === (st.legalSlug || 'terms'));
+      if ((was == null || was === d.body) !== (st.legalDraft === d.body)) { const pos = e.target.selectionStart, top = e.target.scrollTop; render(); const t = $('lgBody'); if (t) { t.focus(); t.setSelectionRange(pos, pos); t.scrollTop = top; } } };
+    if ($('lgDate')) $('lgDate').onchange = e => { keepDraft(); render(); };
+    if ($('lgUndo')) $('lgUndo').onclick = () => { if (confirm('Discard your changes?')) { st.legalDraft = null; st.legalDate = null; render(); } };
+    if ($('lgHist')) $('lgHist').onclick = () => { keepDraft(); if (st.legalHist) { st.legalHist = null; return render(); } run(async () => { st.legalHist = await Cloud.rpc('admin_legal_versions', { p_slug: st.legalSlug || 'terms' }) || []; }); };
+    $app.querySelectorAll('[data-lgload]').forEach(b => b.onclick = () => { const v = (st.legalHist || []).find(x => String(x.id) === b.dataset.lgload); if (!v) return;
+      st.legalDraft = v.body; st.legalPrev = false; render(); flash(`Version ${v.version} is in the editor. Save to make it live again.`); });
+    if ($('lgSave')) $('lgSave').onclick = () => { keepDraft(); const slug = st.legalSlug || 'terms', d = st.legal.docs.find(x => x.slug === slug), body = st.legalDraft != null ? st.legalDraft : d.body, date = st.legalDate || String(d.effective_date).slice(0, 10);
+      if (!confirm(`Publish this ${d.title} now, effective ${fDate(date)}? Everyone will see it right away. The current version is kept in history.`)) return;
+      run(async () => { const r = await Cloud.rpc('admin_save_legal', { p_slug: slug, p_title: d.title, p_body: body, p_effective: date }); st.legal = { docs: await Cloud.rpc('admin_legal_docs') || [] }; st.legalDraft = null; st.legalDate = null; st.legalHist = null; flash(`${d.title} version ${r.version} is live.`); }); };
     if ($('invF')) $('invF').onsubmit = e => { e.preventDefault(); const a = { p_payable_to: $('iPay').value, p_address: $('iAddr').value, p_wire: $('iWire').value, p_terms: $('iTerms').value };
       run(async () => { await Cloud.rpc('admin_save_invoice_settings', a); st.invSet = await Cloud.rpc('admin_invoice_settings'); }, 'Invoice details saved. New and resent invoices use them.'); };
     $('sTest').onclick = () => run(async () => { const n = await Cloud.rpc('admin_send_test_email'); flash(`Test email sent to ${n} address${n === 1 ? '' : 'es'}. It should arrive within a minute or two.`); });
@@ -1046,7 +1089,7 @@ ${trialForm()}
       if (st.tab === 'keys') { const [k, c, p, q] = await Promise.all([Cloud.rpc('admin_book_keys'), Cloud.rpc('admin_key_claims'), Cloud.rpc('admin_print_status'), Cloud.rpc('admin_key_questions')]); st.keys = k || []; st.claims = c || []; st.printStat = p; st.kq = q || []; }
       if (st.tab === 'dash') st.dash = await Cloud.rpc('admin_dashboard');
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
-      if (st.tab === 'settings') { st.settings = await Cloud.rpc('admin_settings'); try { st.invSet = await Cloud.rpc('admin_invoice_settings'); } catch (e) { st.invSet = {}; } st.stripe = null; Cloud.pay({ action: 'stripe_mode' }).then(r => { st.stripe = r || {}; if (st.tab === 'settings') render(); }).catch(e => { st.stripe = { error: errMsg(e) }; if (st.tab === 'settings') render(); }); }
+      if (st.tab === 'settings') { st.settings = await Cloud.rpc('admin_settings'); try { st.invSet = await Cloud.rpc('admin_invoice_settings'); } catch (e) { st.invSet = {}; } try { st.legal = { docs: await Cloud.rpc('admin_legal_docs') || [] }; } catch (e) { st.legal = { error: errMsg(e) }; } st.stripe = null; Cloud.pay({ action: 'stripe_mode' }).then(r => { st.stripe = r || {}; if (st.tab === 'settings') render(); }).catch(e => { st.stripe = { error: errMsg(e) }; if (st.tab === 'settings') render(); }); }
       if (st.tab === 'nochurch') { const [a, b] = await Promise.all([Cloud.rpc('admin_no_church'), Cloud.rpc('admin_pending_members')]); st.nc = a || []; st.pend = b || []; st.ncSel = new Set(); st.pSel = new Set(); }
       if (st.tab === 'members') { const [a, t] = await Promise.all([Cloud.rpc('admin_all_members'), Cloud.rpc('admin_trials_v2')]); st.all = a || []; st.trials = t || []; }
       if (st.tab === 'amdash') st.amo = await Cloud.rpc('am_overview') || [];

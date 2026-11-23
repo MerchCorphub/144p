@@ -191,6 +191,7 @@ const nf = n => Number(n).toLocaleString('en-US');
       <div class="tabs" role="tablist"><button class="tab" role="tab" type="button" data-as="church" aria-selected="${st.as === 'church'}">I lead a church</button><button class="tab" role="tab" type="button" data-as="group" aria-selected="${st.as === 'group'}">I lead a group</button></div>
       ${statusList()}${form()}
       <p class="sub" style="margin-top:16px">Just want the study book for yourself? <a href="access.html">See individual pricing</a>.</p>
+      <p class="sub" style="margin-top:8px;font-size:13px"><a href="terms.html">Terms and Conditions</a> · <a href="privacy.html">Privacy Policy</a></p>
       ${st.support ? `<p class="sub" style="margin-top:8px">Questions before you sign up? Email <a href="mailto:${esc(st.support)}">${esc(st.support)}</a></p>` : ''}`;
     bind();
   }

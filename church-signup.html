@@ -267,7 +267,7 @@ input.big{font-size:22px;font-weight:700;text-align:center;max-width:220px}
           : `For orders of ${money(o.invoice_min)} or more. This order is ${money(total())}.`}</div>
         ${inv && !open ? `<ul><li><strong>Online</strong> by card, ACH or bank wire, from the link on the invoice</li><li><strong>Mail a check</strong> to the address on the invoice</li><li><strong>Wire</strong> to our bank, using the details on the invoice</li></ul>
           <div class="d" style="margin-top:6px">Your seats turn on as soon as your payment is received.</div>` : ''}</div></label>
-      <label class="check"><input type="checkbox" id="agree" ${st.agree ? 'checked' : ''}><span>I understand all sales are final, and members can join once the ${word()} is approved.</span></label>
+      <label class="check"><input type="checkbox" id="agree" ${st.agree ? 'checked' : ''}><span>I agree to the <a href="terms.html" target="_blank" rel="noopener">Terms and Conditions</a> for ${word() === 'group' ? 'groups' : 'churches'} and the <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>. I understand all sales are final, and members can join once the ${word()} is approved.</span></label>
       <button class="btn teal" type="button" id="payGo" ${st.agree && !st.busy ? '' : 'disabled'}>${st.busy ? (st.method === 'invoice' ? 'Creating your invoice…' : 'Opening secure checkout…') : st.method === 'invoice' ? `Email my invoice for ${money(total())}` : `Pay ${money(total())} by card`}</button></div>`;
   }
 
@@ -307,7 +307,8 @@ input.big{font-size:22px;font-weight:700;text-align:center;max-width:220px}
       ${progress(s)}
       ${(st.err ? `<div class="err" role="alert">${esc(st.err)}</div>` : '') + (st.msg ? `<div class="ok">${esc(st.msg)}</div>` : '')}
       ${views[s]()}
-      ${st.support ? `<p class="sub" style="margin-top:16px;font-size:14px">Questions? Email <a href="mailto:${esc(st.support)}">${esc(st.support)}</a></p>` : ''}`;
+      ${st.support ? `<p class="sub" style="margin-top:16px;font-size:14px">Questions? Email <a href="mailto:${esc(st.support)}">${esc(st.support)}</a></p>` : ''}
+      <p class="sub" style="margin-top:8px;font-size:13px"><a href="terms.html">Terms and Conditions</a> · <a href="privacy.html">Privacy Policy</a></p>`;
     bind();
   }
   function bind() {

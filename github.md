@@ -101,3 +101,11 @@ The `invoice-pdf` function draws the PDF (logo, bill-to, seats × price, how to 
 **Admin Panel › Settings › What prints on invoices** — payable-to name, mailing address for checks, wire instructions, terms. Pete types bank details here himself.
 
 Migrations 0029–0032. Edge functions: invoice-pdf (new), stripe-pay (mark_paid, void_invoice; finalize-only invoices), send-emails (attachments).
+
+## Terms and Conditions and Privacy Policy (Nov 2026)
+
+- Public pages: `terms.html` and `privacy.html` (same file; `legal.js` turns the simple Markdown into HTML). They read the live text from the database (`public_legal`) and fall back to `legal/terms.md` / `legal/privacy.md` shipped with the site.
+- Edit in **Admin Panel › Settings › Terms and Privacy Policy**: edit/preview, effective date, Save and publish, earlier versions (every save kept in `legal_doc_versions`).
+- Placeholders filled in when shown: `{{support_email}}` (Settings support email), `{{mailing_address}}` (Settings invoice mailing address), `{{effective_date}}`.
+- Linked from the account sign-up checkbox, app footer, church sign-up checkout, individual checkout and the Leader Console buy box.
+- Drafted from a review of comparable faith apps (YouVersion, Hallow, Glorify, RightNow Media): Merch Corporation as owner, 13+ (under 18 with a parent), Georgia law, individual AAA arbitration in Georgia with a 30-day opt-out and class-action waiver, all sales final, liability cap. Have an attorney review before relying on them.

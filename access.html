@@ -169,7 +169,7 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
         ${guest ? '<a class="btn alt" href="read.html">Open the study book</a>' : ''}`;
     } else if (!covered) {
       if (trial) html += `<a class="btn alt" href="read.html">Open the study book</a>`;
-      html += `<div class="card opt"><h3>${trial || trialOver ? 'Join' : 'Buy it for yourself'} · ${esc(money(p.individual))}</h3><p class="sub" style="margin:0 0 4px">Pay securely with card, Apple Pay or Google Pay. All sales are final.</p>
+      html += `<div class="card opt"><h3>${trial || trialOver ? 'Join' : 'Buy it for yourself'} · ${esc(money(p.individual))}</h3><p class="sub" style="margin:0 0 4px">Pay securely with card, Apple Pay or Google Pay. All sales are final. By buying you agree to the <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</p>
           <button class="btn teal" id="buy" type="button" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Opening secure checkout…' : 'Get the study book · ' + esc(money(p.individual))}</button></div>
         <div class="card opt"><h3>Have the printed book?</h3><p class="sub" style="margin:0">Your copy includes the app edition and a seat to give. Use the book key printed inside.</p><a class="btn alt" href="redeem.html">Enter my book key</a></div>
         <div class="card opt"><h3>Is your church taking part?</h3><p class="sub" style="margin:0">If your church bought seats, the study book is included once you’re approved. Enter your church code in My Account.</p><a class="btn alt" href="./">Join my church</a></div>`;
