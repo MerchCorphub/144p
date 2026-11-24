@@ -218,6 +218,7 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
       else if (a && a.seat) html += `<p class="sub" style="margin-top:12px">You’ve given all ${gmax} guest seats for the last 12 months${a.guest_seat_given_to ? ` (most recently to ${esc(a.guest_seat_given_to)})` : ''}. A seat frees up 12 months after each one was used.</p>`;
       html += familyCard();
     }
+    html += `<div class="card"><strong>Want a printed copy?</strong><p class="sub" style="margin:6px 0 0">Order the paperback, or another book by C.P. Parker, from our Bookstore. Amazon or IngramSpark prints and ships it to you.</p><a class="btn alt" href="bookstore.html">Visit the Bookstore</a></div>`;
     html += `<div class="card"><strong>Do you lead a church or a group?</strong><p class="sub" style="margin:6px 0 0">Register your church or group, get a join code for your members, and buy study book seats for everyone${p.church_top_rate != null ? ` (${esc(money(p.church_top_rate))} a seat, less for larger churches)` : ''}.</p>
       <div class="two" style="margin-top:12px"><a class="btn alt" href="church-signup.html" style="margin-top:0">Church leaders</a><a class="btn alt" href="leaders.html?as=group" style="margin-top:0">Group leaders</a></div></div>`;
     if (st.support) html += `<p class="sub" style="margin-top:14px;text-align:center">Questions? Email <a href="mailto:${esc(st.support)}">${esc(st.support)}</a></p>`;
