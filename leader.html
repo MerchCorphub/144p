@@ -618,15 +618,25 @@ table.mini td{padding:3px 12px 3px 0}
   const catPill = c => CAT[c] ? `<span class="pill ${CAT[c][1]}">${CAT[c][0]}</span>` : '';
   const PAIDBY = { bought: 'Bought the study book', book_key: 'Printed-book key', own_seat: 'Own seat', church: 'Church seat', leader: 'Church leader' , family: 'Teen on a parent’s membership' };
   VIEWS.members = () => { const all = st.all || [], q = (st.amQ || '').trim().toLowerCase(), f = st.amF || 'all';
-    const L = all.filter(m => (f === 'all' || m.category === f) && (!q || (m.name + ' ' + m.email + ' ' + (m.church || '')).toLowerCase().includes(q)));
+    const X = {}; ((st.fam && st.fam.members) || []).forEach(x => { X[x.partner_id] = x; });
+    const FS = (st.fam && st.fam.stats) || {}, gmax = FS.guest_max || 4;
+    const isTeen = m => !!(X[m.partner_id] && X[m.partner_id].parent_name), isParent = m => !!(X[m.partner_id] && (X[m.partner_id].teens || []).length);
+    const match = m => f === 'all' || m.category === f || (f === 'teen' && isTeen(m)) || (f === 'parent' && isParent(m)) || (f === 'giver' && X[m.partner_id] && X[m.partner_id].guests_year > 0);
+    const L = all.filter(m => match(m) && (!q || (m.name + ' ' + m.email + ' ' + (m.church || '')).toLowerCase().includes(q)));
+    const extra = m => { const x = X[m.partner_id]; if (!x) return '';
+      const parts = [];
+      if ((x.teens || []).length) parts.push(`<span class="pill" style="background:#EDE7F6;color:#4A2C82">Parent</span> of ${x.teens.map(t => esc(t.name) + (t.status === 'invited' ? ' <span class="muted">(invited)</span>' : '')).join(', ')}`);
+      if (x.guests_left != null || x.guests_year) parts.push(`Guest seats: ${x.guests_year || 0} of ${gmax} given in 12 months${x.guests_left === 0 ? ' <span class="pill off">At limit</span>' : ''}`);
+      return parts.length ? '<br><span class="muted" style="font-size:12.5px">' + parts.join('<br>') + '</span>' : ''; };
     const n = c => all.filter(m => m.category === c).length;
-    return `<h2>All members</h2><p class="sub">Every account, by category. <strong>Member</strong>: paid (bought the study book, has a church seat, or used a printed-book key). <strong>Guest</strong>: a temporary seat from a Member’s Time4God Challenge, until the challenge ends. <strong>Trial</strong>: a free trial pass you sent, until it ends. <strong>Prospect</strong>: a free account that hasn’t paid, including guests and trials that have ended.</p>
-    <div class="tiles">${tile('Members', String(n('member')), 'paid')}${tile('Guests', String(n('guest')), 'on a challenge seat')}${tile('Trials', String(n('trial')), 'on a free trial pass')}${tile('Prospects', String(n('prospect')), 'free, not paid')}</div>
+    return `<h2>All members</h2><p class="sub">Every account, by category. <strong>Member</strong>: paid (bought the study book, has a church seat, or used a printed-book key). <strong>Guest</strong>: a temporary seat from a Member’s Time4God Challenge, until the challenge ends. <strong>Trial</strong>: a free trial pass you sent, until it ends. <strong>Prospect</strong>: a free account that hasn’t paid, including guests and trials that have ended. <strong>Teens</strong> on a parent’s membership count as Members and show who their parent is.</p>
+    <div class="tiles">${tile('Members', String(n('member')), 'paid')}${tile('Guests', String(n('guest')), 'on a challenge seat')}${tile('Trials', String(n('trial')), 'on a free trial pass')}${tile('Prospects', String(n('prospect')), 'free, not paid')}
+      ${st.fam ? tile('Family teen accounts', String(FS.teens_linked || 0), `${FS.parents || 0} parent${FS.parents === 1 ? '' : 's'} · ${FS.teens_invited || 0} invited, not joined yet`) + tile('Guest seats, 12 months', String(FS.guests_year || 0), `${FS.givers_at_limit || 0} member${FS.givers_at_limit === 1 ? '' : 's'} at the ${gmax}-a-year limit`) : ''}</div>
     <div class="card"><div class="row"><input id="amQ" type="search" placeholder="Search name, email or church" value="${esc(st.amQ || '')}" style="flex:1;min-width:220px">
-      <select id="amF">${[['all', 'Everyone'], ['member', 'Members'], ['guest', 'Guests'], ['trial', 'Trials'], ['prospect', 'Prospects']].map(([k, t]) => `<option value="${k}" ${f === k ? 'selected' : ''}>${t}</option>`).join('')}</select></div></div>
+      <select id="amF">${[['all', 'Everyone'], ['member', 'Members'], ['guest', 'Guests'], ['trial', 'Trials'], ['prospect', 'Prospects'], ['teen', 'Teens (family)'], ['parent', 'Parents with teens'], ['giver', 'Gave guest seats']].map(([k, t]) => `<option value="${k}" ${f === k ? 'selected' : ''}>${t}</option>`).join('')}</select></div></div>
     <div class="card tbl">${L.length ? `<table><thead><tr><th>Member</th><th>Category</th><th>Church</th><th>Time with God</th><th>Signed up</th></tr></thead><tbody>
       ${L.map(m => `<tr><td><strong>${esc(m.name)}</strong><br><a href="mailto:${esc(m.email)}" class="muted">${esc(m.email)}</a></td>
-        <td>${catPill(m.category)}<br><span class="muted">${m.category === 'member' ? esc(PAIDBY[m.paid_by] || '') : m.category === 'guest' ? `until ${fDate(m.guest_until + 'T12:00:00')}${m.guest_from ? ' · from ' + esc(m.guest_from) : ''}` : m.category === 'trial' ? `until ${fDate(m.trial_until + 'T12:00:00')}` : m.trial_until ? 'Trial ended ' + fDate(m.trial_until + 'T12:00:00') : m.guest_until ? 'Guest seat ended ' + fDate(m.guest_until + 'T12:00:00') : 'Free account'}</span></td>
+        <td>${catPill(m.category)}<br><span class="muted">${m.category === 'member' ? esc(m.paid_by === 'family' && X[m.partner_id] && X[m.partner_id].parent_name ? 'Teen on ' + X[m.partner_id].parent_name + '’s membership' : PAIDBY[m.paid_by] || '') : m.category === 'guest' ? `until ${fDate(m.guest_until + 'T12:00:00')}${m.guest_from ? ' · from ' + esc(m.guest_from) : ''}` : m.category === 'trial' ? `until ${fDate(m.trial_until + 'T12:00:00')}` : m.trial_until ? 'Trial ended ' + fDate(m.trial_until + 'T12:00:00') : m.guest_until ? 'Guest seat ended ' + fDate(m.guest_until + 'T12:00:00') : 'Free account'}</span>${extra(m)}</td>
         <td>${m.church ? `${esc(m.church)}${m.church_status === 'pending' ? '<br><span class="pill wait">Waiting for approval</span>' : ''}` : '<span class="muted">No church</span>'}</td>
         <td>${m.minutes_all ? `${hm(m.minutes_all)} total<br><span class="muted">${m.minutes_30 ? hm(m.minutes_30) + ' in 30 days' : 'none in 30 days'}</span>` : '<span class="muted">None yet</span>'}</td>
         <td class="muted">${fDate(m.created_at)}</td></tr>`).join('')}</tbody></table>` : `<p class="empty">${all.length ? 'No one matches.' : 'No accounts yet.'}</p>`}</div>` + trialCard(); };
@@ -982,7 +992,8 @@ ${trialForm()}
         ${tile('In a church', n0(M.in_church), `${n0(M.pending)} waiting for approval`, M.pending > 0)}
         ${tile('Have the study book', n0(M.with_book), `${n0(M.own_seats)} bought their own · ${n0(M.key_claims)} with a book key`)}
         ${tile('No church yet', n0(M.no_church), M.no_church ? '<a href="#" data-go="nochurch">See who →</a>' : 'Candidates for a church code or own seat')}
-        ${D.guests ? tile('Guest seats used', `${n0(D.guests.used)} of ${n0(D.guests.given)}`, `${n0(D.guests.active)} reading now · ${n0(D.guests.kept_going)} kept going`) : ''}</div>
+        ${D.guests ? tile('Guest seats used', n0(D.guests.used), `${n0(D.guests.active)} reading now · ${n0(D.guests.kept_going)} kept going${st.fam ? ` · ${n0(st.fam.stats.guests_year)} in 12 months` : ''}`) : ''}
+        ${st.fam ? tile('Family teen accounts', n0(st.fam.stats.teens_linked), `${n0(st.fam.stats.parents)} parents · ${n0(st.fam.stats.teens_reading)} reading now · ${n0(st.fam.stats.teens_invited)} invited · <a href="#" data-go="members">See them →</a>`) : ''}</div>
       ${bars('cSign', 'New accounts per week (last 12 weeks)', M.signups_by_week.map(r => ({ k: r.week, v: r.n })), n0, (k, full) => full ? 'Week of ' + dShort(k) : dShort(k))}
       <h3 class="dh">Engagement</h3><div class="tiles">
         ${tile('Active last 7 days', n0(E.active_7), 'Logged any time with God')}
@@ -1087,11 +1098,11 @@ ${trialForm()}
         st.allChurches = Cloud.ok(await c.from('churches').select('id,name,code,city,state,enrollment_policy,status,kind').neq('status', 'pending').order('name'));
       }
       if (st.tab === 'keys') { const [k, c, p, q] = await Promise.all([Cloud.rpc('admin_book_keys'), Cloud.rpc('admin_key_claims'), Cloud.rpc('admin_print_status'), Cloud.rpc('admin_key_questions')]); st.keys = k || []; st.claims = c || []; st.printStat = p; st.kq = q || []; }
-      if (st.tab === 'dash') st.dash = await Cloud.rpc('admin_dashboard');
+      if (st.tab === 'dash') { const [d, fm] = await Promise.all([Cloud.rpc('admin_dashboard'), Cloud.rpc('admin_family_summary').catch(() => null)]); st.dash = d; st.fam = fm; }
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
       if (st.tab === 'settings') { st.settings = await Cloud.rpc('admin_settings'); try { st.invSet = await Cloud.rpc('admin_invoice_settings'); } catch (e) { st.invSet = {}; } try { st.legal = { docs: await Cloud.rpc('admin_legal_docs') || [] }; } catch (e) { st.legal = { error: errMsg(e) }; } st.stripe = null; Cloud.pay({ action: 'stripe_mode' }).then(r => { st.stripe = r || {}; if (st.tab === 'settings') render(); }).catch(e => { st.stripe = { error: errMsg(e) }; if (st.tab === 'settings') render(); }); }
       if (st.tab === 'nochurch') { const [a, b] = await Promise.all([Cloud.rpc('admin_no_church'), Cloud.rpc('admin_pending_members')]); st.nc = a || []; st.pend = b || []; st.ncSel = new Set(); st.pSel = new Set(); }
-      if (st.tab === 'members') { const [a, t] = await Promise.all([Cloud.rpc('admin_all_members'), Cloud.rpc('admin_trials_v2')]); st.all = a || []; st.trials = t || []; }
+      if (st.tab === 'members') { const [a, t, fm] = await Promise.all([Cloud.rpc('admin_all_members'), Cloud.rpc('admin_trials_v2'), Cloud.rpc('admin_family_summary').catch(() => null)]); st.all = a || []; st.trials = t || []; st.fam = fm; }
       if (st.tab === 'amdash') st.amo = await Cloud.rpc('am_overview') || [];
       if (st.tab === 'roles') { const [r, ch] = await Promise.all([Cloud.rpc('admin_roles'), Cloud.rpc('admin_all_churches')]); st.roles = r || []; st.allCh = ch || []; }
       if (st.tab === 'churches') st.ams = await Cloud.rpc('church_account_managers') || [];

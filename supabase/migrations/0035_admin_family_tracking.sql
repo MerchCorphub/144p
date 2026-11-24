@@ -1,0 +1,4 @@
+-- 0035: Admin tracking for family teen accounts and guest seats (All members tab and Dashboard).
+-- public.admin_family_summary() → { stats: {parents, teens_linked, teens_reading, teens_invited, guests_year, givers_at_limit, guest_max, family_max},
+--                                   members: [{partner_id, parent_name, teens:[{name,status}], guests_year, guests_left}] }
+-- (Applied as written in the Supabase migration of the same name.)
