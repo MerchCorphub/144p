@@ -109,3 +109,11 @@ Migrations 0029–0032. Edge functions: invoice-pdf (new), stripe-pay (mark_paid
 - Placeholders filled in when shown: `{{support_email}}` (Settings support email), `{{mailing_address}}` (Settings invoice mailing address), `{{effective_date}}`.
 - Linked from the account sign-up checkbox, app footer, church sign-up checkout, individual checkout and the Leader Console buy box.
 - Drafted from a review of comparable faith apps (YouVersion, Hallow, Glorify, RightNow Media): Merch Corporation as owner, 13+ (under 18 with a parent), Georgia law, individual AAA arbitration in Georgia with a 30-day opt-out and class-action waiver, all sales final, liability cap. Have an attorney review before relying on them.
+
+## Family teen accounts and 4 guest seats a year (Nov 2026)
+
+- Any paid member (own seat, book key, church seat or church leader) can link up to 2 teens (13–17), free. Parent adds them at access.html › Family (name, optional email, parent/guardian confirmation); the teen accepts at `family.html?code=…` with their own account and confirms age. Email invite is sent if an email is given; parents can also copy the link or text it from their phone.
+- Teens are Members (paid by "family"); access lasts while the parent's own paid access lasts. Parents see the teen's time, notes, reflections and challenges (`family_teen_view`). Teens can't add teens or give guest seats.
+- Guest seats: members with their own seat can give up to 4 in any 12 months (`guest_seats_left` counts seats used in the last year; a guest pass is created when a challenge is accepted).
+- Sign-up screen tells parents about teen accounts. Terms (new Section 7A) and Privacy Policy updated to version 2.
+- Migration 0034.

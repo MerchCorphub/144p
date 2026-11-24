@@ -92,6 +92,7 @@ html,body{width:100%;min-height:100%}
           <span style="flex:none;width:24px;height:24px;border-radius:6px;border:2px solid #075D61;background:{{ consentBg }};color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:15px"><i class="icon-check"></i></span>
           <span>I agree to the Terms and Conditions and the Privacy Policy. I am at least 13 years old (under 18 with a parent’s permission). My statement, deposits and notes stay private to me.</span>
         </button>
+        <div style="display:flex;gap:10px;align-items:flex-start;background:#EEF6F5;border:1px solid #CFE6E2;border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.45;color:#173344"><span style="flex:none;font-size:18px">👨‍👩‍👧</span><span><strong>Parents:</strong> a paid membership includes free accounts for up to 2 teens (ages 13 to 17), each with their own login. After you join, add them from More › Get the Study Book › Family. Children under 13 can’t have accounts.</span></div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:14px;padding:0 0 0 36px"><a href="terms.html" target="_blank" rel="noopener" style="color:#075D61;font-weight:600">Read the Terms</a><a href="privacy.html" target="_blank" rel="noopener" style="color:#075D61;font-weight:600">Read the Privacy Policy</a></div>
       </sc-if>
       <sc-if value="{{ isSignin }}" hint-placeholder-val="{{ false }}">
@@ -1528,7 +1529,7 @@ class Component extends DCLogic {
       ac, acOn, startLabel: fDate(u.start, FULL),
       ...(() => { const A = u.cloud && s.access, c = A && A.category;
         const fmt = d => { try { return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return d; } };
-        const by = { bought: 'You bought the study book', book_key: 'From your printed book', own_seat: 'Your own seat', church: 'Your church covers your seat', leader: 'As a church leader' };
+        const by = { bought: 'You bought the study book', book_key: 'From your printed book', own_seat: 'Your own seat', church: 'Your church covers your seat', leader: 'As a church leader', family: 'From your parent’s membership' };
         const money = n => '$' + Number(n).toFixed(Number(n) % 1 ? 2 : 0);
         if (!c) return { hasCategory: false };
         if (c === 'member') return { hasCategory: true, catLabel: 'Member', catBg: '#E3F3EC', catFg: '#0E7A55', catSub: by[A.paid_by] || '',
