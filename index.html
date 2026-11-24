@@ -661,6 +661,9 @@ html,body{width:100%;min-height:100%}
         <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Last name<input value="{{ ac.last }}" onChange="{{ acOn.last }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
       </div>
       <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Email address<input type="email" value="{{ ac.email }}" onChange="{{ acOn.email }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
+      <sc-if value="{{ isCloud }}" hint-placeholder-val="{{ false }}">
+      <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Mobile phone <span style="font-weight:400;color:#6A7A84">(optional)</span><input type="tel" value="{{ ac.phone }}" onChange="{{ acOn.phone }}" autocomplete="tel" placeholder="(404) 555-0123" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"><span style="font-weight:400;font-size:13px;color:#6A7A84;line-height:1.4">Lets friends who know your number challenge you in the app. Never shown to other members. We don’t send texts.</span></label>
+      </sc-if>
       <sc-if value="{{ notCloud }}" hint-placeholder-val="{{ false }}">
       <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Church <span style="font-weight:400;color:#6A7A84">(optional)</span><input value="{{ ac.church }}" onChange="{{ acOn.church }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
       <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Table <span style="font-weight:400;color:#6A7A84">(optional)</span><input value="{{ ac.table }}" onChange="{{ acOn.table }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
@@ -1057,6 +1060,7 @@ class Component extends DCLogic {
       const db = mergeCloud(JSON.parse(JSON.stringify(this.state.db)), data); persist(db); this.setState({ db });
       try { const a = await Cloud.rpc('my_access'); if (a) this.setState({ access: a }); } catch (e) {}
       try { const f = await Cloud.rpc('my_family'); if (f) this.setState({ family: f }); } catch (e) {}
+      try { const ph = await Cloud.rpc('my_phone'); this.setState({ phone: ph || '' }); } catch (e) {}
     } catch (e) {}
   }
   syncDiff(a, b) {
@@ -1406,8 +1410,8 @@ class Component extends DCLogic {
     const prefs = db.prefs[u.id] || { reminder: false, time: '07:00', tz: Intl.DateTimeFormat().resolvedOptions().timeZone };
     const setPrefs = patch => this.commit(x => { x.prefs[u.id] = { ...prefs, ...patch }; });
 
-    const ac = s.acct || { first: u.first, last: u.last, email: u.email, church: u.church, table: u.table };
-    const acOn = Object.fromEntries(['first', 'last', 'email', 'church', 'table'].map(k => [k, e => { const v = e.target.value; this.setState(st => ({ acct: { ...(st.acct || ac), [k]: v }, err: '' })); }]));
+    const ac = s.acct || { first: u.first, last: u.last, email: u.email, church: u.church, table: u.table, phone: s.phone || '' };
+    const acOn = Object.fromEntries(['first', 'last', 'email', 'church', 'table', 'phone'].map(k => [k, e => { const v = e.target.value; this.setState(st => ({ acct: { ...(st.acct || ac), [k]: v }, err: '' })); }]));
 
     return {
       ...base,
@@ -1586,6 +1590,12 @@ class Component extends DCLogic {
         if (db.partners.some(x => x.email === a.email && x.id !== u.id)) return this.fail('That email is already in use.');
         if (a.email !== u.email && u.pw) return this.fail('Changing your email needs a password re-check, which arrives with the hosted backend.');
         this.commit(x => { const pp = x.partners.find(y => y.id === u.id); Object.assign(pp, { first: a.first, last: a.last, email: a.email }, u.cloud ? {} : { church: (a.church || '').trim(), table: (a.table || '').trim() }); this.audit(x, 'account.updated', 'partner', u.id); });
+        const phoneNew = (ac.phone || '').trim(), phoneOld = (s.phone || '').trim();
+        if (u.cloud && window.Cloud && phoneNew !== phoneOld) {
+          Cloud.rpc('set_my_phone', { p_phone: phoneNew }).then(v => { this.setState({ phone: v || '', acct: null }); this.flash('Account updated.'); })
+            .catch(e => this.fail((e && e.message) || 'Could not save your phone number.'));
+          return;
+        }
         this.setState({ acct: null }); this.flash('Account updated.');
       },
       exportData: () => this.exportData(), deleteAccount: () => this.deleteAccount(),

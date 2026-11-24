@@ -9,7 +9,7 @@ This Privacy Policy explains how **Merch Corporation** ("we," "us" or "our") col
 
 ## 1. Information you give us
 
-- **Account details:** first and last name, email address, password (stored by our sign-in provider in protected, hashed form; we cannot see it), time zone and your giving plan.
+- **Account details:** first and last name, email address, password (stored by our sign-in provider in protected, hashed form; we cannot see it), time zone, your giving plan and, if you choose to add it, your mobile phone number.
 - **Church or group membership:** the church or group you ask to join, its code, your status (waiting, approved or removed), the group you are placed in, and any leader roles.
 - **Your time and reflections:** time you record ("deposits"), its category, date and time, timer activity, optional private notes, and weekly reflections.
 - **Challenges:** challenges you create or join and the people or groups involved.
@@ -51,6 +51,7 @@ Belonging to a church, taking part in a faith study or recording time spent in p
 - **Your church or group leaders** (admins, group leaders and our account managers assigned to that church) can see your name, email address, membership status, group, join date, recent activity, and participation used for group and church totals and challenges. **They cannot see your private notes or weekly reflections.**
 - **Challenge participants** can see your name and your totals for that challenge, and leaderboards may show names and totals.
 - **People you choose** to share with (where the app lets you share a summary) see only what you choose to share.
+- **Your phone number** is never shown to other members. A member who already knows your number can enter it to send you a challenge; we only tell them whether it reached a member, never who. We do not send text messages to it.
 - **Platform administrators** at Merch Corporation can see account, membership, purchase and invoice information to run the Service and help you.
 
 ## 6. How we share information
