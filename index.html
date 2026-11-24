@@ -684,6 +684,21 @@ html,body{width:100%;min-height:100%}
           <sc-if value="{{ catHasLink }}" hint-placeholder-val="{{ false }}"><a href="access.html" style="display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:12px;background:#123C56;color:#FFFFFF;font-size:15px;font-weight:600;text-decoration:none">{{ catLinkLabel }}</a></sc-if>
         </div>
       </sc-if>
+      <sc-if value="{{ hasSeason }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px"><div style="font-size:14px;font-weight:600;flex:1">Your season</div><span style="font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px;background:#E6F0FA;color:#1F4E8C">{{ seasonBadge }}</span></div>
+          <div style="font-size:17px;font-weight:700;color:#123C56">{{ seasonName }}</div>
+          <div style="font-size:14px;color:#4F5F68;line-height:1.45">{{ seasonText }}</div>
+          <sc-if value="{{ seasonCanPick }}" hint-placeholder-val="{{ false }}">
+            <div style="font-size:13px;font-weight:600;color:#4F5F68;margin-top:4px">Choose your season</div>
+            <sc-for list="{{ seasonOpts }}" as="o" hint-placeholder-count="2">
+              <button onClick="{{ o.pick }}" aria-pressed="{{ o.sel }}" style="display:flex;flex-direction:column;align-items:flex-start;text-align:left;gap:2px;padding:12px 14px;border-radius:12px;border:2px solid {{ o.border }};background:{{ o.bg }};color:#173344;cursor:pointer">
+                <span style="font-size:15px;font-weight:700">{{ o.name }}</span><span style="font-size:13px;color:#4F5F68">{{ o.sub }}</span>
+              </button>
+            </sc-for>
+          </sc-if>
+        </div>
+      </sc-if>
       <sc-if value="{{ hasFamily }}" hint-placeholder-val="{{ false }}">
         <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px">
           <div style="display:flex;align-items:center;gap:10px"><div style="font-size:14px;font-weight:600;flex:1">Family · teen accounts</div><span style="font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px;background:#EDE7F6;color:#4A2C82">{{ famBadge }}</span></div>
@@ -1071,6 +1086,7 @@ class Component extends DCLogic {
       try { const ph = await Cloud.rpc('my_phone'); this.setState({ phone: ph || '' }); } catch (e) {}
       try { if (localStorage.getItem('144p-news-optin') === '1') { await Cloud.rpc('set_my_news_email', { p_on: true }); localStorage.removeItem('144p-news-optin'); } } catch (e) {}
       try { const nw = await Cloud.rpc('my_news_email'); this.setState({ news: !!nw }); } catch (e) {}
+      try { const [ms, ls] = await Promise.all([Cloud.rpc('my_season'), Cloud.rpc('list_seasons')]); this.setState({ mySeason: ms, seasonList: ls || [] }); } catch (e) {}
     } catch (e) {}
   }
   syncDiff(a, b) {
@@ -1593,6 +1609,16 @@ class Component extends DCLogic {
           this.flash(r === 'pending' ? 'Request sent. Your church leader will approve you.' : 'You joined your church.'); }
         catch (e) { this.fail((e && e.message) || 'That church code wasn\u2019t found.'); }
       },
+      ...(() => { const M = u.cloud && s.mySeason, x = M && M.season; if (!x) return { hasSeason: false, seasonCanPick: false };
+        const fmt = d => new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+        const when = y => y.phase === 'live' ? 'Week ' + y.week + ' of 12' : y.phase === 'upcoming' ? 'Starts ' + fmt(y.start_date) : 'Finished';
+        const L = (s.seasonList || []), church = M.source === 'church';
+        const pick = id => async () => { try { const r = await Cloud.rpc('set_my_season', { p_season: id }); this.setState({ mySeason: r }); this.flash('Season updated. Your weekly chapters follow its dates.'); } catch (e) { this.fail((e && e.message) || 'Could not change your season.'); } };
+        const opts = [{ id: null, name: 'Default season', sub: 'Follow whichever season Time4God has set as the default' }].concat(L.filter(y => y.can_join || y.id === M.chosen_id).map(y => ({ id: y.id, name: y.name, sub: fmt(y.start_date) + ' – ' + fmt(y.end_date) + ' · ' + when(y) })));
+        return { hasSeason: true, seasonName: x.name, seasonBadge: when(x),
+          seasonText: fmt(x.start_date) + ' – ' + fmt(x.end_date) + '. Week 1 opens on the start date and a new chapter opens every 7 days. ' + (church ? 'You follow ' + (M.church || 'your church') + '’s season; your church admin chooses it.' : M.source === 'own' ? 'You chose this season.' : 'You’re following the default season.'),
+          seasonCanPick: !church && L.length > 1,
+          seasonOpts: opts.map(o => { const sel = (M.chosen_id || null) === o.id; return { ...o, sel, border: sel ? '#075D61' : '#E1E7EA', bg: sel ? '#F2FAF8' : '#FFFFFF', pick: pick(o.id) }; }) }; })(),
       newsOn: !!s.news, newsOnBg: s.news ? '#075D61' : '#FFFFFF',
       toggleNews: () => { if (!(u.cloud && window.Cloud)) return; const on = !s.news; this.setState({ news: on });
         Cloud.rpc('set_my_news_email', { p_on: on }).then(() => this.flash(on ? 'You’ll get news and offers by email.' : 'News and offers turned off.')).catch(e => { this.setState({ news: !on }); this.fail((e && e.message) || 'Could not save that.'); }); },
