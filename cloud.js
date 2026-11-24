@@ -20,7 +20,7 @@
   // ---------- auth ----------
   async function session() { const c = await sb(); return (await c.auth.getSession()).data.session; }
   async function signUp(email, password, meta) {
-    const c = await sb(); const d = ok(await c.auth.signUp({ email, password, options: { data: meta || {}, emailRedirectTo: location.href.split('?')[0] } }));
+    const c = await sb(); const d = ok(await c.auth.signUp({ email, password, options: { data: meta || {}, emailRedirectTo: location.origin + '/confirm.html' } }));
     return { user: d.user, session: d.session };
   }
   async function signIn(email, password) { const c = await sb(); return ok(await c.auth.signInWithPassword({ email, password })).session; }

@@ -143,3 +143,9 @@ Migrations 0029–0032. Edge functions: invoice-pdf (new), stripe-pay (mark_paid
 - Admin Panel › Bookstore: add books (title, subtitle, author, price shown, description, cover upload or link, up to 3 buy buttons such as Amazon and IngramSpark Share & Sell), featured/order/show; clicks per button (30 days / all time).
 - Members: `bookstore.html` (More › Bookstore, and a "Want a printed copy?" card on Get the Study Book). Buttons open the seller in a new tab; the seller takes the order, prints and ships.
 - Migration 0039 (`store_books`, `store_clicks`, public `covers` bucket, admin-only uploads).
+
+## Branded account emails (Nov 2026)
+
+- `confirm.html` handles links from Supabase Auth emails on time4god.app: `?token_hash=…&type=email|recovery|magiclink|email_change` → `verifyOtp`; recovery shows "Set a new password".
+- Templates to paste in Supabase › Authentication › Emails: `supabase/auth-email-templates/*.html` (they link to `{{ .SiteURL }}/confirm.html`, so no supabase.co link appears).
+- Sender: set Custom SMTP in Supabase › Authentication › Emails › SMTP (Resend: smtp.resend.com, port 465, user `resend`, password = a Resend API key), sender notifications@time4god.app, name "Time4God Challenge". Site URL: https://time4god.app.
