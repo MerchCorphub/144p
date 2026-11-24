@@ -614,9 +614,9 @@ table.mini td{padding:3px 12px 3px 0}
       </tbody></table>` : '<p class="empty">No payments yet.</p>'}</div>`; };
 
   // ---------- all members by category (admin) ----------
-  const CAT = { member: ['Member', 'ok', 'Paid: bought the study book, has a church seat, or used a printed-book key'], guest: ['Guest', 'wait', 'Temporary seat from a Member’s Time4God Challenge'], trial: ['Trial', 'wait', 'Free trial pass'], prospect: ['Prospect', 'off', 'Free account, not paid'] };
+  const CAT = { member: ['Member', 'ok', 'Paid: bought the study book, has a church seat, used a printed-book key, or is a teen on a parent’s membership'], guest: ['Guest', 'wait', 'Temporary seat from a Member’s Time4God Challenge'], trial: ['Trial', 'wait', 'Free trial pass'], prospect: ['Prospect', 'off', 'Free account, not paid'] };
   const catPill = c => CAT[c] ? `<span class="pill ${CAT[c][1]}">${CAT[c][0]}</span>` : '';
-  const PAIDBY = { bought: 'Bought the study book', book_key: 'Printed-book key', own_seat: 'Own seat', church: 'Church seat', leader: 'Church leader' };
+  const PAIDBY = { bought: 'Bought the study book', book_key: 'Printed-book key', own_seat: 'Own seat', church: 'Church seat', leader: 'Church leader' , family: 'Teen on a parent’s membership' };
   VIEWS.members = () => { const all = st.all || [], q = (st.amQ || '').trim().toLowerCase(), f = st.amF || 'all';
     const L = all.filter(m => (f === 'all' || m.category === f) && (!q || (m.name + ' ' + m.email + ' ' + (m.church || '')).toLowerCase().includes(q)));
     const n = c => all.filter(m => m.category === c).length;

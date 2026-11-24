@@ -104,6 +104,7 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
 .status.no{background:#FFF8E6;color:#6B4E12;border:1px solid #F1D8A0}
 .opt{margin-top:14px}
 .opt h3{margin:0 0 4px;font-size:17px;color:#0B2257}
+.req{border:1px solid #E6DFCC;border-radius:12px;padding:12px;margin-top:10px;font-size:15px}
 </style>
 </head>
 <body>
@@ -120,7 +121,7 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
   const money = n => n == null ? '' : '$' + Number(n).toFixed(Number(n) % 1 ? 2 : 0);
   const fDate = d => new Date(d).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   const errMsg = e => (e && (e.message || e.error_description)) || 'Something went wrong. Please try again.';
-  const st = { price: null, me: null, acc: null, msg: '', err: '', busy: false, trial: null, trialCode: null };
+  const st = { price: null, me: null, acc: null, fam: null, msg: '', err: '', busy: false, trial: null, trialCode: null, invite: null, view: null, viewing: null };
   const TRIAL_KEY = '144p-trial', AFTER_KEY = '144p-after-auth';
   // A trial invitation link: access.html?trial=CODE (kept on this device until they sign in)
   try { const q = new URLSearchParams(location.search).get('trial'); if (q) localStorage.setItem(TRIAL_KEY, q.trim().toUpperCase()); st.trialCode = localStorage.getItem(TRIAL_KEY); } catch (e) {}
@@ -129,15 +130,51 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
   // ‹ Back: one step back. Inside this page it steps back a view; otherwise it returns to where you came from in the app.
   function toApp() { try { if (document.referrer && new URL(document.referrer).origin === location.origin && history.length > 1) return history.back(); } catch (e) {} location.href = './'; }
   document.getElementById('backApp').onclick = e => { e.preventDefault(); toApp(); };
+  // ---------- Family: up to 2 teens (13–17) on a paid membership ----------
+  function familyCard() {
+    const f = st.fam; if (!f) return '';
+    if (f.parent) return `<div class="card" id="family"><strong>Your family</strong><p class="sub" style="margin:6px 0 0">Your account is linked to ${esc(f.parent.name)}.${f.parent.covered ? '' : ' Their membership isn’t active right now, so the study book is closed until they renew.'}</p>
+      <button class="btn alt" type="button" id="leaveFam">Leave this family</button></div>`;
+    if (!f.can_add && !(f.teens || []).length) return '';
+    const T = f.teens || [], room = f.max - T.length;
+    return `<div class="card" id="family"><strong>Family · free teen accounts</strong>
+      <p class="sub" style="margin:6px 0 0">Add up to ${f.max} teens (ages 13 to 17). Each gets their own login and the full study book free while your membership lasts. You can see their time, challenges, notes and reflections.</p>
+      ${T.map(t => `<div class="req" style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><div><strong>${esc(t.name)}</strong> ${t.status === 'active' ? '<span class="pill">Linked</span>' : '<span class="pill wait">Invited</span>'}<br>
+          <span class="sub" style="font-size:13px">${t.status === 'active' ? esc(t.email || '') : `Family code <strong>${esc(t.code)}</strong>${t.email ? ' · emailed to ' + esc(t.email) : ''}`}</span></div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">${t.status === 'active' ? `<button class="btn alt" style="width:auto;min-height:40px;margin:0;font-size:14px" type="button" data-view="${t.id}">See activity</button>`
+            : `<button class="btn alt" style="width:auto;min-height:40px;margin:0;font-size:14px" type="button" data-copy="${esc(t.code)}">Copy link</button><a class="btn alt" style="width:auto;min-height:40px;margin:0;font-size:14px" href="${smsHref(t)}">Text it</a>`}
+          <button class="btn danger" style="width:auto;min-height:40px;margin:0;font-size:14px" type="button" data-rm="${t.id}" data-nm="${esc(t.name)}">Remove</button></div></div>
+        ${st.viewing === t.id ? teenView() : ''}`).join('')}
+      ${room > 0 && f.can_add ? (st.invite ? `<form id="famF" class="req" style="margin-top:10px"><strong>Add a teen</strong>
+          <label for="fn">Teen’s first name</label><input id="fn" type="text" maxlength="40" required>
+          <label for="fe">Teen’s own email <span style="font-weight:400;color:#4F5F68">(optional; or text them the link)</span></label><input id="fe" type="email" autocomplete="off">
+          <label class="choice"><input type="checkbox" id="fok"><div><strong>I am this teen’s parent or legal guardian, and they are 13 to 17.</strong><span>Children under 13 can’t have accounts.</span></div></label>
+          <div class="two"><button class="btn teal" type="submit" ${st.busy ? 'disabled' : ''}>Add teen</button><button class="btn alt" type="button" id="famX">Cancel</button></div></form>`
+        : `<button class="btn teal" type="button" id="famAdd">Add a teen (${room} of ${f.max} left)</button>`) : ''}
+      ${!f.can_add && T.length ? '<p class="sub" style="font-size:13px;margin-top:8px">Your membership isn’t active, so linked teens can’t read right now.</p>' : ''}</div>`;
+  }
+  const famUrl = code => 'https://time4god.app/family.html?code=' + code;
+  const smsHref = t => 'sms:?&body=' + encodeURIComponent(`${t.name}, I added you to my Time4God Challenge membership. You get the study book free. Open this link, create your account, and accept: ${famUrl(t.code)}`);
+  function teenView() {
+    const v = st.view; if (!v) return '<p class="sub">Loading…</p>';
+    const hm = m => (m >= 60 ? Math.floor(m / 60) + ' h ' : '') + (m % 60) + ' min';
+    return `<div class="req" style="background:#FBF8F1"><div style="display:flex;gap:16px;flex-wrap:wrap"><div><span class="price" style="font-size:26px">${esc(hm(v.week_minutes))}</span><br><span class="per">this week</span></div><div><span class="price" style="font-size:26px">${esc(hm(v.season_minutes))}</span><br><span class="per">this season</span></div></div>
+      <h3 style="font-size:15px;margin:14px 0 4px">Recent time and notes</h3>${(v.deposits || []).length ? `<ul style="margin:0;padding-left:18px;font-size:14px;line-height:1.5">${v.deposits.slice(0, 20).map(d => `<li>${esc(fDate(d.activity_date + 'T12:00:00'))} · ${esc(String(d.category).replace(/_/g, ' '))} · ${d.minutes} min${d.note ? `<br><em>“${esc(d.note)}”</em>` : ''}</li>`).join('')}</ul>` : '<p class="sub" style="font-size:14px">No time recorded yet.</p>'}
+      <h3 style="font-size:15px;margin:14px 0 4px">Weekly reflections</h3>${(v.reflections || []).length ? v.reflections.map(r => `<p style="font-size:14px;margin:6px 0"><strong>Week of ${esc(fDate(r.week + 'T12:00:00'))}</strong>${r.meaningful ? '<br>Most meaningful: ' + esc(r.meaningful) : ''}${r.next ? '<br>Next week: ' + esc(r.next) : ''}</p>`).join('') : '<p class="sub" style="font-size:14px">No reflections yet.</p>'}
+      <h3 style="font-size:15px;margin:14px 0 4px">Challenges</h3>${(v.challenges || []).length ? `<ul style="margin:0;padding-left:18px;font-size:14px">${v.challenges.map(c => `<li>${esc(c.a || '')} vs ${esc(c.b || '…')} · ${esc(c.status)}</li>`).join('')}</ul>` : '<p class="sub" style="font-size:14px">None yet.</p>'}</div>`;
+  }
+
   function render() {
     $('signOut').hidden = !st.me;
     const p = st.price || {}, a = st.acc;
-    const covered = a && (a.church_covers || a.seat || a.admin);
+    const fam = st.fam || {}, famCovered = !!(fam.parent && fam.parent.covered);
+    const covered = a && (a.church_covers || a.seat || a.admin || famCovered);
     const guest = a && !covered && a.guest_active, keep = a && !covered && a.keep_going_price != null;
     const trial = a && !covered && !guest && a.trial_active, trialOver = a && !covered && !guest && !a.trial_active && a.trial_until;
     let status = '';
     if (st.me && a) {
       if (a.admin) status = `<div class="status yes"><strong>You have full access</strong> as the platform admin.</div>`;
+      else if (famCovered && !a.seat && !a.church_covers) status = `<div class="status yes"><strong>${esc(fam.parent.name)}’s membership covers your study book.</strong> Nothing to pay. Your parent or guardian can see the time you record, your challenges, and your notes and reflections.</div>`;
       else if (a.seat) status = `<div class="status yes"><strong>You have the study book.</strong>${a.seat_expires ? ` Your access runs through ${esc(fDate(a.seat_expires))}.` : ''}</div>`;
       else if (guest) status = `<div class="status yes"><strong>${a.guest_from ? esc(a.guest_from) + ' gave you a seat.' : 'You have a guest seat.'}</strong> The full study book is yours through ${esc(fDate(a.guest_until + 'T12:00:00'))}, the last day of your challenge.</div>`;
       else if (trial) status = `<div class="status yes"><strong>Your free trial is on.</strong> The full study book is yours through ${esc(fDate(a.trial_until + 'T12:00:00'))}. Join for ${esc(money(p.individual))} any time to keep reading for a full year.</div>`;
@@ -159,7 +196,7 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
         <ul class="ticks"><li>Log the time you give to God each day</li><li>Daily reminders and your streak</li><li>Take part in the Time4God Challenge</li></ul></div>
       <div class="card"><strong>The study book in the app</strong>
         <div style="display:flex;align-items:baseline;gap:8px;margin-top:10px"><span class="price">${esc(money(p.individual))}</span><span class="per">one payment · one year · tax included</span></div>
-        <ul class="ticks"><li><em>What Will You Give Today?</em>, one chapter each week for 12 weeks</li><li>Weekly journal pages and checkpoints</li><li>Listen to any chapter read aloud</li><li><strong>A seat to give.</strong> The first person who accepts your Time4God Challenge gets the study book free for that challenge</li></ul></div>`;
+        <ul class="ticks"><li><em>What Will You Give Today?</em>, one chapter each week for 12 weeks</li><li>Weekly journal pages and checkpoints</li><li>Listen to any chapter read aloud</li><li><strong>Up to ${esc(String((st.fam && st.fam.guest_max) || 4))} guest seats a year.</strong> When someone accepts your Time4God Challenge, they get the study book free for that challenge</li><li><strong>Free teen accounts.</strong> Parents can add up to 2 teens (ages 13 to 17) with their own login, at no extra cost</li></ul></div>`;
     if (!st.me) {
       html += `<button class="btn teal" type="button" data-auth="register">Create your free account</button><button class="btn alt" type="button" data-auth="signin">Sign in</button>
         <p class="sub" style="margin-top:12px">After you sign in, come back here to get the study book.</p>`;
@@ -172,11 +209,14 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
       html += `<div class="card opt"><h3>${trial || trialOver ? 'Join' : 'Buy it for yourself'} · ${esc(money(p.individual))}</h3><p class="sub" style="margin:0 0 4px">Pay securely with card, Apple Pay or Google Pay. All sales are final. By buying you agree to the <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</p>
           <button class="btn teal" id="buy" type="button" ${st.busy ? 'disabled' : ''}>${st.busy ? 'Opening secure checkout…' : 'Get the study book · ' + esc(money(p.individual))}</button></div>
         <div class="card opt"><h3>Have the printed book?</h3><p class="sub" style="margin:0">Your copy includes the app edition and a seat to give. Use the book key printed inside.</p><a class="btn alt" href="redeem.html">Enter my book key</a></div>
+        ${st.fam && st.fam.parent ? familyCard() : ''}
         <div class="card opt"><h3>Is your church taking part?</h3><p class="sub" style="margin:0">If your church bought seats, the study book is included once you’re approved. Enter your church code in My Account.</p><a class="btn alt" href="./">Join my church</a></div>`;
     } else {
       html += `<a class="btn teal" href="read.html">Open the study book</a>`;
-      if (a && a.guest_seats_left > 0) html += `<div class="card"><strong>You have a seat to give</strong><p class="sub" style="margin:6px 0 0">Challenge a friend to the Time4God Challenge. The first person who accepts gets the study book free for that challenge.</p><a class="btn alt" href="challenges.html">Challenge someone</a></div>`;
-      else if (a && a.seat && a.guest_seat_given_to) html += `<p class="sub" style="margin-top:12px">You gave your guest seat to ${esc(a.guest_seat_given_to)}.</p>`;
+      const gmax = fam.guest_max || 4;
+      if (a && a.guest_seats_left > 0) html += `<div class="card"><strong>${a.guest_seats_left} of ${gmax} guest seats left this year</strong><p class="sub" style="margin:6px 0 0">Challenge a friend to the Time4God Challenge. When they accept, they get the study book free for that challenge. You can give up to ${gmax} guest seats in any 12 months.</p><a class="btn alt" href="challenges.html">Challenge someone</a></div>`;
+      else if (a && a.seat) html += `<p class="sub" style="margin-top:12px">You’ve given all ${gmax} guest seats for the last 12 months${a.guest_seat_given_to ? ` (most recently to ${esc(a.guest_seat_given_to)})` : ''}. A seat frees up 12 months after each one was used.</p>`;
+      html += familyCard();
     }
     html += `<div class="card"><strong>Do you lead a church or a group?</strong><p class="sub" style="margin:6px 0 0">Register your church or group, get a join code for your members, and buy study book seats for everyone${p.church_top_rate != null ? ` (${esc(money(p.church_top_rate))} a seat, less for larger churches)` : ''}.</p>
       <div class="two" style="margin-top:12px"><a class="btn alt" href="church-signup.html" style="margin-top:0">Church leaders</a><a class="btn alt" href="leaders.html?as=group" style="margin-top:0">Group leaders</a></div></div>`;
@@ -184,6 +224,22 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
     $app.innerHTML = html;
     // Sign-in buttons come back here afterwards (and keep the trial invitation)
     $app.querySelectorAll('[data-auth]').forEach(b => b.onclick = () => { try { localStorage.setItem(AFTER_KEY, 'access.html'); } catch (e) {} location.href = './?start=' + b.dataset.auth; });
+    if ($('famAdd')) $('famAdd').onclick = () => { st.invite = true; render(); $('fn').focus(); };
+    if ($('famX')) $('famX').onclick = () => { st.invite = null; render(); };
+    if ($('famF')) $('famF').onsubmit = async e => { e.preventDefault(); const a = { p_name: $('fn').value, p_email: $('fe').value, p_parent_ok: $('fok').checked };
+      if (!a.p_parent_ok) { st.err = 'Please confirm you are this teen’s parent or legal guardian and that they are 13 to 17.'; render(); $('fn').value = a.p_name; $('fe').value = a.p_email; $('family').scrollIntoView(); return; }
+      st.err = st.msg = ''; st.busy = true; render();
+      try { await Cloud.rpc('family_invite', a); st.invite = null; st.fam = await Cloud.rpc('my_family');
+        st.msg = a.p_email.trim() ? `We emailed ${a.p_name} an invitation. You can also text them the link.` : `${a.p_name} is added. Text them the link, or copy it and send it another way.`; }
+      catch (x) { st.err = errMsg(x); }
+      st.busy = false; render(); if (st.err && $('fn')) { $('fn').value = a.p_name; $('fe').value = a.p_email; $('fok').checked = a.p_parent_ok; } };
+    $app.querySelectorAll('[data-copy]').forEach(b => b.onclick = async () => { try { await navigator.clipboard.writeText(famUrl(b.dataset.copy)); b.textContent = 'Copied'; } catch (x) { prompt('Copy this link:', famUrl(b.dataset.copy)); } });
+    $app.querySelectorAll('[data-rm]').forEach(b => b.onclick = async () => { if (!confirm(`Remove ${b.dataset.nm} from your family? They’ll lose the study book that comes from your membership.`)) return;
+      try { await Cloud.rpc('family_remove', { p_id: b.dataset.rm }); st.fam = await Cloud.rpc('my_family'); st.viewing = null; st.msg = `${b.dataset.nm} was removed.`; } catch (x) { st.err = errMsg(x); } render(); });
+    $app.querySelectorAll('[data-view]').forEach(b => b.onclick = async () => { if (st.viewing === b.dataset.view) { st.viewing = null; return render(); }
+      st.viewing = b.dataset.view; st.view = null; render(); try { st.view = await Cloud.rpc('family_teen_view', { p_link: b.dataset.view }); } catch (x) { st.err = errMsg(x); st.viewing = null; } render(); });
+    if ($('leaveFam')) $('leaveFam').onclick = async () => { if (!confirm('Leave this family? Your study book from your parent’s membership will close.')) return;
+      try { await Cloud.rpc('family_remove', { p_id: st.fam.parent.id }); st.fam = await Cloud.rpc('my_family'); st.acc = await Cloud.rpc('my_access'); } catch (x) { st.err = errMsg(x); } render(); };
     if ($('keep')) $('keep').onclick = async () => { st.err = ''; st.busy = true; render(); try { await Cloud.checkout('keep_going'); } catch (e) { st.busy = false; st.err = errMsg(e); render(); } };
     if ($('buy')) $('buy').onclick = async () => { st.err = ''; st.busy = true; render(); try { await Cloud.checkout('individual'); } catch (e) { st.busy = false; st.err = errMsg(e); render(); } };
   }
@@ -206,8 +262,10 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
         st.trialCode = null; st.trial = null;
       }
       try { st.acc = await Cloud.rpc('my_access'); } catch (e) {}
+      try { st.fam = await Cloud.rpc('my_family'); } catch (e) {}
     }
     render();
+    if (location.hash === '#family' && $('family')) $('family').scrollIntoView();
   }
   $('signOut').onclick = async () => { await Cloud.signOut(); st.me = null; st.acc = null; render(); };
   load().catch(e => { st.err = errMsg(e); render(); });

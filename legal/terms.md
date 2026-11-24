@@ -24,7 +24,7 @@ The Service is an encouragement and study tool. It is not a church, a ministry l
 ## 2. Who may use the Service
 
 - You must be **at least 13 years old** to create an account. Children under 13 may not create accounts or give us personal information.
-- If you are 13 to 17 (or under the age of majority where you live), you may use the Service only with the permission and supervision of a parent or legal guardian, who agrees to these Terms for you and is responsible for your use.
+- If you are 13 to 17 (or under the age of majority where you live), you may use the Service only with the permission and supervision of a parent or legal guardian, who agrees to these Terms for you and is responsible for your use. A parent may also link your account to theirs as a family teen account (Section 7A).
 - If you register or manage a church, group or other organization, you confirm that you are authorized to act for it and to accept these Terms on its behalf. In that case "you" also means the organization.
 - You may not use the Service if we have previously removed you from it, or if the law prohibits it.
 
@@ -40,7 +40,7 @@ The Service is an encouragement and study tool. It is not a church, a ministry l
 The Service shows one of these labels on each account. Features and access depend on the label.
 
 - **Prospect:** a free account that has not bought or received a seat. Prospects can look around and read free sample content.
-- **Member:** an account with an active paid seat (bought personally, provided by an approved church or group, or claimed with a book key).
+- **Member:** an account with an active paid seat (bought personally, provided by an approved church or group, claimed with a book key, or provided through a parent's membership as a family teen account).
 - **Guest:** an account using a guest seat that a Member gave them (Section 7).
 - **Trial:** an account using a free trial pass we sent (Section 8).
 
@@ -62,9 +62,17 @@ We may change what each label includes. We will not take away paid access you al
 
 ## 7. Guest seats ("give one")
 
-- Each eligible purchase, and each eligible book-key claim, may include one guest seat that the buyer can give to one other person.
+- A Member with their own seat (bought personally or claimed with a book key) may give **up to 4 guest seats in any 12-month period**, counted from the date each guest seat is used. Church seats and family teen accounts do not include guest seats.
 - A guest seat gives the full book for the time stated when it is given. **A guest cannot give guest seats.** Guests may buy their own seat, including any keep-going price offered.
 - Guest seats have no cash value, cannot be sold or traded, and are not replaced if unused, lost or given to the wrong person. We may limit, change or end guest seats at any time, and may cancel guest seats obtained by fraud or abuse.
+
+## 7A. Family teen accounts
+
+- A Member with paid access (their own seat, a book key, a church seat or a church leader role) may link **up to 2 teens, ages 13 to 17**, at no extra cost. Each teen has their own login.
+- The parent confirms they are the teen's parent or legal guardian and that the teen is 13 to 17. The teen confirms their age and their parent's permission when accepting. Children under 13 may not have accounts.
+- A family teen account has access only while the parent's paid access is active. It ends if the parent's access ends, if the parent removes the teen, or if the teen leaves the family. No refund or credit applies.
+- **The linked parent can see the teen's recorded time, challenges, notes and weekly reflections.** The parent is responsible for the teen's use of the Service. Teens cannot add other teens and do not receive guest seats.
+- We may limit, change or end family teen accounts, and may remove links we believe are not between a parent or guardian and their teen.
 
 ## 8. Trial passes
 

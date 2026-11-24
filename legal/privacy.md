@@ -5,7 +5,7 @@ Effective date: {{effective_date}}
 
 This Privacy Policy explains how **Merch Corporation** ("we," "us" or "our") collects, uses, shares and protects personal information when you use the Time4God Challenge app, The 144(P) Plan, time4god.app and related services (the "Service"). It is part of our [Terms and Conditions](terms.html).
 
-**The short version:** we collect what we need to run the Service. We do not sell your personal information, we do not show ads, and we do not share your information with advertisers. Your private notes and weekly reflections are never shown to anyone else, including your church or group leaders.
+**The short version:** we collect what we need to run the Service. We do not sell your personal information, we do not show ads, and we do not share your information with advertisers. Your private notes and weekly reflections are never shown to anyone else, including your church or group leaders. The one exception: on a family teen account, the linked parent or guardian can see them.
 
 ## 1. Information you give us
 
@@ -17,7 +17,8 @@ This Privacy Policy explains how **Merch Corporation** ("we," "us" or "our") col
 - **Purchases:** what you bought, amount, date, seats and status. **Card details are collected and processed by Stripe; we never receive your full card number.**
 - **Church and group registration and billing:** organization name, street address, city, state, ZIP, phone, website, billing contact name and billing email, and the requester's role and notes.
 - **Book keys:** the key you enter and the answer to the book check question.
-- **Invitations:** when you or an administrator invite someone (for example, a guest seat or trial pass), the name, email address and note entered for that person.
+- **Invitations:** when you or an administrator invite someone (for example, a guest seat, trial pass or family teen account), the name, email address and note entered for that person.
+- **Family links:** which parent account a teen account is linked to, and when it was linked.
 - **Support:** what you tell us when you contact us.
 
 ## 2. Information collected automatically
@@ -46,6 +47,7 @@ Belonging to a church, taking part in a faith study or recording time spent in p
 
 ## 5. Who can see your information in the Service
 
+- **A linked parent or guardian** can see a family teen account's recorded time, challenges, notes and weekly reflections. The teen is told this before accepting.
 - **Your church or group leaders** (admins, group leaders and our account managers assigned to that church) can see your name, email address, membership status, group, join date, recent activity, and participation used for group and church totals and challenges. **They cannot see your private notes or weekly reflections.**
 - **Challenge participants** can see your name and your totals for that challenge, and leaderboards may show names and totals.
 - **People you choose** to share with (where the app lets you share a summary) see only what you choose to share.
@@ -93,7 +95,7 @@ Church and group records (such as invoices and seat history) belong to the organ
 
 ## 10. Children
 
-The Service is not for children under 13, and we do not knowingly collect personal information from them. Teens 13 to 17 may use the Service only with a parent's or guardian's permission. If you believe a child under 13 has given us information, email {{support_email}} and we will delete it.
+The Service is not for children under 13, and we do not knowingly collect personal information from them. Teens 13 to 17 may use the Service only with a parent's or guardian's permission. A parent may link up to 2 teens to their membership; the parent can then see the teen's recorded time, challenges, notes and reflections, and may remove the link at any time. If you believe a child under 13 has given us information, email {{support_email}} and we will delete it.
 
 ## 11. Security
 
