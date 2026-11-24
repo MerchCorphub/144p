@@ -673,6 +673,14 @@ html,body{width:100%;min-height:100%}
           <sc-if value="{{ catHasLink }}" hint-placeholder-val="{{ false }}"><a href="access.html" style="display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:12px;background:#123C56;color:#FFFFFF;font-size:15px;font-weight:600;text-decoration:none">{{ catLinkLabel }}</a></sc-if>
         </div>
       </sc-if>
+      <sc-if value="{{ hasFamily }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:8px">
+          <div style="display:flex;align-items:center;gap:10px"><div style="font-size:14px;font-weight:600;flex:1">Family · teen accounts</div><span style="font-size:13px;font-weight:700;padding:3px 10px;border-radius:999px;background:#EDE7F6;color:#4A2C82">{{ famBadge }}</span></div>
+          <div style="font-size:14px;color:#4F5F68;line-height:1.45">{{ famText }}</div>
+          <sc-if value="{{ famHasNames }}" hint-placeholder-val="{{ false }}"><div style="font-size:14px;color:#173344;line-height:1.5">{{ famNames }}</div></sc-if>
+          <a href="access.html#family" style="display:flex;align-items:center;justify-content:center;min-height:46px;border-radius:12px;background:#123C56;color:#FFFFFF;font-size:15px;font-weight:600;text-decoration:none">{{ famBtn }}</a>
+        </div>
+      </sc-if>
       <sc-if value="{{ isCloud }}" hint-placeholder-val="{{ false }}">
         <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
           <div style="font-size:14px;font-weight:600">Church</div>
@@ -1048,6 +1056,7 @@ class Component extends DCLogic {
       await Cloud.flush(); const data = await Cloud.pullPartner(); if (!data) return;
       const db = mergeCloud(JSON.parse(JSON.stringify(this.state.db)), data); persist(db); this.setState({ db });
       try { const a = await Cloud.rpc('my_access'); if (a) this.setState({ access: a }); } catch (e) {}
+      try { const f = await Cloud.rpc('my_family'); if (f) this.setState({ family: f }); } catch (e) {}
     } catch (e) {}
   }
   syncDiff(a, b) {
@@ -1527,6 +1536,16 @@ class Component extends DCLogic {
       openAccount: () => this.go('account', { acct: null }), signOut: () => this.signOut(),
 
       ac, acOn, startLabel: fDate(u.start, FULL),
+      ...(() => { const F = u.cloud && s.family; if (!F) return { hasFamily: false, famHasNames: false };
+        const T = F.teens || [];
+        if (F.parent) return { hasFamily: true, famBadge: 'Teen account', famHasNames: false, famBtn: 'See my family',
+          famText: 'Your account is linked to ' + F.parent.name + '. ' + (F.parent.covered ? 'Their membership covers your study book. They can see the time you record, your challenges, and your notes and reflections.' : 'Their membership isn’t active right now, so the study book is closed until they renew.') };
+        if (!F.can_add && !T.length) return { hasFamily: false, famHasNames: false };
+        const left = Math.max(0, (F.max || 2) - T.length);
+        return { hasFamily: true, famBadge: T.length + ' of ' + (F.max || 2) + ' added', famHasNames: T.length > 0,
+          famNames: T.map(t => t.name + (t.status === 'invited' ? ' (invited)' : ' ✓')).join(' · '),
+          famText: F.can_add ? 'Your membership includes free accounts for up to ' + (F.max || 2) + ' teens (ages 13 to 17). Each gets their own login and the full study book. You can see their time, challenges, notes and reflections.' : 'Your membership isn’t active, so your linked teens can’t read right now.',
+          famBtn: T.length ? (left && F.can_add ? 'Manage teens or add another' : 'Manage teen accounts') : 'Add a teen account' }; })(),
       ...(() => { const A = u.cloud && s.access, c = A && A.category;
         const fmt = d => { try { return new Date(d + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return d; } };
         const by = { bought: 'You bought the study book', book_key: 'From your printed book', own_seat: 'Your own seat', church: 'Your church covers your seat', leader: 'As a church leader', family: 'From your parent’s membership' };
