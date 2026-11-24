@@ -117,3 +117,10 @@ Migrations 0029–0032. Edge functions: invoice-pdf (new), stripe-pay (mark_paid
 - Guest seats: members with their own seat can give up to 4 in any 12 months (`guest_seats_left` counts seats used in the last year; a guest pass is created when a challenge is accepted).
 - Sign-up screen tells parents about teen accounts. Terms (new Section 7A) and Privacy Policy updated to version 2.
 - Migration 0034.
+
+## Challenge a member by phone (Nov 2026)
+
+- Members may add an optional mobile number in My Account (`set_my_phone`, stored as `partners.phone` / `phone_norm`). Never shown to others; the app doesn't send texts.
+- Challenge someone › A person › "To a member, by phone number": `challenge_member_by_phone` creates a person challenge addressed to that member only (`challenges.target_partner_id`), emails them, and shows it at the top of their Challenges page ("X challenged you"). Only the addressed member can accept. Members who already have the book accept without a guest seat.
+- No match (or a number shared by several members): the sender gets "Text the link" with the number filled in. 20 lookups a day per member. Privacy Policy v3.
+- Migration 0036. Also fixed: the custom date pickers showed even when "The full 12 weeks" was chosen.
