@@ -142,7 +142,7 @@ table.mini td{padding:3px 12px 3px 0}
 
   // ---------- tabs ----------
   const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'],
-    ...(st.admin ? [['dash', 'Dashboard'], ['members', 'All members'], ['nochurch', 'No church'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['settings', 'Settings'], ...(st.owner ? [['roles', 'Roles']] : [])]
+    ...(st.admin ? [['dash', 'Dashboard'], ['members', 'All members'], ['nochurch', 'No church'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['news', 'Announcements'], ['settings', 'Settings'], ...(st.owner ? [['roles', 'Roles']] : [])]
       : st.am ? [['amdash', 'My churches'], ['churches', 'Churches'], ['licenses', 'Licenses']] : [])];
   function renderNav() {
     $('nav').hidden = false;
@@ -910,6 +910,34 @@ ${trialForm()}
     $('sTest').onclick = () => run(async () => { const n = await Cloud.rpc('admin_send_test_email'); flash(`Test email sent to ${n} address${n === 1 ? '' : 'es'}. It should arrive within a minute or two.`); });
   };
 
+  // ---------- announcements: news and offers by email, opt-in only ----------
+  VIEWS.news = () => { const A = st.news; if (!A) return '<h2>Announcements</h2><p class="sub">Loading…</p>';
+    const D = st.newsDraft || {};
+    return `<h2>Announcements</h2><p class="sub">Email news and offers to members who asked for them. Each email includes a one-click Unsubscribe link and your mailing address, as the law requires. Phone numbers are never used for this.</p>
+    <div class="tiles">${tile('Opted in', String(A.opted_in), `of ${A.accounts} accounts`)}${tile('Sent', String((A.sent || []).filter(x => !x.test).length), 'announcements')}</div>
+    ${A.address ? '' : `<div class="card" style="border-color:#A33A2E;background:#FBEAE7"><strong>Add your mailing address first.</strong> Every announcement must show it. Go to Settings › What prints on invoices › Mailing address. <button class="btn alt sm" type="button" data-go="settings">Open Settings</button></div>`}
+    <form class="card" id="nwF"><strong>New announcement</strong>
+      <label for="nwS" style="font-weight:700;margin-top:10px;display:block">Subject</label><input id="nwS" type="text" maxlength="120" style="width:100%" value="${esc(D.subject || '')}" placeholder="Give the gift of time this Christmas">
+      <label for="nwB" style="font-weight:700;margin-top:12px;display:block">Message</label>
+      <p class="muted" style="margin:2px 0 6px">Plain text. Leave a blank line between paragraphs.</p>
+      <textarea id="nwB" rows="9" style="width:100%">${esc(D.body || '')}</textarea>
+      <div class="row" style="margin-top:12px;flex-wrap:wrap"><div class="grow"><label for="nwT" style="font-weight:700">Button label <span class="muted" style="font-weight:400">(optional)</span></label><input id="nwT" type="text" maxlength="40" style="width:100%" value="${esc(D.btn || '')}" placeholder="Get the study book"></div>
+        <div class="grow" style="min-width:260px"><label for="nwL" style="font-weight:700">Button link</label><input id="nwL" type="text" inputmode="url" style="width:100%" value="${esc(D.link || '')}" placeholder="https://time4god.app/access.html"></div></div>
+      <div class="row" style="margin-top:16px;flex-wrap:wrap"><button class="btn alt" type="button" id="nwTest">Send a test to me</button>
+        <button class="btn teal" type="submit" ${A.opted_in && A.address ? '' : 'disabled'}>Send to ${A.opted_in} member${A.opted_in === 1 ? '' : 's'}</button></div>
+      <p class="muted" style="margin-top:8px;font-size:13px">Send yourself a test first. Emails go out a few dozen a minute, so a large list takes a little while to finish.</p></form>
+    <div class="card tbl"><strong>Sent</strong>${(A.sent || []).length ? `<table><thead><tr><th>Subject</th><th>To</th><th>Sent</th></tr></thead><tbody>${A.sent.map(x => `<tr><td>${esc(x.subject)}${x.test ? ' <span class="pill wait">Test</span>' : ''}</td><td>${x.recipients}</td><td class="muted">${fDate(x.created_at)}</td></tr>`).join('')}</tbody></table>` : '<p class="empty">Nothing sent yet.</p>'}</div>`; };
+  BIND.news = () => {
+    const read = () => ({ subject: $('nwS').value, body: $('nwB').value, btn: $('nwT').value, link: $('nwL').value });
+    const send = test => { const d = read(); st.newsDraft = d;
+      if (!test && !confirm(`Send “${d.subject}” to ${st.news.opted_in} member${st.news.opted_in === 1 ? '' : 's'} now? This can’t be undone.`)) return;
+      run(async () => { const r = await Cloud.rpc('admin_send_announcement', { p_subject: d.subject, p_body: d.body, p_button_text: d.btn, p_button_link: d.link, p_test: test });
+        st.news = await Cloud.rpc('admin_announcements'); if (!test) st.newsDraft = null;
+        flash(test ? `Test sent to ${r.sent} admin address${r.sent === 1 ? '' : 'es'}. Check your inbox.` : `Sending to ${r.sent} member${r.sent === 1 ? '' : 's'}.`); }); };
+    if ($('nwF')) { $('nwF').onsubmit = e => { e.preventDefault(); send(false); }; $('nwTest').onclick = () => send(true); }
+    $app.querySelectorAll('[data-go]').forEach(b => b.onclick = async () => { st.tab = b.dataset.go; await loadTab(); });
+  };
+
   // ---------- book keys (app edition for print readers) ----------
   VIEWS.keys = () => { const ps = st.printStat || {}, K = st.keys;
     return `<h2>Book keys</h2><p class="sub">Print readers claim the app edition at <strong>time4god.app/redeem</strong> with the key printed in the book. Each reader gets a different check: a random page and a word on it, and they type the word that comes next. You can turn that question off for a key (for a promotion or a small group); then anyone with the key can claim it, up to its claim limit. One claim per account; it turns on a free 1-year app seat.</p>
@@ -1100,6 +1128,7 @@ ${trialForm()}
       if (st.tab === 'keys') { const [k, c, p, q] = await Promise.all([Cloud.rpc('admin_book_keys'), Cloud.rpc('admin_key_claims'), Cloud.rpc('admin_print_status'), Cloud.rpc('admin_key_questions')]); st.keys = k || []; st.claims = c || []; st.printStat = p; st.kq = q || []; }
       if (st.tab === 'dash') { const [d, fm] = await Promise.all([Cloud.rpc('admin_dashboard'), Cloud.rpc('admin_family_summary').catch(() => null)]); st.dash = d; st.fam = fm; }
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
+      if (st.tab === 'news') st.news = await Cloud.rpc('admin_announcements');
       if (st.tab === 'settings') { st.settings = await Cloud.rpc('admin_settings'); try { st.invSet = await Cloud.rpc('admin_invoice_settings'); } catch (e) { st.invSet = {}; } try { st.legal = { docs: await Cloud.rpc('admin_legal_docs') || [] }; } catch (e) { st.legal = { error: errMsg(e) }; } st.stripe = null; Cloud.pay({ action: 'stripe_mode' }).then(r => { st.stripe = r || {}; if (st.tab === 'settings') render(); }).catch(e => { st.stripe = { error: errMsg(e) }; if (st.tab === 'settings') render(); }); }
       if (st.tab === 'nochurch') { const [a, b] = await Promise.all([Cloud.rpc('admin_no_church'), Cloud.rpc('admin_pending_members')]); st.nc = a || []; st.pend = b || []; st.ncSel = new Set(); st.pSel = new Set(); }
       if (st.tab === 'members') { const [a, t, fm] = await Promise.all([Cloud.rpc('admin_all_members'), Cloud.rpc('admin_trials_v2'), Cloud.rpc('admin_family_summary').catch(() => null)]); st.all = a || []; st.trials = t || []; st.fam = fm; }

@@ -40,6 +40,7 @@ Belonging to a church, taking part in a faith study or recording time spent in p
 - to let churches and groups approve members, organize groups, send messages and run challenges;
 - to process purchases, seats, guest seats, trial passes, book keys, invoices and receipts;
 - to send service emails, reminders and push notifications you have turned on;
+- to send news and offers by email, **only if you opt in** (at sign-up or in My Account). Every such email has an Unsubscribe link. We never use your phone number for marketing and do not send marketing texts;
 - to provide support, answer questions and send important notices about the Service or these policies;
 - to prevent fraud and misuse, protect the Service and enforce our Terms;
 - to understand, fix and improve the Service using our own records and summaries that do not identify you;
@@ -91,6 +92,7 @@ Church and group records (such as invoices and seat history) belong to the organ
 - **Deletion:** you can ask us to delete your account and personal information by emailing {{support_email}}.
 - **Leaving a church or group:** you may leave, or ask your leader to remove you, at any time.
 - **Notifications:** turn reminders and push notifications on or off in the app or your device settings. Service emails (such as receipts and security notices) continue while you have an account.
+- **News and offers:** off unless you turn it on. Turn it off any time in More › My Account or with the Unsubscribe link in any news email.
 - **State privacy rights:** depending on where you live (for example, California, Colorado, Connecticut, Virginia or other states with privacy laws), you may have rights to know, access, correct, delete or move your information, and to opt out of sale, sharing for targeted advertising, or profiling. We do not sell or share information for targeted advertising. To use your rights, email {{support_email}}. We will verify your request using your account email, and you may use an authorized agent where the law allows. We will not treat you differently for using your rights. If we deny your request, you may appeal by replying to our decision.
 - **Do Not Track:** we do not track you across other websites, so we do not change our practices in response to Do Not Track signals.
 
