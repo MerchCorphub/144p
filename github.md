@@ -130,3 +130,10 @@ Migrations 0029–0032. Edge functions: invoice-pdf (new), stripe-pay (mark_paid
 - Members opt in with "Email me news and offers" at sign-up (applied on first sync) or in My Account (`set_my_news_email`). Off by default.
 - Admin Panel › Announcements: subject, plain-text message, optional button; "Send a test to me" then "Send to N members" (`admin_send_announcement`). Every email carries a one-click unsubscribe link (`unsubscribe.html?t=…` → `news_unsubscribe`) and the mailing address from Settings; sending is blocked until the address is set.
 - Phone numbers are never used for marketing; no marketing texts. Privacy Policy v4. Migration 0037.
+
+## Several seasons (Nov 2026)
+
+- Admin Panel › Seasons: add any number of seasons (may overlap), edit, hide/show, and choose the **default**. Each row shows dates, status (Upcoming/Live week N/Finished), churches and people following it.
+- Churches/groups pick their season in the Leader Console (Approvals card, "Season your members follow"); members follow the church's season. People without a church pick in My Account › Your season; otherwise they follow the default.
+- `private.season_for(pid)` drives reading weeks, the book status, reminders, challenge default dates and the teen view. Seats/licenses stay one year from payment, so all 12 weeks stay open after a season ends.
+- Migration 0038 (`seasons.listed`, `churches.season_id`, `partners.season_id`).

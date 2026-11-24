@@ -142,7 +142,7 @@ table.mini td{padding:3px 12px 3px 0}
 
   // ---------- tabs ----------
   const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'],
-    ...(st.admin ? [['dash', 'Dashboard'], ['members', 'All members'], ['nochurch', 'No church'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Season'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['news', 'Announcements'], ['settings', 'Settings'], ...(st.owner ? [['roles', 'Roles']] : [])]
+    ...(st.admin ? [['dash', 'Dashboard'], ['members', 'All members'], ['nochurch', 'No church'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Seasons'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['news', 'Announcements'], ['settings', 'Settings'], ...(st.owner ? [['roles', 'Roles']] : [])]
       : st.am ? [['amdash', 'My churches'], ['churches', 'Churches'], ['licenses', 'Licenses']] : [])];
   function renderNav() {
     $('nav').hidden = false;
@@ -167,6 +167,7 @@ table.mini td{padding:3px 12px 3px 0}
     if (canName()) {
       try { st.invoices = (await Cloud.rpc('church_invoices', { cid: st.church.church_id })) || []; } catch (e) { st.invoices = []; }
       try { st.docs = (await Cloud.rpc('church_invoice_docs', { cid: st.church.church_id })) || []; } catch (e) { st.docs = []; }
+      try { const [ci, ls] = await Promise.all([Cloud.rpc('church_season_info', { cid: st.church.church_id }), Cloud.rpc('list_seasons')]); st.cseason = ci; st.seasonList = ls || []; } catch (e) { st.cseason = null; }
       // An invoice may have been paid since we last looked: ask Stripe, then reload once
       if (st.invoices.some(i => i.status === 'open') && !st.invoiceSynced) {
         st.invoiceSynced = true;
@@ -204,6 +205,7 @@ table.mini td{padding:3px 12px 3px 0}
         <div><label>Church code to share</label><span class="code">${esc(st.church.code)}</span></div>
       </div>
       <div style="margin-top:14px">${cap ? `<strong>${used} of ${cap}</strong> seats used · ${esc(s.plan_name || '')} license ${pill(s.license_status)}${s.expires_at ? ` <span class="muted">· good through ${fDate(s.expires_at)}</span>` : ''}<div class="seatbar" aria-hidden="true"><span style="width:${Math.min(100, Math.round(used / cap * 100))}%"></span></div>` : `<span class="muted">No book license for ${esc(s.season_name || 'this season')} yet. You can still approve members; the book opens once a license is active.</span>`}</div>
+      ${seasonPick()}
       ${invoiceList()}
       ${canName() ? (st.buy ? buyBox() : `<button class="btn teal" type="button" id="buyOpen" style="margin-top:12px">${s.license_status === 'active' ? 'Add seats' : 'Buy seats for your church'}</button>`) : ''}</div>
 
@@ -254,6 +256,15 @@ table.mini td{padding:3px 12px 3px 0}
         <p class="muted" style="margin-top:6px;font-size:13px">Purchases of ${money(o.invoice_min)} or more can be paid by invoice. We email you a Time4God invoice (PDF). Pay within ${o.invoice_days || 15} days online (card, ACH or wire), by check, or by wire to our bank. Your seats turn on as soon as the payment arrives.</p>`
       : `<button class="btn teal" type="button" id="buyGo" ${ok ? '' : 'disabled'} style="margin-top:10px">Continue to secure checkout</button><p class="muted" style="margin-top:6px;font-size:13px">You’ll pay on Stripe’s secure page (card, Apple Pay or Google Pay), then come back here.${o.invoice_min ? ` Spending ${money(o.invoice_min)} or more? You can ask for an invoice and pay by bank transfer.` : ''}</p>`}</div>`;
   }
+  function seasonPick() {
+    const C = st.cseason; if (!C || !C.season) return '';
+    const x = C.season, L = st.seasonList || [];
+    const label = y => `${y.name} · starts ${fDate(y.start_date)}${y.is_default ? ' (default)' : ''}`;
+    return `<div style="margin-top:14px;padding-top:12px;border-top:1px solid #EEF2F4"><div class="row" style="flex-wrap:wrap;align-items:flex-end">
+      <div class="grow"><label>Season your members follow</label><strong>${esc(x.name)}</strong> <span class="pill ${x.phase === 'live' ? 'ok' : x.phase === 'upcoming' ? 'wait' : 'off'}">${x.phase === 'live' ? 'Week ' + x.week + ' of 12' : x.phase === 'upcoming' ? 'Starts ' + fDate(x.start_date) : 'Finished'}</span>
+        <br><span class="muted">${fDate(x.start_date)} – ${fDate(x.end_date)}. Week 1 opens on the start date; a new week opens every 7 days.${C.chosen_id ? '' : ' (You haven’t chosen, so you follow the default season.)'}</span></div>
+      ${C.can_change && L.length > 1 ? `<div><label for="seasSel">Change season</label><select id="seasSel"><option value="">Default season</option>${L.map(y => `<option value="${y.id}" ${C.chosen_id === y.id ? 'selected' : ''}>${esc(label(y))}</option>`).join('')}</select></div>` : ''}</div></div>`;
+  }
   function invoiceList() {
     const L = (st.docs || []).filter(i => i.status !== 'void');
     if (!L.length) return '';
@@ -266,6 +277,9 @@ table.mini td{padding:3px 12px 3px 0}
         ${i.status === 'open' && i.stripe_url ? `<a class="btn teal sm" href="${esc(i.stripe_url)}" target="_blank" rel="noopener">Pay online</a>` : ''}</div></div></div>`; }).join('')}</div>`;
   }
   BIND.approvals = () => {
+    if ($('seasSel')) $('seasSel').onchange = e => { const v = e.target.value || null, y = (st.seasonList || []).find(z => z.id === v);
+      if (!confirm(`Move ${st.church.name} to ${y ? '“' + y.name + '”' : 'the default season'}? Your members’ weekly chapters will follow its dates.`)) { e.target.value = st.cseason.chosen_id || ''; return; }
+      run(async () => { st.cseason = await Cloud.rpc('set_church_season', { cid: st.church.church_id, p_season: v }); }, 'Season updated. Your members now follow it.'); };
     $app.querySelectorAll('[data-pdf]').forEach(b => b.onclick = () => openPdf(b.dataset.pdf));
     if ($('nsNew')) $('nsNew').onchange = e => { const on = e.target.checked; run(async () => { await Cloud.rpc('set_notification_settings', { p_new_members: on }); st.notify.email_new_members = on; }, on ? 'You’ll get an email when someone new signs up.' : 'New-member emails turned off.'); };
     if ($('buyOpen')) $('buyOpen').onclick = () => run(async () => { st.buy = true; st.buySeats = ''; st.buyOpts = null; render(); st.buyOpts = await Cloud.rpc('purchase_options', { cid: st.church.church_id }); try { st.support = (await Cloud.rpc('public_contact')).support_email; } catch (e) {} });
@@ -1054,17 +1068,35 @@ ${trialForm()}
   };
 
   // ---------- season ----------
-  VIEWS.season = () => { const s = st.season || {}; return `<h2>Season</h2><p class="sub">Week 1 of the book opens on the start date, and one new week opens every 7 days after.</p>
-    <form class="card" id="sf"><div class="row">
-      <div class="grow"><label for="sn">Season name</label><input id="sn" type="text" value="${esc(s.name || '')}" required style="width:100%"></div>
-      <div><label for="sd">Start date (Day 1)</label><input id="sd" type="date" value="${esc(s.start_date || '')}" required></div>
-      <div><label for="sc">Last day to join</label><input id="sc" type="date" value="${esc(s.join_cutoff || '')}"></div>
-      <div><label>&nbsp;</label><button class="btn" type="submit">Save season</button></div></div></form>`; };
-  BIND.season = () => { $('sf').onsubmit = e => { e.preventDefault(); run(async () => {
-    const v = { name: $('sn').value.trim(), start_date: $('sd').value, join_cutoff: $('sc').value || null };
-    if (st.season) Cloud.ok(await c.from('seasons').update(v).eq('id', st.season.id)); else Cloud.ok(await c.from('seasons').insert({ ...v, active: true }));
-    await loadTab(true);
-  }, 'Season saved.'); }; };
+  // ---------- seasons: several, may overlap; churches pick theirs, others pick or follow the default ----------
+  const PH = { upcoming: ['Upcoming', 'wait'], live: ['Live', 'ok'], finished: ['Finished', 'off'] };
+  VIEWS.season = () => { const L = st.seasonsAll || [], ed = st.seasonEdit;
+    const form = (x, id) => `<form class="card" data-sform="${id || ''}" style="${id ? '' : 'border-color:#123C56'}"><strong>${id ? 'Edit season' : 'Add a season'}</strong><div class="row" style="flex-wrap:wrap;margin-top:8px">
+        <div class="grow" style="min-width:240px"><label>Season name</label><input name="n" type="text" value="${esc(x.name || '')}" required style="width:100%" placeholder="Season 2 · Summer 2027"></div>
+        <div><label>Start date (Day 1)</label><input name="d" type="date" value="${esc(x.start_date || '')}" required></div>
+        <div><label>Last day to join <span class="muted" style="font-weight:400">(optional)</span></label><input name="c" type="date" value="${esc(x.join_cutoff || '')}"></div></div>
+      <label class="pick" style="border:0;padding:0;margin-top:10px"><input type="checkbox" class="check" name="l" ${x.listed !== false ? 'checked' : ''} ${x.is_default ? 'disabled' : ''}> <span>Show this season so churches and people can choose it</span></label>
+      <div class="row" style="margin-top:12px"><button class="btn" type="submit">${id ? 'Save season' : 'Add season'}</button>${id ? '<button class="btn alt" type="button" data-scancel>Cancel</button>' : ''}</div></form>`;
+    return `<h2>Seasons</h2><p class="sub">Each season is 12 weeks: Week 1 opens on its start date and a new week opens every 7 days. Seasons can overlap. Each church or group picks its season in the Leader Console and its members read on that schedule; people without a church pick in My Account. Anyone who hasn’t picked follows the <strong>default</strong> season. Seats last one year from payment, so all 12 weeks stay open after a season ends.</p>
+    <div class="card tbl">${L.length ? `<table><thead><tr><th>Season</th><th>Dates</th><th>Status</th><th>Churches</th><th>People</th><th></th></tr></thead><tbody>
+      ${L.map(r => { const x = r.season; return ed === x.id ? `<tr><td colspan="6">${form({ ...x, listed: r.listed }, x.id)}</td></tr>` : `<tr>
+        <td><strong>${esc(x.name)}</strong>${x.is_default ? ' <span class="pill ok">Default</span>' : ''}${r.listed ? '' : ' <span class="pill off">Hidden</span>'}</td>
+        <td>${fDate(x.start_date)} – ${fDate(x.end_date)}${x.join_cutoff ? `<br><span class="muted">Join by ${fDate(x.join_cutoff)}</span>` : ''}</td>
+        <td><span class="pill ${PH[x.phase][1]}">${PH[x.phase][0]}</span>${x.phase === 'live' ? `<br><span class="muted">Week ${x.week} of 12</span>` : ''}</td>
+        <td>${r.churches}</td><td>${r.people}</td>
+        <td><div class="row" style="justify-content:flex-end"><button class="btn alt sm" type="button" data-sedit="${x.id}">Edit</button>${x.is_default ? '' : `<button class="btn alt sm" type="button" data-sdef="${x.id}">Make default</button>`}</div></td></tr>`; }).join('')}
+      </tbody></table>` : '<p class="empty">No seasons yet. Add your first one below.</p>'}</div>
+    ${form({}, null)}`; };
+  BIND.season = () => {
+    $app.querySelectorAll('[data-sedit]').forEach(b => b.onclick = () => { st.seasonEdit = b.dataset.sedit; render(); });
+    $app.querySelectorAll('[data-scancel]').forEach(b => b.onclick = () => { st.seasonEdit = null; render(); });
+    $app.querySelectorAll('[data-sdef]').forEach(b => b.onclick = () => { const r = st.seasonsAll.find(x => x.season.id === b.dataset.sdef);
+      if (!confirm(`Make “${r.season.name}” the default season? Churches and people who haven’t picked a season will follow it.`)) return;
+      run(async () => { await Cloud.rpc('admin_set_default_season', { p_id: b.dataset.sdef }); await loadTab(true); }, 'Default season changed.'); });
+    $app.querySelectorAll('[data-sform]').forEach(f => f.onsubmit = e => { e.preventDefault(); const id = f.dataset.sform || null;
+      const a = { p_id: id, p_name: f.n.value, p_start: f.d.value, p_cutoff: f.c.value || null, p_listed: f.l.checked };
+      run(async () => { await Cloud.rpc('admin_save_season', a); st.seasonEdit = null; await loadTab(true); }, id ? 'Season saved.' : 'Season added.'); });
+  };
 
   // ---------- book ----------
   VIEWS.book = () => {
@@ -1143,6 +1175,7 @@ ${trialForm()}
         st.licenses = st.season ? Cloud.ok(await c.from('church_licenses').select('*').eq('season_id', st.season.id)) : [];
         st.seats = st.admin ? (await Cloud.rpc('admin_individual_seats') || []) : [];
       }
+      if (st.tab === 'season') st.seasonsAll = await Cloud.rpc('admin_seasons') || [];
       if (st.tab === 'book') st.sections = Cloud.ok(await c.from('book_sections').select('slug,title,kind,unlock_week,sort_order,content_html,updated_at,hidden').order('sort_order'));
     } catch (e) { flash(errMsg(e), true); }
     render();
