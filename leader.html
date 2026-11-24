@@ -142,7 +142,7 @@ table.mini td{padding:3px 12px 3px 0}
 
   // ---------- tabs ----------
   const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'],
-    ...(st.admin ? [['dash', 'Dashboard'], ['members', 'All members'], ['nochurch', 'No church'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Seasons'], ['book', 'Book'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['news', 'Announcements'], ['settings', 'Settings'], ...(st.owner ? [['roles', 'Roles']] : [])]
+    ...(st.admin ? [['dash', 'Dashboard'], ['members', 'All members'], ['nochurch', 'No church'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Seasons'], ['book', 'Book'], ['store', 'Bookstore'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['news', 'Announcements'], ['settings', 'Settings'], ...(st.owner ? [['roles', 'Roles']] : [])]
       : st.am ? [['amdash', 'My churches'], ['churches', 'Churches'], ['licenses', 'Licenses']] : [])];
   function renderNav() {
     $('nav').hidden = false;
@@ -952,6 +952,53 @@ ${trialForm()}
     $app.querySelectorAll('[data-go]').forEach(b => b.onclick = async () => { st.tab = b.dataset.go; await loadTab(); });
   };
 
+  // ---------- bookstore: books for sale, bought on Amazon / IngramSpark ----------
+  const LINKS0 = [{ label: 'Buy on Amazon', url: '', hint: 'Amazon product page (amazon.com/dp/…)' }, { label: 'Buy direct', url: '', hint: 'IngramSpark Share & Sell purchase link' }, { label: '', url: '', hint: 'Any other store (optional)' }];
+  VIEWS.store = () => { const L = st.store || [], ed = st.storeEdit;
+    if (ed) { const b = ed === 'new' ? { links: [], active: true, author: 'C.P. Parker' } : L.find(x => x.id === ed) || {};
+      const links = LINKS0.map((d, i) => ({ ...d, ...(b.links || [])[i] }));
+      return `<h2>${ed === 'new' ? 'Add a book' : 'Edit · ' + esc(b.title)}</h2><p class="sub">Members see this on the Bookstore page. Amazon or IngramSpark takes the order, prints the book and ships it.</p>
+      <form class="card" id="bkF">
+        <div class="row" style="flex-wrap:wrap"><div class="grow" style="min-width:260px"><label>Title</label><input name="t" type="text" required value="${esc(b.title || '')}" style="width:100%"></div>
+          <div class="grow" style="min-width:200px"><label>Subtitle <span class="muted" style="font-weight:400">(optional)</span></label><input name="s" type="text" value="${esc(b.subtitle || '')}" style="width:100%"></div></div>
+        <div class="row" style="flex-wrap:wrap;margin-top:10px"><div class="grow"><label>Author</label><input name="a" type="text" value="${esc(b.author || 'C.P. Parker')}" style="width:100%"></div>
+          <div class="grow"><label>Price shown <span class="muted" style="font-weight:400">(optional)</span></label><input name="p" type="text" value="${esc(b.price_label || '')}" placeholder="$16.99 paperback" style="width:100%"></div></div>
+        <label style="margin-top:10px;display:block">Description</label><textarea name="d" rows="6" style="width:100%" placeholder="A short, inviting description. Leave a blank line between paragraphs.">${esc(b.description || '')}</textarea>
+        <label style="margin-top:10px;display:block">Cover picture</label>
+        <div class="row" style="align-items:flex-start;flex-wrap:wrap">${b.cover_url ? `<img src="${esc(b.cover_url)}" alt="" style="width:80px;border-radius:4px">` : ''}
+          <div class="grow"><input type="file" id="bkCover" accept="image/png,image/jpeg,image/webp"><p class="muted" style="margin:4px 0">Upload a JPG or PNG, or paste a link to the picture:</p><input name="c" type="text" value="${esc(b.cover_url || '')}" placeholder="https://…" style="width:100%"></div></div>
+        <h3 style="font-size:16px;margin:18px 0 4px">Buy buttons</h3><p class="muted" style="margin:0 0 6px">The first one is the main button. Leave a link empty to hide that button.</p>
+        ${links.map((l, i) => `<div class="row" style="flex-wrap:wrap;margin-top:6px"><div style="min-width:180px"><label>Button text</label><input data-ll="${i}" type="text" value="${esc(l.label || '')}" placeholder="${i === 2 ? 'Buy at Barnes & Noble' : ''}"></div>
+          <div class="grow" style="min-width:280px"><label>Link <span class="muted" style="font-weight:400">· ${esc(l.hint)}</span></label><input data-lu="${i}" type="text" inputmode="url" value="${esc(l.url || '')}" placeholder="https://…" style="width:100%"></div></div>`).join('')}
+        <div class="row" style="margin-top:14px;flex-wrap:wrap;gap:16px"><label class="pick" style="border:0;padding:0"><input type="checkbox" class="check" name="on" ${b.active !== false ? 'checked' : ''}> <span>Show in the Bookstore</span></label>
+          <label class="pick" style="border:0;padding:0"><input type="checkbox" class="check" name="f" ${b.featured ? 'checked' : ''}> <span>Featured (shown first)</span></label>
+          <div><label>Order</label><input name="o" type="number" value="${esc(String(b.sort_order || 0))}" style="max-width:90px"></div></div>
+        <div class="row" style="margin-top:16px"><button class="btn teal" type="submit">Save book</button><button class="btn alt" type="button" id="bkX">Cancel</button></div></form>`; }
+    return `<h2>Bookstore</h2><p class="sub">Books members can buy. Each button goes to Amazon or IngramSpark (Share & Sell), which take the order, print and ship. Members find it at More › Bookstore. <a href="bookstore.html" target="_blank" rel="noopener">See the Bookstore</a></p>
+      <button class="btn teal" type="button" id="bkNew">+ Add a book</button>
+      <div class="card tbl">${L.length ? `<table><thead><tr><th></th><th>Book</th><th>Buttons</th><th>Clicks</th><th></th></tr></thead><tbody>${L.map(b => `<tr>
+        <td style="width:56px">${b.cover_url ? `<img src="${esc(b.cover_url)}" alt="" style="width:44px;border-radius:3px">` : ''}</td>
+        <td><strong>${esc(b.title)}</strong>${b.featured ? ' <span class="pill ok">Featured</span>' : ''}${b.active ? '' : ' <span class="pill off">Hidden</span>'}<br><span class="muted">${esc(b.price_label || '')}</span></td>
+        <td>${(b.links || []).map(l => `${esc(l.label)} <span class="muted">· ${(b.by_link || {})[l.label] || 0} clicks</span>`).join('<br>') || '<span class="muted">No buttons yet</span>'}</td>
+        <td>${b.clicks_30} <span class="muted">in 30 days</span><br><span class="muted">${b.clicks_all} all time</span></td>
+        <td><button class="btn alt sm" type="button" data-bkedit="${b.id}">Edit</button></td></tr>`).join('')}</tbody></table>` : '<p class="empty">No books yet. Add your first one.</p>'}</div>`; };
+  BIND.store = () => {
+    if ($('bkNew')) $('bkNew').onclick = () => { st.storeEdit = 'new'; render(); };
+    $app.querySelectorAll('[data-bkedit]').forEach(b => b.onclick = () => { st.storeEdit = b.dataset.bkedit; render(); window.scrollTo(0, 0); });
+    if ($('bkX')) $('bkX').onclick = () => { st.storeEdit = null; render(); };
+    if ($('bkF')) $('bkF').onsubmit = e => { e.preventDefault(); const f = $('bkF'), file = $('bkCover').files[0];
+      const links = [0, 1, 2].map(i => ({ label: f.querySelector(`[data-ll="${i}"]`).value, url: f.querySelector(`[data-lu="${i}"]`).value }));
+      const a = { p_id: st.storeEdit === 'new' ? null : st.storeEdit, p_title: f.t.value, p_subtitle: f.s.value, p_author: f.a.value, p_description: f.d.value, p_cover_url: f.c.value,
+        p_price_label: f.p.value, p_links: links, p_active: f.on.checked, p_featured: f.f.checked, p_sort: parseInt(f.o.value, 10) || 0 };
+      run(async () => {
+        if (file) { if (file.size > 5e6) throw new Error('That picture is over 5 MB. Use a smaller one.');
+          const path = 'books/' + Date.now() + '-' + file.name.toLowerCase().replace(/[^a-z0-9.]+/g, '-');
+          Cloud.ok(await c.storage.from('covers').upload(path, file, { upsert: true, contentType: file.type }));
+          a.p_cover_url = c.storage.from('covers').getPublicUrl(path).data.publicUrl; }
+        await Cloud.rpc('admin_save_store_book', a); st.storeEdit = null; await loadTab(true);
+      }, 'Book saved.'); };
+  };
+
   // ---------- book keys (app edition for print readers) ----------
   VIEWS.keys = () => { const ps = st.printStat || {}, K = st.keys;
     return `<h2>Book keys</h2><p class="sub">Print readers claim the app edition at <strong>time4god.app/redeem</strong> with the key printed in the book. Each reader gets a different check: a random page and a word on it, and they type the word that comes next. You can turn that question off for a key (for a promotion or a small group); then anyone with the key can claim it, up to its claim limit. One claim per account; it turns on a free 1-year app seat.</p>
@@ -1161,6 +1208,7 @@ ${trialForm()}
       if (st.tab === 'dash') { const [d, fm] = await Promise.all([Cloud.rpc('admin_dashboard'), Cloud.rpc('admin_family_summary').catch(() => null)]); st.dash = d; st.fam = fm; }
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
       if (st.tab === 'news') st.news = await Cloud.rpc('admin_announcements');
+      if (st.tab === 'store') st.store = await Cloud.rpc('admin_store_books') || [];
       if (st.tab === 'settings') { st.settings = await Cloud.rpc('admin_settings'); try { st.invSet = await Cloud.rpc('admin_invoice_settings'); } catch (e) { st.invSet = {}; } try { st.legal = { docs: await Cloud.rpc('admin_legal_docs') || [] }; } catch (e) { st.legal = { error: errMsg(e) }; } st.stripe = null; Cloud.pay({ action: 'stripe_mode' }).then(r => { st.stripe = r || {}; if (st.tab === 'settings') render(); }).catch(e => { st.stripe = { error: errMsg(e) }; if (st.tab === 'settings') render(); }); }
       if (st.tab === 'nochurch') { const [a, b] = await Promise.all([Cloud.rpc('admin_no_church'), Cloud.rpc('admin_pending_members')]); st.nc = a || []; st.pend = b || []; st.ncSel = new Set(); st.pSel = new Set(); }
       if (st.tab === 'members') { const [a, t, fm] = await Promise.all([Cloud.rpc('admin_all_members'), Cloud.rpc('admin_trials_v2'), Cloud.rpc('admin_family_summary').catch(() => null)]); st.all = a || []; st.trials = t || []; st.fam = fm; }

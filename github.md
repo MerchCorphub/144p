@@ -137,3 +137,9 @@ Migrations 0029–0032. Edge functions: invoice-pdf (new), stripe-pay (mark_paid
 - Churches/groups pick their season in the Leader Console (Approvals card, "Season your members follow"); members follow the church's season. People without a church pick in My Account › Your season; otherwise they follow the default.
 - `private.season_for(pid)` drives reading weeks, the book status, reminders, challenge default dates and the teen view. Seats/licenses stay one year from payment, so all 12 weeks stay open after a season ends.
 - Migration 0038 (`seasons.listed`, `churches.season_id`, `partners.season_id`).
+
+## Bookstore (Nov 2026)
+
+- Admin Panel › Bookstore: add books (title, subtitle, author, price shown, description, cover upload or link, up to 3 buy buttons such as Amazon and IngramSpark Share & Sell), featured/order/show; clicks per button (30 days / all time).
+- Members: `bookstore.html` (More › Bookstore, and a "Want a printed copy?" card on Get the Study Book). Buttons open the seller in a new tab; the seller takes the order, prints and ships.
+- Migration 0039 (`store_books`, `store_clicks`, public `covers` bucket, admin-only uploads).
