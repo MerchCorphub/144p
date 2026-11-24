@@ -128,7 +128,7 @@ ol.board li.me{background:#F2FAF8;font-weight:700}
     const note = c.message ? `"${c.message}"\n\n` : '';
     const who = c.kind === 'person' ? `${st.me.first_name} challenged you` : c.kind === 'group' ? `${c.a_name} challenges your group` : `${c.a_name} challenges your church`;
     const how = c.kind === 'church' ? 'Your church admin can accept here' : c.kind === 'group' ? 'Your group leader can accept here' : 'Accept here';
-    const gift = c.kind === 'person' && st.opts && st.opts.guest_seats_left > 0 ? ' I’m giving you a seat: the study book in the app is free for you during our challenge.' : '';
+    const gift = c.kind === 'person' && st.opts && st.opts.guest_seats_left > 0 ? ' Already have the study book? Just accept. If you don’t, I’m giving you a seat: the study book in the app is free for you during our challenge.' : '';
     return `${note}${who} to the Time4God Challenge! Who will give the most time to God ${when}?${gift} ${how}: ${linkFor(code)}\n\n#Time4GodChallenge`;
   }
 
@@ -293,7 +293,7 @@ ol.board li.me{background:#F2FAF8;font-weight:700}
       <form id="nf">
         <fieldset style="border:0;padding:0;margin:0"><legend class="sr">Kind of challenge</legend>
         <label style="margin-top:18px">Who are you challenging?</label>
-        ${opt('person', 'A person', o.can_person ? `A friend or family member, one on one.${o.guest_seats_left > 0 ? ' Your seat to give goes with it: they get the study book free for the challenge.' : ''}` : esc(why), first === 'person', !o.can_person)}
+        ${opt('person', 'A person', o.can_person ? `A friend, family member or fellow member, one on one. If they already have the study book, they just accept.${o.guest_seats_left > 0 ? ' If they don’t, one of your guest seats gives it to them free for the challenge.' : ''}` : esc(why), first === 'person', !o.can_person)}
         ${o.group_name ? opt('group', 'Another group', `Your group, ${esc(o.group_name)}, against another group. Scored by average minutes per member.`, first === 'group') : ''}
         ${o.church_name ? opt('church', 'Another church', `${esc(o.church_name)} against another church. Their church admin accepts. Scored by average minutes per member.`, first === 'church') : ''}
         ${o.church_name ? opt('church_open', 'Our own members', `A challenge only members of ${esc(o.church_name)} can join, with a leaderboard.`) : ''}
@@ -343,7 +343,7 @@ ol.board li.me{background:#F2FAF8;font-weight:700}
         <button class="btn alt" type="button" id="copy">Copy link</button>
         ${navigator.share ? '<button class="btn alt" type="button" id="more">More options…</button>' : '<button class="btn alt" type="button" id="copyAll">Copy message</button>'}
       </div>
-      <p class="sub" style="margin-top:14px">${c.kind === 'person' ? 'The first person to accept the link becomes your opponent.' : c.kind === 'group' ? 'Send it to the other group’s leader. They accept for their group.' : 'Send it to the other church’s admin or pastor. Their church admin accepts.'} The challenge shows under “Waiting for an answer” until then.</p>
+      <p class="sub" style="margin-top:14px">${c.kind === 'person' ? 'The first person to accept the link becomes your opponent. Members who already have the study book accept without using a guest seat.' : c.kind === 'group' ? 'Send it to the other group’s leader. They accept for their group.' : 'Send it to the other church’s admin or pastor. Their church admin accepts.'} The challenge shows under “Waiting for an answer” until then.</p>
       <button class="btn alt" type="button" id="done">Done</button>
       <button class="btn danger" type="button" id="cx">Cancel this challenge</button>`,
       after: () => {
