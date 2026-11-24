@@ -124,3 +124,9 @@ Migrations 0029–0032. Edge functions: invoice-pdf (new), stripe-pay (mark_paid
 - Challenge someone › A person › "To a member, by phone number": `challenge_member_by_phone` creates a person challenge addressed to that member only (`challenges.target_partner_id`), emails them, and shows it at the top of their Challenges page ("X challenged you"). Only the addressed member can accept. Members who already have the book accept without a guest seat.
 - No match (or a number shared by several members): the sender gets "Text the link" with the number filled in. 20 lookups a day per member. Privacy Policy v3.
 - Migration 0036. Also fixed: the custom date pickers showed even when "The full 12 weeks" was chosen.
+
+## News and offers by email, opt-in (Nov 2026)
+
+- Members opt in with "Email me news and offers" at sign-up (applied on first sync) or in My Account (`set_my_news_email`). Off by default.
+- Admin Panel › Announcements: subject, plain-text message, optional button; "Send a test to me" then "Send to N members" (`admin_send_announcement`). Every email carries a one-click unsubscribe link (`unsubscribe.html?t=…` → `news_unsubscribe`) and the mailing address from Settings; sending is blocked until the address is set.
+- Phone numbers are never used for marketing; no marketing texts. Privacy Policy v4. Migration 0037.

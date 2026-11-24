@@ -92,6 +92,10 @@ html,body{width:100%;min-height:100%}
           <span style="flex:none;width:24px;height:24px;border-radius:6px;border:2px solid #075D61;background:{{ consentBg }};color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:15px"><i class="icon-check"></i></span>
           <span>I agree to the Terms and Conditions and the Privacy Policy. I am at least 13 years old (under 18 with a parent’s permission). My statement, deposits and notes stay private to me.</span>
         </button>
+        <button onClick="{{ on.news }}" role="checkbox" aria-checked="{{ f.news }}" style="display:flex;gap:12px;align-items:flex-start;text-align:left;border:none;background:transparent;padding:0;cursor:pointer;color:#173344;font-size:14px;line-height:1.45">
+          <span style="flex:none;width:24px;height:24px;border-radius:6px;border:2px solid #075D61;background:{{ newsBg }};color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:15px"><i class="icon-check"></i></span>
+          <span>Email me news and offers from Time4God Challenge. <span style="color:#6A7A84">(Optional. Unsubscribe any time.)</span></span>
+        </button>
         <div style="display:flex;gap:10px;align-items:flex-start;background:#EEF6F5;border:1px solid #CFE6E2;border-radius:12px;padding:10px 12px;font-size:13.5px;line-height:1.45;color:#173344"><span style="flex:none;font-size:18px">👨‍👩‍👧</span><span><strong>Parents:</strong> a paid membership includes free accounts for up to 2 teens (ages 13 to 17), each with their own login. After you join, add them from More › Get the Study Book › Family. Children under 13 can’t have accounts.</span></div>
         <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:14px;padding:0 0 0 36px"><a href="terms.html" target="_blank" rel="noopener" style="color:#075D61;font-weight:600">Read the Terms</a><a href="privacy.html" target="_blank" rel="noopener" style="color:#075D61;font-weight:600">Read the Privacy Policy</a></div>
       </sc-if>
@@ -663,6 +667,10 @@ html,body{width:100%;min-height:100%}
       <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Email address<input type="email" value="{{ ac.email }}" onChange="{{ acOn.email }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
       <sc-if value="{{ isCloud }}" hint-placeholder-val="{{ false }}">
       <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Mobile phone <span style="font-weight:400;color:#6A7A84">(optional)</span><input type="tel" value="{{ ac.phone }}" onChange="{{ acOn.phone }}" autocomplete="tel" placeholder="(404) 555-0123" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"><span style="font-weight:400;font-size:13px;color:#6A7A84;line-height:1.4">Lets friends who know your number challenge you in the app. Never shown to other members. We don’t send texts.</span></label>
+      <button onClick="{{ toggleNews }}" role="checkbox" aria-checked="{{ newsOn }}" style="display:flex;gap:12px;align-items:flex-start;text-align:left;background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:14px 16px;cursor:pointer;color:#173344;font-size:14px;line-height:1.45">
+        <span style="flex:none;width:24px;height:24px;border-radius:6px;border:2px solid #075D61;background:{{ newsOnBg }};color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:15px"><i class="icon-check"></i></span>
+        <span><strong>Email me news and offers</strong><br><span style="color:#6A7A84">New seasons, gift ideas and special prices. Optional; turn it off any time. Account emails (receipts, approvals) still come either way.</span></span>
+      </button>
       </sc-if>
       <sc-if value="{{ notCloud }}" hint-placeholder-val="{{ false }}">
       <label style="display:flex;flex-direction:column;gap:6px;font-size:14px;font-weight:600">Church <span style="font-weight:400;color:#6A7A84">(optional)</span><input value="{{ ac.church }}" onChange="{{ acOn.church }}" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:13px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
@@ -978,7 +986,7 @@ const HELP = {
   redemptions: ['My redemptions', [H('Everything you have redeemed,', 'with the date and minutes used.')]],
   notes: ['My notes', [H('Two short reflections each week:', 'the time that mattered most, and what you plan to give next week.'), H('Private.', 'Your Table leader and church never see your notes.')]],
   more: ['More', [H('Your account,', 'giving plan, reminders and privacy settings live here.'), H('The Book:', 'get the study book, read it, join your church, the Time4God Challenge, and the Leader Console for leaders.'), H('Help:', 'replay the 5-step tour from the ? on the home page.')]],
-  account: ['My account', [H('Your name and email', 'are how your church leaders recognize you. Tap Save changes after editing.'), H('Church:', 'enter the code from your church leader and tap Join my church. A leader approves you, and you’ll see “Approved member.”'), H('Group:', 'your church leader places you in a group.'), H('Mobile phone (optional):', 'add it so friends who know your number can challenge you right in the app. Nobody sees your number, and we never text you.'), H('Family:', 'a paid membership includes free accounts for up to 2 teens (13 to 17). Tap Add a teen account.')]],
+  account: ['My account', [H('Your name and email', 'are how your church leaders recognize you. Tap Save changes after editing.'), H('Church:', 'enter the code from your church leader and tap Join my church. A leader approves you, and you’ll see “Approved member.”'), H('Group:', 'your church leader places you in a group.'), H('Mobile phone (optional):', 'add it so friends who know your number can challenge you right in the app. Nobody sees your number, and we never text you.'), H('Family:', 'a paid membership includes free accounts for up to 2 teens (13 to 17). Tap Add a teen account.'), H('News and offers:', 'optional emails about new seasons, gift ideas and special prices. Turn them on or off here any time.')]],
   plan: ['My giving plan', [H('During weeks 1–12', 'the study book is your guide, one chapter a week.'), H('From week 13', 'write down how you intend to keep giving your 144 minutes, and save it here.')]],
   notifications: ['Reminders', [H('Daily reminder:', 'a phone or computer notification at the time you pick, even when the app is closed. On iPhone, add the app to your Home Screen first.'), H('Email reminder:', 'the same reminder by email.'), H('Each reminder shows', 'yesterday’s minutes, your streak, this week’s chapter and how your challenge is going.'), H('Messages', 'from your church leaders arrive the same way.')]],
   privacy: ['Privacy and church view', [H('Your statement is yours.', 'Only you see your deposits, notes and balances.'), H('What leaders see:', 'your name, approval status, group, and minutes in challenges. Never your notes or reflections.')]],
@@ -1061,6 +1069,8 @@ class Component extends DCLogic {
       try { const a = await Cloud.rpc('my_access'); if (a) this.setState({ access: a }); } catch (e) {}
       try { const f = await Cloud.rpc('my_family'); if (f) this.setState({ family: f }); } catch (e) {}
       try { const ph = await Cloud.rpc('my_phone'); this.setState({ phone: ph || '' }); } catch (e) {}
+      try { if (localStorage.getItem('144p-news-optin') === '1') { await Cloud.rpc('set_my_news_email', { p_on: true }); localStorage.removeItem('144p-news-optin'); } } catch (e) {}
+      try { const nw = await Cloud.rpc('my_news_email'); this.setState({ news: !!nw }); } catch (e) {}
     } catch (e) {}
   }
   syncDiff(a, b) {
@@ -1109,6 +1119,7 @@ class Component extends DCLogic {
     if ((f.password || '').length < 8) return this.fail('Use a password with at least 8 characters.');
     if (!f.consent) return this.fail('Please agree to the Terms and Privacy Policy to continue.');
     if (db.partners.some(p => p.email === email && !p.cloud)) return this.fail('An account with this email already exists. Try signing in.');
+    try { if (f.news) localStorage.setItem('144p-news-optin', '1'); else localStorage.removeItem('144p-news-optin'); } catch (e) {}
     if (window.Cloud) return this.registerCloud(first, last, email, f);
     const pw = await sha(f.password + '|' + email);
     const today = ymd(new Date());
@@ -1275,9 +1286,9 @@ class Component extends DCLogic {
       hasJoin: !!s.join, joinName: s.join ? s.join.name : '',
       toSignin: () => this.setState({ screen: 'signin', err: '', form: {} }),
       toWelcome: () => this.setState({ screen: 'welcome', err: '' }),
-      f: { first: '', last: '', email: '', password: '', church: '', table: '', consent: false, ...s.form },
-      on: { first: formOn('first'), last: formOn('last'), email: formOn('email'), password: formOn('password'), church: formOn('church'), table: formOn('table'), consent: () => this.setState(st => ({ form: { ...st.form, consent: !st.form.consent }, err: '' })) },
-      consentBg: s.form.consent ? '#075D61' : '#FFFFFF',
+      f: { first: '', last: '', email: '', password: '', church: '', table: '', consent: false, news: false, ...s.form },
+      on: { first: formOn('first'), last: formOn('last'), email: formOn('email'), password: formOn('password'), church: formOn('church'), table: formOn('table'), consent: () => this.setState(st => ({ form: { ...st.form, consent: !st.form.consent }, err: '' })), news: () => this.setState(st => ({ form: { ...st.form, news: !st.form.news } })) },
+      consentBg: s.form.consent ? '#075D61' : '#FFFFFF', newsBg: s.form.news ? '#075D61' : '#FFFFFF',
       demoAccounts: [
         { name: 'Jane Smith', sub: 'Starter phase · Week 3 of 12', pick: () => this.demoSignin('demo-jane') },
         { name: 'Sam Lee', sub: 'Standard account · Commissioned', pick: () => this.demoSignin('demo-sam') }],
@@ -1582,6 +1593,9 @@ class Component extends DCLogic {
           this.flash(r === 'pending' ? 'Request sent. Your church leader will approve you.' : 'You joined your church.'); }
         catch (e) { this.fail((e && e.message) || 'That church code wasn\u2019t found.'); }
       },
+      newsOn: !!s.news, newsOnBg: s.news ? '#075D61' : '#FFFFFF',
+      toggleNews: () => { if (!(u.cloud && window.Cloud)) return; const on = !s.news; this.setState({ news: on });
+        Cloud.rpc('set_my_news_email', { p_on: on }).then(() => this.flash(on ? 'You’ll get news and offers by email.' : 'News and offers turned off.')).catch(e => { this.setState({ news: !on }); this.fail((e && e.message) || 'Could not save that.'); }); },
       saveAccount: () => {
         const cap = v => { v = (v || '').trim().replace(/\s+/g, ' '); return v && v === v.toLowerCase() ? v.replace(/(^|[\s'-])([a-z])/g, (m, p1, c) => p1 + c.toUpperCase()) : v; };
         const a = { ...ac, first: cap(ac.first), last: cap(ac.last), email: (ac.email || '').trim().toLowerCase() };
