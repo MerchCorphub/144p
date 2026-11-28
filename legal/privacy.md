@@ -5,7 +5,7 @@ Effective date: {{effective_date}}
 
 This Privacy Policy explains how **Merch Corporation** ("we," "us" or "our") collects, uses, shares and protects personal information when you use the Time4God Challenge app, The 144(P) Plan, time4god.app and related services (the "Service"). It is part of our [Terms and Conditions](terms.html).
 
-**The short version:** we collect what we need to run the Service. We do not sell your personal information, we do not show ads, and we do not share your information with advertisers. Your private notes and weekly reflections are never shown to anyone else, including your church or group leaders. The one exception: on a family teen account, the linked parent or guardian can see them.
+**The short version:** we collect what we need to run the Service. We do not sell your personal information, we do not show ads, and we do not share your information with advertisers. Your private notes and weekly reflections are never shown to anyone else, including your church or group leaders. The one exception: on a family teen account, the linked parent or guardian can see them. A review you choose to write is shown publicly only after we approve it (see section 5A).
 
 ## 1. Information you give us
 
@@ -19,6 +19,7 @@ This Privacy Policy explains how **Merch Corporation** ("we," "us" or "our") col
 - **Book keys:** the key you enter and the answer to the book check question.
 - **Invitations:** when you or an administrator invite someone (for example, a guest seat, trial pass or family teen account), the name, email address and note entered for that person.
 - **Family links:** which parent account a teen account is linked to, and when it was linked.
+- **Ratings, reviews and feedback:** your private Week 6 check-in (stars and an optional comment), any review you write after Week 12 (stars, your answers, the name choice you pick and whether you allow marketing use), which reviews you mark helpful, and notes you send from "Tell Us How to Improve."
 - **Support:** what you tell us when you contact us.
 
 ## 2. Information collected automatically
@@ -55,6 +56,15 @@ Belonging to a church, taking part in a faith study or recording time spent in p
 - **Your phone number** is never shown to other members. A member who already knows your number can enter it to send you a challenge; we only tell them whether it reached a member, never who. We do not send text messages to it.
 - **Platform administrators** at Merch Corporation can see account, membership, purchase and invoice information to run the Service and help you.
 
+## 5A. Reviews, check-ins and feedback
+
+- **Reviews are public only if you write one,** and only after our team approves it. They appear on time4god.app pages such as the welcome screen, the study book page, the leaders page and the member reviews page.
+- **Your name** shows as your first name and last initial, or as "time4god member" if you choose. Your email address is never shown. Reviews from family teen accounts always show as "time4god member."
+- **Marketing use** happens only if you tick the marketing box. We may then quote your review, shortened without changing its meaning, on our website, social media, ads, emails and print materials, with the name you chose. You can withdraw this permission by emailing {{support_email}}; we will stop new uses, but printed materials already made cannot be recalled. Teen reviews are never used in marketing.
+- **Helpful votes** are counted and the total may be shown, but who voted is never shown.
+- **Your Week 6 check-in and your feedback notes are private** to our team. Check-ins never count toward the public rating.
+- **You can update your review** at any time (it goes back for approval) or ask us to remove it by emailing {{support_email}}. We may decline, hide or remove any review.
+
 ## 6. How we share information
 
 We do **not** sell or rent personal information, and we do not share it for targeted advertising. We share it only:
@@ -78,7 +88,7 @@ The Service does not send text messages itself. Some features open your own phon
 
 ## 8. How long we keep information
 
-We keep personal information while your account is open and as long as needed to provide the Service. After you ask us to delete your account, we delete or de-identify your personal information within a reasonable time, except:
+We keep personal information while your account is open and as long as needed to provide the Service. Deleting your account also deletes your reviews, check-ins, helpful votes and feedback notes from the Service (copies already used in printed marketing with your permission cannot be recalled). After you ask us to delete your account, we delete or de-identify your personal information within a reasonable time, except:
 
 - purchase, invoice and payment records, which we keep as long as tax and accounting laws require (generally at least 7 years);
 - information we must keep to resolve disputes, prevent fraud or meet legal obligations; and

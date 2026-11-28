@@ -17,6 +17,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap" rel="stylesheet">
 <script src="./cloud.js"></script>
+<script src="./reviews.js"></script>
 <style>
 *{box-sizing:border-box}
 html,body{margin:0;background:#F7F3EA;color:#14284B;font-family:'Public Sans',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
@@ -114,6 +115,8 @@ ul.ticks li:before{content:'✓';position:absolute;left:4px;top:6px;color:#0E7A5
   <button class="link" id="signOut" hidden type="button">Sign out</button>
 </div></header>
 <main class="wrap" id="app" aria-live="polite"><p class="sub" style="margin-top:24px">Loading…</p></main>
+<section class="wrap" id="t4g-reviews" hidden aria-label="Member reviews"></section>
+<script>T4GReviews.summary(document.getElementById('t4g-reviews'));</script>
 <script>
 (function () {
   const $app = document.getElementById('app'), $ = id => document.getElementById(id);
