@@ -142,7 +142,7 @@ table.mini td{padding:3px 12px 3px 0}
 
   // ---------- tabs ----------
   const TABS = () => [['approvals', 'Approvals'], ['groups', 'Groups'], ['messages', 'Messages'],
-    ...(st.admin ? [['dash', 'Dashboard'], ['members', 'All members'], ['nochurch', 'No church'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Seasons'], ['book', 'Book'], ['store', 'Bookstore'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['news', 'Announcements'], ['settings', 'Settings'], ...(st.owner ? [['roles', 'Roles']] : [])]
+    ...(st.admin ? [['dash', 'Dashboard'], ['members', 'All members'], ['nochurch', 'No church'], ['prices', 'Prices'], ['licenses', 'Licenses'], ['churches', 'Churches'], ['season', 'Seasons'], ['book', 'Book'], ['store', 'Bookstore'], ['keys', 'Book keys'], ['challenges', 'Challenges'], ['payments', 'Payments'], ['news', 'Announcements'], ['reviews', 'Reviews'], ['settings', 'Settings'], ...(st.owner ? [['roles', 'Roles']] : [])]
       : st.am ? [['amdash', 'My churches'], ['churches', 'Churches'], ['licenses', 'Licenses']] : [])];
   function renderNav() {
     $('nav').hidden = false;
@@ -1192,6 +1192,36 @@ ${trialForm()}
     };
   };
 
+  // ---------- reviews: approve member reviews, read check-ins and feedback ----------
+  VIEWS.reviews = () => { const R = st.rv, v = st.rvView || 'pending';
+    if (!R) return '<h2>Reviews</h2><p class="sub">Loading…</p>';
+    const C = R.counts || {}, L = R.items || [];
+    const star = n => '<span style="color:#C98A0B;letter-spacing:1px" aria-label="' + n + ' out of 5 stars">' + '★'.repeat(n) + '<span style="color:#D8D2C2">' + '★'.repeat(5 - n) + '</span></span>';
+    const when = t => { try { return new Date(t).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }); } catch (e) { return ''; } };
+    const tabs = [['pending', 'Pending', C.pending], ['live', 'Live', C.live], ['hidden', 'Hidden', C.hidden], ['checkins', 'Check-ins', C.checkins], ['feedback', 'Feedback inbox', (C.feedback_new || 0) + ' new']]
+      .map(([k, t, n]) => `<button type="button" class="btn ${v === k ? '' : 'alt'} sm" data-rvv="${k}" ${v === k ? 'aria-current="true"' : ''}>${t} (${esc(String(n == null ? 0 : n))})</button>`).join(' ');
+    let body;
+    if (v === 'feedback') body = L.length ? L.map(f => `<div class="card" style="${f.is_read ? '' : 'border-color:#D9A62B;background:#FFFBF0'}">
+        <div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap"><strong>${esc(f.name || 'Member')}</strong><span class="muted">${esc(when(f.created_at))}${f.screen ? ' · from ' + esc(f.screen) : ''}</span></div>
+        <p style="white-space:pre-wrap;margin:8px 0">${esc(f.note)}</p>
+        <div class="row" style="gap:8px;flex-wrap:wrap">${f.email ? `<a class="btn alt sm" href="mailto:${esc(f.email)}?subject=${encodeURIComponent('Your note to time4god')}">Reply by email</a>` : ''}<button type="button" class="btn alt sm" data-fbread="${f.id}" data-r="${f.is_read ? '0' : '1'}">${f.is_read ? 'Mark as new' : 'Mark as read'}</button></div></div>`).join('') : '<p class="empty">No notes yet. Members send these from More › Tell Us How to Improve.</p>';
+    else if (v === 'checkins') body = `<div class="card"><strong>Average check-in: ${R.checkin_avg != null ? esc(String(R.checkin_avg)) + ' ★' : '—'}</strong><p class="sub" style="margin:4px 0 0">Private ratings members give after Week 6. They never count toward the public average.</p></div>` +
+      (L.length ? `<div class="card tbl"><table><thead><tr><th>Rating</th><th>Comment</th><th>Member</th><th>Date</th></tr></thead><tbody>${L.map(x => `<tr><td>${star(x.stars)}</td><td>${esc(x.comment || '')}</td><td>${esc(x.member)}<br><span class="muted">${esc(x.email || '')}</span></td><td>${esc(when(x.updated_at))}</td></tr>`).join('')}</tbody></table></div>` : '<p class="empty">No check-ins yet.</p>');
+    else body = L.length ? L.map(r => `<div class="card">
+        <div class="row" style="justify-content:space-between;gap:10px;flex-wrap:wrap"><span>${star(r.stars)}${r.edited ? ' <span class="pill wait">Edited</span>' : ''}${r.teen ? ' <span class="pill off">Teen</span>' : ''}</span><span class="muted">${esc(when(r.updated_at))}</span></div>
+        ${r.discovery ? `<p style="margin:8px 0 0"><span class="muted">God showed me:</span> <strong>${esc(r.discovery)}</strong></p>` : ''}
+        ${r.changed ? `<p style="margin:8px 0 0"><span class="muted">What changed:</span><br><span style="white-space:pre-wrap">${esc(r.changed)}</span></p>` : ''}
+        ${r.recommend ? `<p style="margin:8px 0 0"><span class="muted">Recommend to:</span> ${esc(r.recommend)}</p>` : ''}
+        <p class="sub" style="margin:10px 0 0">Written by <strong>${esc(r.member)}</strong> (${esc(r.email || '')}) · shows as <strong>${esc(r.shows_as)}</strong> · marketing: <strong>${r.marketing_ok ? 'Yes' : 'No'}</strong>${v === 'live' ? ' · ' + esc(String(r.helpful_count)) + ' helpful' : ''}</p>
+        <div class="row" style="gap:8px;margin-top:10px">${v !== 'live' ? `<button type="button" class="btn teal sm" data-rvset="${r.id}" data-s="approved">Approve</button>` : ''}${v !== 'hidden' ? `<button type="button" class="btn alt sm" data-rvset="${r.id}" data-s="hidden">Hide</button>` : ''}</div></div>`).join('')
+      : `<p class="empty">${v === 'pending' ? 'Nothing waiting. New and edited reviews appear here.' : v === 'live' ? 'No live reviews yet.' : 'No hidden reviews.'}</p>`;
+    return `<h2>Reviews</h2><p class="sub">Members rate the plan privately after Week 6 and can write a public review after Week 12. Reviews go live only after you approve them. Public average: <strong>${R.review_avg != null ? esc(String(R.review_avg)) + ' ★' : '—'}</strong>. <a href="reviews.html" target="_blank" rel="noopener">See the reviews page</a></p>
+      <div class="row" style="gap:8px;flex-wrap:wrap;margin:12px 0">${tabs}</div>${body}`; };
+  BIND.reviews = () => {
+    $app.querySelectorAll('[data-rvv]').forEach(b => b.onclick = () => { st.rvView = b.dataset.rvv; st.rv = null; render(); loadTab(true); });
+    $app.querySelectorAll('[data-rvset]').forEach(b => b.onclick = () => run(async () => { await Cloud.rpc('admin_set_review', { p_review: b.dataset.rvset, p_status: b.dataset.s }); await loadTab(true); }, b.dataset.s === 'approved' ? 'Review approved. It’s live now.' : 'Review hidden.'));
+    $app.querySelectorAll('[data-fbread]').forEach(b => b.onclick = () => run(async () => { await Cloud.rpc('admin_feedback_read', { p_id: b.dataset.fbread, p_read: b.dataset.r === '1' }); await loadTab(true); }));
+  };
   // ---------- loading ----------
   async function loadTab(quiet) {
     if (!quiet) st.msg = st.err = '';
@@ -1209,6 +1239,7 @@ ${trialForm()}
       if (st.tab === 'payments') st.payments = await Cloud.rpc('admin_payments') || [];
       if (st.tab === 'news') st.news = await Cloud.rpc('admin_announcements');
       if (st.tab === 'store') st.store = await Cloud.rpc('admin_store_books') || [];
+      if (st.tab === 'reviews') st.rv = await Cloud.rpc('admin_reviews', { p_view: st.rvView || 'pending' });
       if (st.tab === 'settings') { st.settings = await Cloud.rpc('admin_settings'); try { st.invSet = await Cloud.rpc('admin_invoice_settings'); } catch (e) { st.invSet = {}; } try { st.legal = { docs: await Cloud.rpc('admin_legal_docs') || [] }; } catch (e) { st.legal = { error: errMsg(e) }; } st.stripe = null; Cloud.pay({ action: 'stripe_mode' }).then(r => { st.stripe = r || {}; if (st.tab === 'settings') render(); }).catch(e => { st.stripe = { error: errMsg(e) }; if (st.tab === 'settings') render(); }); }
       if (st.tab === 'nochurch') { const [a, b] = await Promise.all([Cloud.rpc('admin_no_church'), Cloud.rpc('admin_pending_members')]); st.nc = a || []; st.pend = b || []; st.ncSel = new Set(); st.pSel = new Set(); }
       if (st.tab === 'members') { const [a, t, fm] = await Promise.all([Cloud.rpc('admin_all_members'), Cloud.rpc('admin_trials_v2'), Cloud.rpc('admin_family_summary').catch(() => null)]); st.all = a || []; st.trials = t || []; st.fam = fm; }

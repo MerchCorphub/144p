@@ -69,6 +69,7 @@ html,body{width:100%;min-height:100%}
     <div style="position:absolute;left:0;right:0;bottom:0;height:42%;background:linear-gradient(180deg,rgba(18,60,86,0) 0%,rgba(18,60,86,.55) 100%);pointer-events:none"></div>
     <div style="position:relative;flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:16px;padding:calc(24px + env(safe-area-inset-top)) calc(24px + env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) calc(24px + env(safe-area-inset-left))">
       <sc-if value="{{ hasJoin }}" hint-placeholder-val="{{ false }}"><div style="align-self:center;background:rgba(255,255,255,.92);color:#123C56;border-radius:999px;padding:8px 16px;font-size:14px;font-weight:600">Invited by {{ joinName }}</div></sc-if>
+      <sc-if value="{{ hasRating }}" hint-placeholder-val="{{ false }}"><a href="reviews.html" style="align-self:center;display:inline-flex;align-items:center;gap:8px;background:rgba(255,255,255,.92);color:#123C56;border-radius:999px;padding:8px 16px;font-size:14px;font-weight:700;text-decoration:none"><span aria-hidden="true" style="color:#C98A0B;letter-spacing:1px">{{ ratingStars }}</span>{{ ratingText }} ›</a></sc-if>
       <div style="display:flex;flex-direction:column;gap:10px;width:100%;max-width:420px;align-self:center">
         <div style="align-self:center;font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#FFFFFF;text-shadow:0 1px 3px rgba(0,0,0,.4)">I’m joining as</div>
         <button onClick="{{ toRegister }}" style="border:none;border-radius:12px;min-height:54px;background:#123C56;color:#FFFFFF;font-size:17px;font-weight:600;cursor:pointer;box-shadow:0 6px 18px rgba(18,60,86,.35);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px">An individual<span style="font-size:12px;font-weight:500;opacity:.85">Free account · study book {{ priceShort }}</span></button>
@@ -173,6 +174,24 @@ html,body{width:100%;min-height:100%}
             </sc-for>
           </div>
           <div style="display:flex;gap:8px;padding:0 16px"><button onClick="{{ tourGo }}" style="flex:1;border:none;border-radius:10px;min-height:42px;background:#F2C94C;color:#0B2257;font-size:15px;font-weight:700;cursor:pointer">Make my first deposit</button><button onClick="{{ hideTour }}" style="border:1px solid #6F8798;border-radius:10px;min-height:42px;padding:0 14px;background:transparent;color:#FFFFFF;font-size:14px;font-weight:600;cursor:pointer">Got it</button></div>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showCheckin }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #F1D8A0;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:700">{{ ciTitle }}</span><span style="font-size:13px;color:#6A7A84;display:flex;gap:6px;align-items:center"><i class="icon-lock"></i>Private. Only the time4god team sees this.</span></div>
+          <div role="group" aria-label="Your rating" style="display:flex;gap:2px"><sc-for list="{{ ciStars }}" as="x" hint-placeholder-count="5"><button onClick="{{ x.pick }}" aria-label="{{ x.label }}" aria-pressed="{{ x.on }}" style="border:none;background:transparent;width:46px;height:46px;font-size:34px;line-height:1;color:{{ x.color }};cursor:pointer;padding:0">★</button></sc-for></div>
+          <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}"><div role="alert" style="background:#FBEAE7;color:#8A2E22;border-radius:12px;padding:12px 14px;font-size:14px">{{ err }}</div></sc-if>
+          <sc-if value="{{ ciSaved }}" hint-placeholder-val="{{ false }}">
+            <input value="{{ ciComment }}" onChange="{{ onCiComment }}" maxlength="200" placeholder="Anything to add? (optional, one line)" aria-label="Optional comment" style="width:100%;border:1px solid #CBD5DA;border-radius:12px;padding:12px 14px;font-size:16px;background:#FFFFFF;color:#173344;outline:none">
+            <div style="display:flex;gap:8px"><button onClick="{{ ciSend }}" style="border:none;border-radius:10px;min-height:44px;padding:0 16px;background:#075D61;color:#FFFFFF;font-size:15px;font-weight:600;cursor:pointer">Send</button><button onClick="{{ ciDone }}" style="border:1px solid #CBD5DA;border-radius:10px;min-height:44px;padding:0 16px;background:#FFFFFF;color:#173344;font-size:15px;font-weight:600;cursor:pointer">Done</button></div>
+          </sc-if>
+          <sc-if value="{{ ciNotSaved }}" hint-placeholder-val="{{ true }}"><div><button onClick="{{ ciLater }}" style="border:1px solid #CBD5DA;border-radius:10px;min-height:44px;padding:0 16px;background:#FFFFFF;color:#173344;font-size:15px;font-weight:600;cursor:pointer">Not now</button></div></sc-if>
+        </div>
+      </sc-if>
+      <sc-if value="{{ showReviewAsk }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#123C56;color:#FFFFFF;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:10px;align-items:flex-start"><i class="icon-party-popper" style="font-size:22px;color:#F2C94C"></i><div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:16px;font-weight:700">You finished the 12 weeks!</span><span style="font-size:14px;line-height:1.45;color:#DCE7ED">Would you share how it went? Your review can help someone else decide to give God their time.</span></div></div>
+          <div style="display:flex;gap:8px"><button onClick="{{ openReview }}" style="border:none;border-radius:10px;min-height:44px;padding:0 16px;background:#F2C94C;color:#0B2257;font-size:15px;font-weight:700;cursor:pointer">Write a review</button><button onClick="{{ reviewLater }}" style="border:1px solid #6F8798;border-radius:10px;min-height:44px;padding:0 16px;background:transparent;color:#FFFFFF;font-size:15px;font-weight:600;cursor:pointer">Not now</button></div>
         </div>
       </sc-if>
       <sc-if value="{{ joinOffer }}" hint-placeholder-val="{{ false }}">
@@ -825,6 +844,59 @@ html,body{width:100%;min-height:100%}
       <sc-if value="{{ hasSupport }}" hint-placeholder-val="{{ false }}"><a href="mailto:{{ supportEmail }}?subject=Question%20about%20the%20144(P)%20Plan%20app" style="display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;border-radius:14px;background:#123C56;color:#FFFFFF;font-size:16px;font-weight:600;text-decoration:none"><i class="icon-mail"></i>Email us: {{ supportEmail }}</a></sc-if>
     </div>
   </sc-if>
+  <sc-if value="{{ isReview }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="14 Review" style="display:flex;flex-direction:column;gap:14px">
+      <sc-if value="{{ rvThanks }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#E8F5F3;border:1px solid #BFE2DC;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px"><span style="font-size:17px;font-weight:700;color:#075D61">{{ rvThanksTitle }}</span><span style="font-size:14px;line-height:1.5;color:#173344">{{ rvThanksText }}</span></div>
+        <div style="background:#123C56;color:#FFFFFF;border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px">
+          <span style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#F2C94C">What’s next</span>
+          <span style="font-size:17px;font-weight:700">Bring someone with you</span>
+          <span style="font-size:14px;line-height:1.5;color:#DCE7ED">Members who finish often invite a friend or family member to start their own 12 weeks. Send them a Time4God Challenge. If they don’t have the study book, one of your free guest seats covers it.</span>
+          <button onClick="{{ rvInvite }}" style="border:none;border-radius:10px;min-height:46px;background:#F2C94C;color:#0B2257;font-size:15px;font-weight:700;cursor:pointer">Invite someone</button>
+          <button onClick="{{ rvStore }}" style="border:1px solid #6F8798;border-radius:10px;min-height:44px;background:transparent;color:#FFFFFF;font-size:15px;font-weight:600;cursor:pointer">Visit the Bookstore</button>
+        </div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap"><button onClick="{{ rvEdit }}" style="border:1px solid #CBD5DA;border-radius:10px;min-height:44px;padding:0 16px;background:#FFFFFF;color:#173344;font-size:15px;font-weight:600;cursor:pointer">Edit my review</button><button onClick="{{ rvSeeAll }}" style="border:1px solid #CBD5DA;border-radius:10px;min-height:44px;padding:0 16px;background:#FFFFFF;color:#173344;font-size:15px;font-weight:600;cursor:pointer">See member reviews</button></div>
+      </sc-if>
+      <sc-if value="{{ rvClosed }}" hint-placeholder-val="{{ false }}">
+        <div style="background:#FFFFFF;border:1px solid #E1E7EA;border-radius:16px;padding:16px;font-size:15px;line-height:1.5">{{ rvClosedText }}</div>
+        <button onClick="{{ rvSeeAll }}" style="border:1px solid #CBD5DA;border-radius:10px;min-height:44px;padding:0 16px;background:#FFFFFF;color:#173344;font-size:15px;font-weight:600;cursor:pointer">See member reviews</button>
+      </sc-if>
+      <sc-if value="{{ rvForm }}" hint-placeholder-val="{{ true }}">
+        <div style="font-size:15px;line-height:1.5;color:#3F5260">Tell us how your 12 weeks went. Your review appears after the time4god team approves it.</div>
+        <div style="display:flex;flex-direction:column;gap:4px"><span style="font-size:15px;font-weight:700">Your rating <span style="font-weight:400;color:#6A7A84">(required)</span></span><div role="group" aria-label="Your rating" style="display:flex;gap:2px"><sc-for list="{{ rvStars }}" as="x" hint-placeholder-count="5"><button onClick="{{ x.pick }}" aria-label="{{ x.label }}" aria-pressed="{{ x.on }}" style="border:none;background:transparent;width:46px;height:46px;font-size:34px;line-height:1;color:{{ x.color }};cursor:pointer;padding:0">★</button></sc-for></div></div>
+        <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:15px;font-weight:700">What did God show you?</span>
+          <div style="display:flex;flex-wrap:wrap;gap:8px"><sc-for list="{{ rvDiscOpts }}" as="o" hint-placeholder-count="5"><button onClick="{{ o.pick }}" aria-pressed="{{ o.on }}" style="min-height:40px;padding:0 14px;border-radius:999px;border:1px solid {{ o.border }};background:{{ o.bg }};color:{{ o.fg }};font-size:14px;font-weight:600;cursor:pointer">{{ o.label }}</button></sc-for></div>
+          <span style="font-size:12px;color:#6A7A84">{{ rvDiscHint }}</span></div>
+        <label style="display:flex;flex-direction:column;gap:8px;font-size:15px;font-weight:700">What changed in your life or your walk with God?
+          <textarea value="{{ rvChanged }}" onChange="{{ onRvChanged }}" rows="5" style="border:1px solid #CBD5DA;border-radius:12px;padding:12px 14px;font-size:16px;font-weight:400;line-height:1.45;background:#FFFFFF;color:#173344;resize:none;outline:none"></textarea>
+          <span style="font-size:12px;font-weight:400;color:#6A7A84;text-align:right">{{ rvChangedCount }}/1000</span></label>
+        <label style="display:flex;flex-direction:column;gap:8px;font-size:15px;font-weight:700">Who would you recommend this to?
+          <input value="{{ rvRecommend }}" onChange="{{ onRvRecommend }}" maxlength="300" placeholder="e.g. Busy parents, my small group" style="border:1px solid #CBD5DA;border-radius:12px;padding:12px 14px;font-size:16px;font-weight:400;background:#FFFFFF;color:#173344;outline:none"></label>
+        <sc-if value="{{ rvCanName }}" hint-placeholder-val="{{ true }}">
+          <div style="display:flex;flex-direction:column;gap:8px"><span style="font-size:15px;font-weight:700">Show my name as</span>
+            <sc-for list="{{ rvNameOpts }}" as="o" hint-placeholder-count="2"><button onClick="{{ o.pick }}" aria-pressed="{{ o.on }}" style="display:flex;align-items:center;gap:10px;min-height:48px;padding:0 14px;border-radius:12px;border:1px solid {{ o.border }};background:{{ o.bg }};color:#173344;font-size:15px;cursor:pointer;text-align:left"><i class="{{ o.icon }}" style="color:#075D61"></i>{{ o.label }}</button></sc-for></div>
+          <button onClick="{{ rvToggleMkt }}" role="checkbox" aria-checked="{{ rvMkt }}" style="display:flex;align-items:flex-start;gap:10px;border:none;background:transparent;padding:4px 0;text-align:left;cursor:pointer;color:#173344;font-size:15px;line-height:1.45"><span style="flex:none;width:22px;height:22px;border-radius:6px;border:2px solid #075D61;background:{{ rvMktBg }};color:#FFFFFF;display:flex;align-items:center;justify-content:center;font-size:14px">✓</span><span>OK to use my review in time4god marketing (website, social media, ads, emails and print). Optional.</span></button>
+        </sc-if>
+        <sc-if value="{{ rvTeen }}" hint-placeholder-val="{{ false }}"><div style="font-size:13px;color:#6A7A84;line-height:1.5">Teen reviews always show as “time4god member” and are never used in marketing.</div></sc-if>
+        <div style="font-size:13px;color:#6A7A84;line-height:1.5">Your email is never shown. Editing your review later sends it back for approval. See the <a href="terms.html">Terms</a> and <a href="privacy.html">Privacy Policy</a>.</div>
+        <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}"><div role="alert" style="background:#FBEAE7;color:#8A2E22;border-radius:12px;padding:12px 14px;font-size:14px">{{ err }}</div></sc-if>
+        <button onClick="{{ rvSend }}" style="border:none;border-radius:14px;min-height:54px;background:#123C56;color:#FFFFFF;font-size:17px;font-weight:600;cursor:pointer">{{ rvSendLabel }}</button>
+        <button onClick="{{ reviewLater }}" style="border:1px solid #CBD5DA;border-radius:14px;min-height:48px;background:#FFFFFF;color:#173344;font-size:16px;font-weight:600;cursor:pointer">Not now</button>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ isFeedback }}" hint-placeholder-val="{{ false }}">
+    <div data-screen-label="15 Feedback" style="display:flex;flex-direction:column;gap:14px">
+      <div style="font-size:15px;line-height:1.5;color:#3F5260">What would make the app better for you? Ideas, problems, anything. This note goes privately to the time4god team.</div>
+      <label style="display:flex;flex-direction:column;gap:8px;font-size:15px;font-weight:700">Your note
+        <textarea value="{{ fbNote }}" onChange="{{ onFbNote }}" rows="6" style="border:1px solid #CBD5DA;border-radius:12px;padding:12px 14px;font-size:16px;font-weight:400;line-height:1.45;background:#FFFFFF;color:#173344;resize:none;outline:none"></textarea>
+        <span style="font-size:12px;font-weight:400;color:#6A7A84;text-align:right">{{ fbCount }}/2000</span></label>
+        <sc-if value="{{ hasErr }}" hint-placeholder-val="{{ false }}"><div role="alert" style="background:#FBEAE7;color:#8A2E22;border-radius:12px;padding:12px 14px;font-size:14px">{{ err }}</div></sc-if>
+      <button onClick="{{ fbSend }}" style="border:none;border-radius:14px;min-height:54px;background:#123C56;color:#FFFFFF;font-size:17px;font-weight:600;cursor:pointer">Send to the team</button>
+      <div style="font-size:13px;color:#6A7A84;display:flex;gap:6px;align-items:center"><i class="icon-lock"></i>Private. We may reply by email.</div>
+    </div>
+  </sc-if>
   <sc-if value="{{ isInstall }}" hint-placeholder-val="{{ false }}">
     <div data-screen-label="13 Install" style="display:flex;flex-direction:column;gap:14px">
       <div style="display:flex;flex-direction:column;gap:6px"><div style="font-size:22px;font-weight:700">Install The 144(P) Plan</div><div style="font-size:15px;color:#6A7A84;line-height:1.5">Add the app to your home screen to open it full-screen, like any other app.</div></div>
@@ -1024,6 +1096,8 @@ const HELP = {
   notifications: ['Reminders', [H('Daily reminder:', 'a phone or computer notification at the time you pick, even when the app is closed. On iPhone, add the app to your Home Screen first.'), H('Email reminder:', 'the same reminder by email.'), H('Each reminder shows', 'yesterday’s minutes, your streak, this week’s chapter and how your challenge is going.'), H('Messages', 'from your church leaders arrive the same way.')]],
   privacy: ['Privacy and church view', [H('Your statement is yours.', 'Only you see your deposits, notes and balances.'), H('What leaders see:', 'your name, approval status, group, and minutes in challenges. Never your notes or reflections.')]],
   about: ['About The 144(P) Plan', [H('144 minutes a day', 'is a tithe of your time, 10% of each day, given to God.'), H('The plan', 'goes with the book What Will You Give Today? by C.P. Parker.')]],
+  review: ['Rate and review', [H('Who sees it:', 'your review appears for everyone after the time4god team approves it, under your first name and last initial, or as “time4god member” if you choose.'), H('Never shown:', 'your email and your private check-in.'), H('Marketing:', 'only if you tick the box. You can ask us to stop using it at any time.'), H('Edits:', 'changing your review sends it back for approval.')]],
+  feedback: ['Tell us how to improve', [H('Private:', 'only the time4god team reads these notes.'), H('Replies:', 'we may answer by email.')]],
   help: ['Help and support', [H('Questions?', 'Start with the ? at the top of any page. For anything else, contact the 144(P) Plan team here.')]],
   install: ['Install the app', [H('Add it to your Home Screen', 'so it opens like a regular app and can send reminders.'), H('iPhone:', 'tap Share, then Add to Home Screen.'), H('Android or computer:', 'tap Install when your browser offers it.')]],
 };
@@ -1051,6 +1125,8 @@ class Component extends DCLogic {
     if (!this.state.join) joinChurchCloud().then(j => { if (j) this.setState({ join: j }); });
     try { const st0 = new URLSearchParams(location.search).get('start'); if ((st0 === 'register' || st0 === 'signin') && this.state.screen === 'welcome') this.setState({ screen: st0, form: {} }); } catch (e) {}
     try { if (window.Cloud && Cloud.rpc) Cloud.rpc('public_pricing').then(p => this.setState({ pricing: p })).catch(() => {}); } catch (e) {}
+    try { if (window.Cloud && Cloud.rpc) Cloud.rpc('public_reviews', { p_limit: 1 }).then(r => this.setState({ pubRating: r })).catch(() => {}); } catch (e) {}
+    try { if (location.hash === '#review' || location.hash === '#feedback') { this.pendingHash = location.hash.slice(1); history.replaceState(null, '', location.pathname + location.search); } } catch (e) {}
     try { if (window.Cloud && Cloud.rpc) Cloud.rpc('public_contact').then(c => this.setState({ supportEmail: (c && c.support_email) || '' })).catch(() => {}); } catch (e) {}
     this.onOnline = () => this.cloudRefresh(); window.addEventListener('online', this.onOnline);
     // Back navigation: coming back from another page (the book, challenges, study book page)
@@ -1103,6 +1179,7 @@ class Component extends DCLogic {
       try { const f = await Cloud.rpc('my_family'); if (f) this.setState({ family: f }); } catch (e) {}
       try { const ph = await Cloud.rpc('my_phone'); this.setState({ phone: ph || '' }); } catch (e) {}
       try { if (localStorage.getItem('144p-news-optin') === '1') { await Cloud.rpc('set_my_news_email', { p_on: true }); localStorage.removeItem('144p-news-optin'); } } catch (e) {}
+      try { const rv = await Cloud.rpc('my_review_state'); this.setState({ rvState: rv }); if (rv && this.pendingHash) { const h = this.pendingHash; this.pendingHash = null; this.openReviewish(h); } } catch (e) {}
       try { const nw = await Cloud.rpc('my_news_email'); this.setState({ news: !!nw }); } catch (e) {}
       try { const [ms, ls] = await Promise.all([Cloud.rpc('my_season'), Cloud.rpc('list_seasons')]); this.setState({ mySeason: ms, seasonList: ls || [] }); } catch (e) {}
     } catch (e) {}
@@ -1124,6 +1201,10 @@ class Component extends DCLogic {
   me() { const db = this.state.db; return db.partners.find(p => p.id === db.session) || null; }
   commit(fn) { const prev = this.state.db, db = JSON.parse(JSON.stringify(prev)); fn(db); persist(db); this.setState({ db }); try { this.syncDiff(prev, db); } catch (e) {} return db; }
   audit(db, type, rt, rid, meta) { db.audit.push({ id: uid(), actor: db.session, type, recordType: rt, recordId: rid, at: Date.now(), meta: meta || null }); }
+  openReviewish(h) { if (h === 'feedback') return this.go('feedback', { fb: '' });
+    this.go('review', { rvd: null, rvDone: false }); }
+  rvLater(kind) { const u = this.me(); try { localStorage.setItem('t4g-rv-later-' + kind + '-' + (u && u.id), String(Date.now())); } catch (e) {} this.forceUpdate(); }
+  rvSnoozed(kind) { const u = this.me(); try { const t = Number(localStorage.getItem('t4g-rv-later-' + kind + '-' + (u && u.id)) || 0); return Date.now() - t < 7 * 864e5; } catch (e) { return false; } }
   flash(m) { this.setState({ toast: m }); clearTimeout(this.tt); this.tt = setTimeout(() => this.setState({ toast: '' }), 2800); }
   fail(m) { this.setState({ err: m }); }
   toTop() { window.scrollTo(0, 0); const sc = document.querySelector('[data-app-scroller]'); if (sc) sc.scrollTop = 0; }
@@ -1305,6 +1386,8 @@ class Component extends DCLogic {
     const scr = s.screen;
     const formOn = k => e => { const v = e.target.value; this.setState(st => ({ form: { ...st.form, [k]: v }, err: '' })); };
     const base = {
+      ...(() => { const R = this.state.pubRating; if (!R || !R.count) return { hasRating: false };
+        return { hasRating: true, ratingStars: '★'.repeat(Math.round(Number(R.average) || 0)), ratingText: R.average + ' · ' + R.count + ' member review' + (R.count == 1 ? '' : 's') }; })(),
       isWelcome: !u && scr === 'welcome', isAuthForm: !u && (scr === 'register' || scr === 'signin'), isApp: !!u,
       isRegister: scr === 'register', isSignin: scr === 'signin',
       priceNote: this.state.pricing && this.state.pricing.individual != null ? `The 12-week study book in the app is $${Number(this.state.pricing.individual).toFixed(Number(this.state.pricing.individual) % 1 ? 2 : 0)} for one year and includes a seat to give someone you challenge, or it’s included if your church has seats or you have the printed book.` : 'The 12-week study book in the app is a separate one-year purchase, or included if your church has seats or you have the printed book.',
@@ -1364,7 +1447,7 @@ class Component extends DCLogic {
     const reflKey = `${u.id}|${wStart(curWeek)}`, refl = db.reflections[reflKey] || db.reflections[`${u.id}|${wStart(curWeek - 1)}`];
 
     // ---- header / nav ----
-    const titles = { statement: s.period === 'week' ? 'Weekly Statement' : s.period === 'month' ? 'Monthly Statement' : 'Year-to-Date Statement', deposit: s.dep && s.dep.editId ? 'Edit Deposit' : 'Make a Deposit', history: 'Deposit History', detail: 'Deposit Details', journey: 'From Starter to Standard', milestones: 'Progress & Milestones', balance: 'My Balance', redeem: 'Redemption Options', redeemDetail: 'Redemption Detail', redemptions: 'My Redemptions', notes: 'My Notes', more: 'More', account: 'My Account', plan: 'My Giving Plan', notifications: 'Notifications', privacy: 'Privacy & Church View', about: 'About The 144(P) Plan', help: 'Help & Support', install: 'Install the App' };
+    const titles = { statement: s.period === 'week' ? 'Weekly Statement' : s.period === 'month' ? 'Monthly Statement' : 'Year-to-Date Statement', deposit: s.dep && s.dep.editId ? 'Edit Deposit' : 'Make a Deposit', history: 'Deposit History', detail: 'Deposit Details', journey: 'From Starter to Standard', milestones: 'Progress & Milestones', balance: 'My Balance', redeem: 'Redemption Options', redeemDetail: 'Redemption Detail', redemptions: 'My Redemptions', notes: 'My Notes', more: 'More', account: 'My Account', plan: 'My Giving Plan', notifications: 'Notifications', privacy: 'Privacy & Church View', about: 'About The 144(P) Plan', help: 'Help & Support', install: 'Install the App', review: 'Rate & Review', feedback: 'Tell Us How to Improve' };
     const navMap = { home: 'home', statement: 'statement', notes: 'statement', deposit: 'deposit', balance: 'balance', redeem: 'balance', redeemDetail: 'balance', redemptions: 'balance' };
     const activeNav = navMap[scr] || 'more';
     const navItems = [['home', 'Home', 'icon-house'], ['deposit', 'Deposit', 'icon-circle-plus'], ['statement', 'Statement', 'icon-file-text'], ['balance', 'Redeem', 'icon-gift'], ['more', 'More', 'icon-ellipsis']].map(([k, label, icon]) => ({
@@ -1463,7 +1546,7 @@ class Component extends DCLogic {
       isHome: scr === 'home', isDeposit: scr === 'deposit', isStatement: scr === 'statement', isHistory: scr === 'history', isDetail: scr === 'detail',
       isJourney: scr === 'journey', isMilestones: scr === 'milestones', isBalance: scr === 'balance', isRedeem: scr === 'redeem', isRedeemDetail: scr === 'redeemDetail',
       isRedemptions: scr === 'redemptions', isNotes: scr === 'notes', isMore: scr === 'more', isAccount: scr === 'account', isPlan: scr === 'plan',
-      isNotifications: scr === 'notifications', isPrivacy: scr === 'privacy', isAbout: scr === 'about', isHelp: scr === 'help',
+      isNotifications: scr === 'notifications', isPrivacy: scr === 'privacy', isAbout: scr === 'about', isHelp: scr === 'help', isReview: scr === 'review', isFeedback: scr === 'feedback',
       hdrHome: scr === 'home', hdrInner: scr !== 'home', hdrTitle: titles[scr] || '',
       openHelp: () => this.setState({ help: scr === 'balance' ? 'balance_screen' : HELP[scr] ? scr : 'home' }),
       helpWeek: () => this.setState({ help: 'week' }), helpBalance: () => this.setState({ help: 'balance' }),
@@ -1581,8 +1664,62 @@ class Component extends DCLogic {
         { title: 'My records', items: [['My Statements', 'icon-file-text', () => this.go('statement', { stWeek: null })], ['Deposit History', 'icon-history', () => this.go('history')], ['My Notes', 'icon-notebook-pen', () => openNotes(curWeek)], ['My Balance', 'icon-infinity', () => this.go('balance')], ['My Redemptions', 'icon-coins', () => this.go('redemptions')], ['Progress & Milestones', 'icon-flag', () => this.go('milestones')], ['Starter to Standard', 'icon-map', () => this.go('journey')]] },
         { title: 'The Book', items: [['Get the Study Book', 'icon-tag', () => this.leave('access.html')], ['Read the Book', 'icon-book-open', () => this.leave('read.html')], ['Bookstore', 'icon-shopping-bag', () => this.leave('bookstore.html')], ['Join My Church', 'icon-church', () => this.go('account', { acct: null })], ['Time4God Challenge', 'icon-flag', () => this.leave('challenges.html')], ['Leader Console', 'icon-users', () => this.leave('leader.html')]] },
         { title: 'About', items: [['Privacy & Church View', 'icon-shield-check', () => this.go('privacy')], ['About The 144(P) Plan', 'icon-info', () => this.go('about')], ['How the App Works', 'icon-sprout', () => { try { localStorage.removeItem(TOUR_KEY); } catch (e) {} this.setState({ tourHidden: false }); this.tab('home'); }], ['Help & Support', 'icon-circle-help', () => this.go('help')], ['Install the App', 'icon-download', () => this.go('install')]] },
+        { title: 'Feedback', items: [['Member Reviews', 'icon-star', () => this.leave('reviews.html')], ...(u.cloud && s.rvState && (s.rvState.review_open || s.rvState.review) ? [[s.rvState.review ? 'My Review' : 'Write a Review', 'icon-message-square-heart', () => this.openReviewish('review')]] : []), ['Tell Us How to Improve', 'icon-lightbulb', () => this.go('feedback', { fb: s.fb || '' })]] },
       ].map(g => ({ title: g.title, items: g.items.map(([label, icon, open]) => ({ label, icon, open })) })),
       openAccount: () => this.go('account', { acct: null }), signOut: () => this.signOut(),
+      // ---- ratings, reviews and feedback ----
+      ...(() => {
+        const R = u.cloud ? s.rvState : null, D = s.rvd || {};
+        const DISC = ['Where my time was going', 'Deeper prayer life', 'Closer to my family', 'Peace and less stress', 'A new habit with God'];
+        const byCat = {}; deps.forEach(d => { byCat[d.category] = (byCat[d.category] || 0) + d.minutes; });
+        const topCat = Object.keys(byCat).sort((a, b) => byCat[b] - byCat[a])[0];
+        const guess = { praying: 'Deeper prayer life', reading: 'A new habit with God', listening: 'Peace and less stress', present: 'Closer to my family' }[topCat] || DISC[0];
+        const disc = D.disc != null ? D.disc : guess;
+        const starRow = (val, pick) => [1, 2, 3, 4, 5].map(n => ({ label: n + ' star' + (n > 1 ? 's' : ''), on: val === n ? 'true' : 'false', color: n <= (val || 0) ? '#C98A0B' : '#D3CCBB', pick: () => pick(n) }));
+        const setD = x => this.setState(st => ({ rvd: { ...(st.rvd || {}), ...x } }));
+        const C = R && R.checkin, ciLocal = s.ciLocal || null;
+        const showCheckin = !!(R && R.checkin_open && !R.review_open && (!C || ciLocal) && !s.ciClosed && !this.rvSnoozed('checkin'));
+        const saveCi = async (stars, comment) => { try { const r = await Cloud.rpc('submit_checkin', { p_stars: stars, p_comment: comment || null }); this.setState({ rvState: r }); return true; } catch (e) { this.fail((e && e.message) || 'Could not save your rating.'); return false; } };
+        const ciStarsVal = ciLocal ? ciLocal.stars : 0;
+        const Rv = R && R.review, editing = !!Rv && !s.rvDone && D.edit;
+        const sending = async () => {
+          if (!D.stars) return this.fail('Tap a star to rate the 12 weeks.');
+          try { const r = await Cloud.rpc('submit_review', { p_stars: D.stars, p_discovery: disc, p_changed: (D.changed || '').trim(), p_recommend: (D.rec || '').trim(), p_name_choice: D.name || 'initial', p_marketing: !!D.mkt });
+            this.setState({ rvState: r, rvDone: true, rvd: null, err: '' }); this.toTop(); } catch (e) { this.fail((e && e.message) || 'Could not send your review. Please try again.'); }
+        };
+        const status = Rv && Rv.status;
+        const nameOpts = [['initial', (R && R.show_as_initial) || (u.first + ' ' + (u.last || '').slice(0, 1) + '.'), 'icon-user-round'], ['anonymous', 'time4god member (anonymous)', 'icon-eye-off']]
+          .map(([k, label, icon]) => { const on = (D.name || 'initial') === k; return { label, icon, on: on ? 'true' : 'false', border: on ? '#075D61' : '#CBD5DA', bg: on ? '#F2FAF8' : '#FFFFFF', pick: () => setD({ name: k }) }; });
+        return {
+          showCheckin, ciTitle: ciLocal && ciLocal.sent ? 'Thank you! Keep going.' : 'Halfway there. How is it going for you?',
+          ciStars: starRow(ciStarsVal, async n => { this.setState({ ciLocal: { stars: n, comment: (ciLocal && ciLocal.comment) || '' } }); await saveCi(n); }),
+          ciSaved: !!ciLocal && !ciLocal.sent, ciNotSaved: !ciLocal, ciComment: (ciLocal && ciLocal.comment) || '',
+          onCiComment: e => { const v = e.target.value.slice(0, 200); this.setState(st => ({ ciLocal: { ...(st.ciLocal || {}), comment: v } })); },
+          ciSend: async () => { if (ciLocal && (ciLocal.comment || '').trim()) { if (await saveCi(ciLocal.stars, ciLocal.comment.trim())) this.flash('Thank you. Only the time4god team sees this.'); } this.setState({ ciClosed: true, ciLocal: null }); },
+          ciDone: () => { this.setState({ ciClosed: true, ciLocal: null }); this.flash('Thanks for checking in.'); },
+          ciLater: () => this.rvLater('checkin'),
+          showReviewAsk: !!(R && R.review_open && !Rv && !this.rvSnoozed('review')),
+          openReview: () => this.openReviewish('review'),
+          reviewLater: () => { this.rvLater('review'); if (scr === 'review') this.back(); },
+          rvThanks: !!Rv && !editing, rvForm: !!R && R.review_open && (!Rv || editing), rvClosed: !R || !R.review_open && !Rv,
+          rvClosedText: !u.cloud ? 'Reviews are saved to your account. Sign in with an online account to write one.' : 'Reviews open after you finish Week 12. You’re in Week ' + Math.max(1, curWeek) + '. We’ll ask you then.',
+          rvThanksTitle: s.rvDone ? 'Thank you for your review!' : 'Your review',
+          rvThanksText: (Rv ? '★'.repeat(Rv.stars) + ' · ' : '') + (status === 'approved' ? 'It’s live on the member reviews page.' : status === 'hidden' ? 'The team didn’t post this one. You can edit it and send it again.' : 'It will appear after the time4god team approves it. That usually takes a few days.'),
+          rvEdit: () => this.setState({ rvDone: false, rvd: { stars: Rv.stars, disc: Rv.discovery || '', changed: Rv.changed || '', rec: Rv.recommend || '', name: Rv.name_choice || 'initial', mkt: !!Rv.marketing_ok, edit: true } }),
+          rvSeeAll: () => this.leave('reviews.html'), rvInvite: () => this.leave('challenges.html'), rvStore: () => this.leave('bookstore.html'),
+          rvStars: starRow(D.stars || 0, n => setD({ stars: n })),
+          rvDiscOpts: DISC.map(label => { const on = disc === label; return { label, on: on ? 'true' : 'false', border: on ? '#075D61' : '#CBD5DA', bg: on ? '#075D61' : '#FFFFFF', fg: on ? '#FFFFFF' : '#173344', pick: () => setD({ disc: label }) }; }),
+          rvDiscHint: D.disc == null && topCat ? 'Picked from where you gave the most time. Tap another if it fits better.' : 'Pick the one that fits best.',
+          rvChanged: D.changed || '', rvChangedCount: (D.changed || '').length, onRvChanged: e => setD({ changed: e.target.value.slice(0, 1000) }),
+          rvRecommend: D.rec || '', onRvRecommend: e => setD({ rec: e.target.value.slice(0, 300) }),
+          rvTeen: !!(R && R.teen), rvCanName: !(R && R.teen), rvNameOpts: nameOpts,
+          rvMkt: D.mkt ? 'true' : 'false', rvMktBg: D.mkt ? '#075D61' : '#FFFFFF', rvToggleMkt: () => setD({ mkt: !D.mkt }),
+          rvSendLabel: editing ? 'Send updated review' : 'Send my review', rvSend: sending,
+          fbNote: s.fb || '', fbCount: (s.fb || '').length, onFbNote: e => this.setState({ fb: e.target.value.slice(0, 2000) }),
+          fbSend: async () => { const n = (s.fb || '').trim(); if (!n) return this.fail('Write a short note first.'); if (!u.cloud) return this.fail('Sign in with an online account to send a note.');
+            try { await Cloud.rpc('send_feedback', { p_note: n, p_screen: (s.stack || []).slice(-1)[0] || 'more' }); this.setState({ fb: '' }); this.back(); this.flash('Thank you! Your note went to the time4god team.'); } catch (e) { this.fail((e && e.message) || 'Could not send your note.'); } },
+        };
+      })(),
 
       ac, acOn, startLabel: fDate(u.start, FULL),
       ...(() => { const F = u.cloud && s.family; if (!F) return { hasFamily: false, famHasNames: false };

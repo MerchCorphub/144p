@@ -135,6 +135,10 @@ The Service offers Christian encouragement, Scripture and study material. It doe
 - You keep ownership of what you put into the Service, such as notes, reflections, messages, names of groups and challenge entries ("Your Content").
 - You give us a non-exclusive, worldwide, royalty-free license to host, store, copy, display and process Your Content only as needed to operate, protect and improve the Service and as our Privacy Policy describes. This license ends when Your Content is deleted from the Service, except for backups kept for a limited time, content others have already received (such as a message you sent) and records we must keep by law.
 - You are responsible for Your Content and confirm you have the right to share it. We do not have to review it, but we may remove content that breaks these Terms or the law.
+- **Reviews.** After you finish the 12 weeks you may write a review. Reviews must be honest, about your own experience, and must not include other people's private information or anything unlawful, hateful or misleading. You may write one review; sending it again updates it and sends it back for approval.
+- We may show approved reviews in the Service and on our websites with the name you chose (first name and last initial, or "time4god member"). We quote reviews in marketing only if you ticked the marketing box, and we may shorten them without changing their meaning.
+- You are not paid for reviews, no review is required, and we may decline, hide or remove any review. Reviews reflect individual experiences, not promised results.
+- **Feedback.** Notes you send from "Tell Us How to Improve" are private to our team. If you share ideas or suggestions, we may use them to improve the Service without owing you anything for them.
 
 ## 16. Our content and intellectual property
 
